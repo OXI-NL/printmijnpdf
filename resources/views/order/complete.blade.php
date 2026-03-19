@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bestelling bevestigd - PrintMijnPDF.nl</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            color: #1a1a2e;
+            line-height: 1.6;
+        }
+        .container { max-width: 540px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+        .logo { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 2rem; }
+        .logo-icon {
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, #e63946 0%, #d62839 100%);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(230, 57, 70, 0.3);
+        }
+        .logo-icon svg { width: 28px; height: 28px; color: white; }
+        .logo-text { font-size: 26px; font-weight: 700; color: #1a1a2e; }
+        .logo-text span { color: #e63946; }
+        .card { background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06); text-align: center; }
+        .success-icon {
+            width: 80px; height: 80px;
+            background: linear-gradient(135deg, #40c057 0%, #2f9e44 100%);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 8px 24px rgba(64, 192, 87, 0.3);
+        }
+        .success-icon svg { width: 40px; height: 40px; color: white; }
+        .card h1 { font-size: 24px; font-weight: 600; margin-bottom: 0.5rem; }
+        .card .subtitle { font-size: 16px; color: #6c757d; margin-bottom: 2rem; }
+        .order-number { background: #f8f9fa; border-radius: 10px; padding: 1rem; margin-bottom: 1.5rem; }
+        .order-number-label { font-size: 12px; color: #6c757d; text-transform: uppercase; letter-spacing: 1px; }
+        .order-number-value { font-size: 20px; font-weight: 700; color: #e63946; font-family: monospace; }
+        .details { text-align: left; background: #f8f9fa; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
+        .details-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+        .details-row:not(:last-child) { border-bottom: 1px solid #e9ecef; }
+        .details-label { color: #6c757d; }
+        .details-value { font-weight: 500; }
+        .next-steps { background: #fff5f5; border: 1px solid #fecaca; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; text-align: left; }
+        .next-steps h3 { font-size: 14px; font-weight: 600; margin-bottom: 0.75rem; color: #e63946; }
+        .next-steps ol { margin: 0; padding-left: 1.25rem; font-size: 14px; color: #6c757d; }
+        .next-steps li { margin-bottom: 0.5rem; }
+        .footer { text-align: center; margin-top: 1.5rem; font-size: 13px; color: #adb5bd; }
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #d3f9d8; color: #2f9e44;
+            padding: 6px 12px; border-radius: 20px;
+            font-size: 13px; font-weight: 500;
+        }
+        .status-badge.pending { background: #fff3cd; color: #856404; }
+        .status-badge.processing { background: #e7e5ff; color: #6c63ff; }
+        .status-badge.shipped { background: #d3f9d8; color: #2f9e44; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                    <line x1="9" y1="15" x2="15" y2="15"></line>
+                </svg>
+            </div>
+            <div class="logo-text">Print<span>Mijn</span>PDF</div>
+        </div>
+
+        <div class="card">
+            @if($order->isPaid())
+            <div class="success-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            <h1>Bedankt voor je bestelling!</h1>
+            <p class="subtitle">We hebben je betaling ontvangen en gaan direct aan de slag.</p>
+            @else
+            <h1>Bestelling aangemaakt</h1>
+            <p class="subtitle">We wachten nog op de betaling.</p>
+            @endif
+
+            <div class="order-number">
+                <div class="order-number-label">Bestelnummer</div>
+                <div class="order-number-value">{{ $order->order_number }}</div>
+            </div>
+
+            <div class="details">
+                <div class="details-row">
+                    <span class="details-label">Status</span>
+                    <span class="status-badge {{ $order->status }}">{{ $order->status_label }}</span>
+                </div>
+                <div class="details-row">
+                    <span class="details-label">Bestand</span>
+                    <span class="details-value">{{ $order->pdf_original_name }}</span>
+                </div>
+                <div class="details-row">
+                    <span class="details-label">Formaat</span>
+                    <span class="details-value">{{ $order->format }} · {{ $order->page_count }} pagina's</span>
+                </div>
+                <div class="details-row">
+                    <span class="details-label">Totaal betaald</span>
+                    <span class="details-value">{{ $order->formatted_total }}</span>
+                </div>
+            </div>
+
+            <div class="details">
+                <div class="details-row">
+                    <span class="details-label">Verzendadres</span>
+                    <span class="details-value" style="text-align: right;">
+                        {{ $order->customer_name }}<br>
+                        {{ $order->address_street }} {{ $order->address_number }}{{ $order->address_addition ? ' '.$order->address_addition : '' }}<br>
+                        {{ $order->address_postcode }} {{ $order->address_city }}
+                    </span>
+                </div>
+            </div>
+
+            @if($order->isPaid())
+            <div class="next-steps">
+                <h3>Wat gebeurt er nu?</h3>
+                <ol>
+                    <li>Je ontvangt een bevestigingsmail op <strong>{{ $order->customer_email }}</strong></li>
+                    <li>Wij printen en binden je document</li>
+                    <li>Je ontvangt een Track & Trace code zodra het pakket onderweg is</li>
+                    <li>Binnen 3 werkdagen wordt het bezorgd!</li>
+                </ol>
+            </div>
+            @endif
+        </div>
+
+        <div class="footer">
+            Vragen? Neem contact op via info@printmijnpdf.nl
+        </div>
+    </div>
+</body>
+</html>
