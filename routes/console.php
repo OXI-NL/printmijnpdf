@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Dagelijks oude PDF's opruimen (ouder dan 7 dagen)
 Schedule::command('pdfs:cleanup --days=7')->daily()->at('03:00');
+
+// Elk half uur betalingsherinneringen versturen (voor orders >2 uur pending)
+Schedule::command('orders:send-payment-reminders')->everyThirtyMinutes();

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\OrderConfirmation;
 use App\Mail\OrderShipped;
+use App\Mail\PaymentFailed;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -201,14 +202,23 @@ class OrderController extends Controller
                     Log::info("Order {$order->order_number} marked as paid");
                 }
             } elseif ($payment->isCanceled()) {
-                $order->update(['status' => 'cancelled']);
-                Log::info("Order {$order->order_number} cancelled");
+                if ($order->status === 'pending') {
+                    $order->update(['status' => 'cancelled']);
+                    $this->sendPaymentFailedEmail($order);
+                    Log::info("Order {$order->order_number} cancelled");
+                }
             } elseif ($payment->isExpired()) {
-                $order->update(['status' => 'cancelled']);
-                Log::info("Order {$order->order_number} expired");
+                if ($order->status === 'pending') {
+                    $order->update(['status' => 'expired']);
+                    $this->sendPaymentFailedEmail($order);
+                    Log::info("Order {$order->order_number} expired");
+                }
             } elseif ($payment->isFailed()) {
-                $order->update(['status' => 'cancelled']);
-                Log::info("Order {$order->order_number} payment failed");
+                if ($order->status === 'pending') {
+                    $order->update(['status' => 'failed']);
+                    $this->sendPaymentFailedEmail($order);
+                    Log::info("Order {$order->order_number} payment failed");
+                }
             }
 
             return response('OK');
@@ -333,6 +343,21 @@ class OrderController extends Controller
         }
         
         Log::info("New paid order: {$order->order_number} - {$order->formatted_total}");
+    }
+
+    /**
+     * Stuur email bij mislukte betaling
+     */
+    protected function sendPaymentFailedEmail(Order $order)
+    {
+        try {
+            Mail::to($order->customer_email, $order->customer_name)
+                ->send(new PaymentFailed($order));
+                
+            Log::info("Payment failed email sent for order {$order->order_number}");
+        } catch (\Exception $e) {
+            Log::error("Failed to send payment failed email for order {$order->order_number}: " . $e->getMessage());
+        }
     }
 
     /**
