@@ -298,7 +298,14 @@
                                 </td>
                                 <td class="file-info">
                                     <span class="file-name" title="{{ $order->pdf_original_name }}">{{ $order->pdf_original_name }}</span>
-                                    <div class="file-meta">{{ $order->format }} • {{ $order->page_count }} pagina's</div>
+                                    <div class="file-meta">
+                                        {{ $order->format }} • {{ $order->page_count }} pag. • 
+                                        @if($order->binding_type === 'booklet')
+                                            Geniet
+                                        @else
+                                            Losbladig {{ $order->print_side === 'double' ? '(2-z)' : '(1-z)' }}
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="price">€ {{ number_format($order->price_total / 100, 2, ',', '.') }}</td>
                                 <td>

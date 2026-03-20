@@ -156,12 +156,14 @@ class AdminController extends Controller
         $pdf->Cell(25, 8, $order->page_count, 1, 0, 'C');
         $pdf->Cell(15, 8, '1', 1, 1, 'C');
         
-        // Extra regel voor inbinden
-        $pdf->Cell(10, 8, '', 1, 0, 'C');
-        $pdf->Cell(95, 8, 'Geniet gebrocheerd', 1, 0, 'L');
-        $pdf->Cell(25, 8, '-', 1, 0, 'C');
-        $pdf->Cell(25, 8, '-', 1, 0, 'C');
-        $pdf->Cell(15, 8, '1', 1, 1, 'C');
+        // Extra regel voor afwerking (alleen bij boekje)
+        if ($order->binding_type === 'booklet') {
+            $pdf->Cell(10, 8, '', 1, 0, 'C');
+            $pdf->Cell(95, 8, 'Geniet gebrocheerd', 1, 0, 'L');
+            $pdf->Cell(25, 8, '-', 1, 0, 'C');
+            $pdf->Cell(25, 8, '-', 1, 0, 'C');
+            $pdf->Cell(15, 8, '1', 1, 1, 'C');
+        }
         
         $pdf->Ln(15);
         
@@ -172,7 +174,15 @@ class AdminController extends Controller
         $pdf->Ln(3);
         
         $pdf->SetFont('Arial', '', 10);
-        $pdf->MultiCell(0, 6, "- Geprint in full colour op hoogwaardig papier\n- Professioneel geniet (gebrocheerd)\n- Bij vragen: info@printmijnpdf.nl", 0, 'L');
+        
+        // Dynamische opmerkingen op basis van binding type
+        if ($order->binding_type === 'booklet') {
+            $remarks = "- Geprint in full colour op hoogwaardig papier\n- Dubbelzijdig geprint\n- Professioneel geniet (gebrocheerd)\n- Bij vragen: info@printmijnpdf.nl";
+        } else {
+            $printSide = ($order->print_side === 'double') ? 'Dubbelzijdig' : 'Enkelzijdig';
+            $remarks = "- Geprint in full colour op hoogwaardig papier\n- {$printSide} geprint\n- Losse pagina's (niet geniet)\n- Bij vragen: info@printmijnpdf.nl";
+        }
+        $pdf->MultiCell(0, 6, $remarks, 0, 'L');
         
         // Footer onderaan de pagina
         $pdf->SetY(-40);

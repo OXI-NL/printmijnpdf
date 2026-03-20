@@ -35,6 +35,8 @@ return new class extends Migration
             $table->enum('format', ['A4', 'A5'])->default('A4');
             $table->boolean('has_bleed')->default(false);
             $table->integer('bleed_mm')->nullable();
+            $table->enum('binding_type', ['booklet', 'loose'])->default('booklet');
+            $table->enum('print_side', ['single', 'double'])->default('double');
             
             // Prijzen (in centen)
             $table->integer('price_startup');

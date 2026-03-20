@@ -90,6 +90,20 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td style="padding: 14px 16px; border-bottom: 1px solid #e2e8f0;">
+                                        <span style="color: #64748b; font-size: 13px;">Afwerking</span>
+                                    </td>
+                                    <td style="padding: 14px 16px; border-bottom: 1px solid #e2e8f0; text-align: right;">
+                                        <span style="color: #1e293b; font-size: 13px; font-weight: 500;">
+                                            @if($order->binding_type === 'booklet')
+                                                Geniet boekje
+                                            @else
+                                                Losbladig ({{ $order->print_side === 'double' ? 'dubbelzijdig' : 'enkelzijdig' }})
+                                            @endif
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td style="padding: 16px; background: #1e293b;">
                                         <span style="color: white; font-size: 14px; font-weight: 600;">Totaal betaald</span>
                                     </td>

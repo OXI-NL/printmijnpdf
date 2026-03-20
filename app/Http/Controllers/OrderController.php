@@ -68,6 +68,8 @@ class OrderController extends Controller
             'format' => 'required|in:A4,A5',
             'has_bleed' => 'boolean',
             'bleed_mm' => 'nullable|integer',
+            'binding_type' => 'required|in:booklet,loose',
+            'print_side' => 'required|in:single,double',
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20',
@@ -85,10 +87,11 @@ class OrderController extends Controller
             $storedName = time() . '_' . uniqid() . '.pdf';
             $path = $pdf->storeAs('pdfs', $storedName, 'local');
 
-            // Bereken prijzen
+            // Bereken prijzen (binding_type bepaalt of er inbindkosten zijn)
             $prices = Order::calculatePrice(
                 $request->input('page_count'),
-                $request->input('format')
+                $request->input('format'),
+                $request->input('binding_type')
             );
 
             // Maak order
@@ -102,6 +105,8 @@ class OrderController extends Controller
                 'format' => $request->input('format'),
                 'has_bleed' => $request->boolean('has_bleed'),
                 'bleed_mm' => $request->input('bleed_mm'),
+                'binding_type' => $request->input('binding_type'),
+                'print_side' => $request->input('print_side'),
                 'price_startup' => $prices['startup'],
                 'price_pages' => $prices['pages'],
                 'price_binding' => $prices['binding'],

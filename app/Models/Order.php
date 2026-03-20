@@ -20,6 +20,8 @@ class Order extends Model
         'format',
         'has_bleed',
         'bleed_mm',
+        'binding_type',
+        'print_side',
         'price_startup',
         'price_pages',
         'price_binding',
@@ -60,14 +62,15 @@ class Order extends Model
     /**
      * Bereken de totaalprijs
      */
-    public static function calculatePrice(int $pageCount, string $format): array
+    public static function calculatePrice(int $pageCount, string $format, string $bindingType = 'booklet'): array
     {
         $pricePerPage = $format === 'A5' 
             ? config('pricing.per_page_a5', 7) 
             : config('pricing.per_page_a4', 10);
         
         $startup = config('pricing.startup', 1000);
-        $binding = config('pricing.binding', 500);
+        // Alleen inbindkosten bij boekje, niet bij losbladig
+        $binding = $bindingType === 'booklet' ? config('pricing.binding', 500) : 0;
         $shipping = config('pricing.shipping', 500);
         $pages = $pageCount * $pricePerPage;
         

@@ -130,6 +130,143 @@
         .error-banner { background: #fee2e2; border: 1px solid #e63946; color: #991b1b; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; font-size: 14px; display: none; }
         .error-banner.visible { display: block; }
         
+        /* Binding Options */
+        .options-section {
+            display: none;
+            margin: 1.5rem 0;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
+        }
+        .options-section.visible { display: block; }
+        .options-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #adb5bd;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.75rem;
+        }
+        .option-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+        .option-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        .option-card:hover {
+            border-color: #adb5bd;
+            background: #f1f3f4;
+        }
+        .option-card.selected {
+            border-color: #e63946;
+            background: #fff5f5;
+        }
+        .option-card-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .option-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 4px;
+        }
+        .option-card-desc {
+            font-size: 12px;
+            color: #6c757d;
+            line-height: 1.4;
+        }
+        .option-card-price {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e63946;
+            margin-top: 8px;
+        }
+        .sub-options {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .sub-options.visible { display: block; }
+        .sub-options-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+        .sub-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 8px;
+        }
+        .sub-option:last-child { margin-bottom: 0; }
+        .sub-option:hover { border-color: #adb5bd; }
+        .sub-option.selected { border-color: #e63946; background: #fff5f5; }
+        .sub-option-radio {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #dee2e6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .sub-option.selected .sub-option-radio {
+            border-color: #e63946;
+        }
+        .sub-option.selected .sub-option-radio::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: #e63946;
+            border-radius: 50%;
+        }
+        .sub-option-text {
+            font-size: 14px;
+            color: #1a1a2e;
+        }
+        .sub-option-hint {
+            font-size: 12px;
+            color: #6c757d;
+            margin-left: auto;
+        }
+        .option-warning {
+            display: none;
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-top: 1rem;
+            line-height: 1.5;
+        }
+        .option-warning.visible { display: block; }
+        .option-warning strong { color: #b45309; }
+        .option-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        
         /* Hero Section */
         .hero-section {
             background: white;
@@ -228,12 +365,19 @@
             <h1 class="hero-title">Van digitaal naar écht papier</h1>
             <p class="hero-text">
                 Ontvang je wel eens een <strong>magazine, boekje of brochure</strong> per e-mail die je liever in je handen wilt houden? 
-                Wij maken er een professioneel <strong>ingebonden boekje</strong> van — gedrukt op hoogwaardig papier, zodat je het lekker kunt doorbladeren.
+                Wij printen het voor je uit en maken er een <strong>professioneel geniet boekje</strong> van — precies zoals je het kent van tijdschriften en magazines. Lekker doorbladeren!
+            </p>
+            <p class="hero-text" style="margin-top: 0;">
+                Liever <strong>losse pagina's</strong>? Dat kan ook — dan vervallen de inbindkosten.
             </p>
             <div class="hero-features">
                 <div class="hero-feature">
+                    <span class="hero-feature-icon">📖</span>
+                    <span>Boekje: max 64 pagina's</span>
+                </div>
+                <div class="hero-feature">
                     <span class="hero-feature-icon">📄</span>
-                    <span>Tot 64 pagina's</span>
+                    <span>Losbladig: geen limiet</span>
                 </div>
                 <div class="hero-feature">
                     <span class="hero-feature-icon">🎨</span>
@@ -245,7 +389,7 @@
                 </div>
             </div>
             <p class="hero-note">
-                <strong>Meer dan 64 pagina's?</strong> Geen probleem! Neem contact op via <a href="mailto:info@printmijnpdf.nl">info@printmijnpdf.nl</a>
+                <strong>Geniet boekje met meer dan 64 pagina's?</strong> Neem contact op via <a href="mailto:info@printmijnpdf.nl">info@printmijnpdf.nl</a> voor maatwerkopties.
             </p>
         </section>
 
@@ -275,7 +419,7 @@
                         <div class="price-value">€ {{ number_format($prices['startup'], 2, ',', '.') }}</div>
                     </div>
                     <div class="price-item">
-                        <div class="price-label">Inbinden</div>
+                        <div class="price-label">Nieten (boekje)</div>
                         <div class="price-value">€ {{ number_format($prices['binding'], 2, ',', '.') }}</div>
                     </div>
                 </div>
@@ -343,6 +487,47 @@
                             <div class="pdf-spec-label">Prijs</div>
                             <div class="pdf-spec-value" id="pdfPrice">€ 0,00</div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Binding Options -->
+                <div class="options-section" id="optionsSection">
+                    <div class="options-label">Hoe wil je het ontvangen?</div>
+                    <div class="option-cards">
+                        <div class="option-card selected" id="optBooklet" data-type="booklet">
+                            <div class="option-card-icon">📖</div>
+                            <div class="option-card-title">Geniet boekje</div>
+                            <div class="option-card-desc">Zoals een magazine, dubbelzijdig geprint</div>
+                            <div class="option-card-price">+ € {{ number_format($prices['binding'], 2, ',', '.') }}</div>
+                        </div>
+                        <div class="option-card" id="optLoose" data-type="loose">
+                            <div class="option-card-icon">📄</div>
+                            <div class="option-card-title">Losse pagina's</div>
+                            <div class="option-card-desc">Zonder nieten, enkelzijdig of dubbelzijdig</div>
+                            <div class="option-card-price">Geen extra kosten</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sub-options for loose pages -->
+                    <div class="sub-options" id="subOptions">
+                        <div class="sub-options-label">Enkelzijdig of dubbelzijdig?</div>
+                        <div class="sub-option selected" id="optDoubleSided" data-print="double">
+                            <div class="sub-option-radio"></div>
+                            <span class="sub-option-text">Dubbelzijdig</span>
+                            <span class="sub-option-hint">Voor- en achterkant bedrukt</span>
+                        </div>
+                        <div class="sub-option" id="optSingleSided" data-print="single">
+                            <div class="sub-option-radio"></div>
+                            <span class="sub-option-text">Enkelzijdig</span>
+                            <span class="sub-option-hint">Alleen voorkant bedrukt</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Warning voor >64 pagina's bij boekje -->
+                    <div class="option-warning" id="pageWarning">
+                        <strong>Let op:</strong> Geniete boekjes kunnen maximaal 64 pagina's bevatten. 
+                        Voor meer pagina's kun je kiezen voor <strong>losse pagina's</strong>, 
+                        of neem contact op via <a href="mailto:info@printmijnpdf.nl">info@printmijnpdf.nl</a> voor maatwerkopties.
                     </div>
                 </div>
 
@@ -447,8 +632,8 @@
                         <span id="summaryPagesLabel">0 pagina's × € 0,10</span>
                         <span id="summaryPagesPrice">€ 0,00</span>
                     </div>
-                    <div class="summary-row">
-                        <span>Inbinden</span>
+                    <div class="summary-row" id="summaryBindingRow">
+                        <span id="summaryBindingLabel">Nieten (boekje)</span>
                         <span id="summaryBinding">€ 5,00</span>
                     </div>
                     <div class="summary-row">
@@ -524,6 +709,8 @@
         let pricePerPage = PRICES.a4;
         let totalPrice = 0;
         let calculatedPrices = {};
+        let bindingType = 'booklet'; // 'booklet' of 'loose'
+        let printSide = 'double'; // 'double' of 'single' (alleen voor loose)
 
         // DOM
         const dropzone = document.getElementById('dropzone');
@@ -533,6 +720,14 @@
         const errorBanner = document.getElementById('errorBanner');
         const steps = document.querySelectorAll('.step');
         const progressSteps = document.querySelectorAll('.progress-step');
+        const optionsSection = document.getElementById('optionsSection');
+        const optBooklet = document.getElementById('optBooklet');
+        const optLoose = document.getElementById('optLoose');
+        const subOptions = document.getElementById('subOptions');
+        const optDoubleSided = document.getElementById('optDoubleSided');
+        const optSingleSided = document.getElementById('optSingleSided');
+        const pageWarning = document.getElementById('pageWarning');
+        const MAX_BOOKLET_PAGES = 64;
 
         // Format price
         function formatPrice(cents) {
@@ -575,15 +770,50 @@
         function calculatePrice() {
             pricePerPage = detectedFormat === 'A5' ? PRICES.a5 : PRICES.a4;
             const pages = pageCount * pricePerPage;
-            totalPrice = PRICES.startup + pages + PRICES.binding + PRICES.shipping;
+            const bindingCost = bindingType === 'booklet' ? PRICES.binding : 0;
+            totalPrice = PRICES.startup + pages + bindingCost + PRICES.shipping;
             calculatedPrices = {
                 startup: PRICES.startup,
                 pages: pages,
-                binding: PRICES.binding,
+                binding: bindingCost,
                 shipping: PRICES.shipping,
                 total: totalPrice
             };
             return totalPrice;
+        }
+        
+        // Update price display
+        function updatePriceDisplay() {
+            calculatePrice();
+            document.getElementById('pdfPrice').textContent = formatPrice(totalPrice);
+        }
+        
+        // Validate page count for binding type
+        function validateAndUpdateOptions() {
+            const exceedsLimit = pageCount > MAX_BOOKLET_PAGES;
+            const toStep2Btn = document.getElementById('toStep2');
+            
+            if (exceedsLimit) {
+                // Meer dan 64 pagina's
+                if (bindingType === 'booklet') {
+                    // Boekje geselecteerd maar te veel pagina's - forceer losbladig
+                    bindingType = 'loose';
+                    optLoose.classList.add('selected');
+                    optBooklet.classList.remove('selected');
+                    subOptions.classList.add('visible');
+                }
+                // Disable de boekje optie
+                optBooklet.classList.add('disabled');
+                pageWarning.classList.add('visible');
+                toStep2Btn.disabled = false;
+            } else {
+                // 64 of minder pagina's - alles toegestaan
+                optBooklet.classList.remove('disabled');
+                pageWarning.classList.remove('visible');
+                toStep2Btn.disabled = false;
+            }
+            
+            updatePriceDisplay();
         }
 
         // Handle file
@@ -610,12 +840,9 @@
                 hasBleed = formatResult.hasBleed;
                 bleedMM = formatResult.bleedMM;
 
-                calculatePrice();
-
                 document.getElementById('pdfName').textContent = file.name;
                 document.getElementById('pdfFormat').textContent = detectedFormat;
                 document.getElementById('pdfPages').textContent = pageCount;
-                document.getElementById('pdfPrice').textContent = formatPrice(totalPrice);
 
                 if (hasBleed) {
                     document.getElementById('pdfMeta').textContent = `${detectedFormat} +${bleedMM}mm afloop`;
@@ -625,7 +852,10 @@
 
                 loading.classList.remove('visible');
                 pdfResult.classList.add('visible');
-                document.getElementById('toStep2').disabled = false;
+                optionsSection.classList.add('visible');
+                
+                // Valideer pagina limiet en update opties
+                validateAndUpdateOptions();
 
             } catch (error) {
                 console.error('PDF error:', error);
@@ -642,6 +872,17 @@
             fileInput.value = '';
             dropzone.style.display = 'block';
             pdfResult.classList.remove('visible');
+            optionsSection.classList.remove('visible');
+            subOptions.classList.remove('visible');
+            pageWarning.classList.remove('visible');
+            // Reset options
+            bindingType = 'booklet';
+            printSide = 'double';
+            optBooklet.classList.add('selected');
+            optBooklet.classList.remove('disabled');
+            optLoose.classList.remove('selected');
+            optDoubleSided.classList.add('selected');
+            optSingleSided.classList.remove('selected');
             document.getElementById('toStep2').disabled = true;
         }
 
@@ -679,11 +920,30 @@
         // Update summary
         function updateSummary() {
             document.getElementById('summaryFileName').textContent = currentFile.name;
-            document.getElementById('summaryFileMeta').textContent = `${detectedFormat} · ${pageCount} pagina's`;
+            
+            // Build meta text with binding type
+            let metaText = `${detectedFormat} · ${pageCount} pagina's`;
+            if (bindingType === 'booklet') {
+                metaText += ' · Geniet boekje';
+            } else {
+                metaText += printSide === 'double' ? ' · Losbladig dubbelzijdig' : ' · Losbladig enkelzijdig';
+            }
+            document.getElementById('summaryFileMeta').textContent = metaText;
+            
             document.getElementById('summaryStartup').textContent = formatPrice(calculatedPrices.startup);
             document.getElementById('summaryPagesLabel').textContent = `${pageCount} pagina's × ${formatPrice(pricePerPage)}`;
             document.getElementById('summaryPagesPrice').textContent = formatPrice(calculatedPrices.pages);
-            document.getElementById('summaryBinding').textContent = formatPrice(calculatedPrices.binding);
+            
+            // Update binding label and price
+            const bindingRow = document.getElementById('summaryBindingRow');
+            if (bindingType === 'booklet') {
+                bindingRow.style.display = 'flex';
+                document.getElementById('summaryBindingLabel').textContent = 'Nieten (boekje)';
+                document.getElementById('summaryBinding').textContent = formatPrice(calculatedPrices.binding);
+            } else {
+                bindingRow.style.display = 'none';
+            }
+            
             document.getElementById('summaryShipping').textContent = formatPrice(calculatedPrices.shipping);
             document.getElementById('summaryTotal').textContent = formatPrice(calculatedPrices.total);
 
@@ -707,6 +967,8 @@
             formData.append('format', detectedFormat);
             formData.append('has_bleed', hasBleed ? '1' : '0');
             formData.append('bleed_mm', bleedMM);
+            formData.append('binding_type', bindingType);
+            formData.append('print_side', printSide);
             formData.append('name', document.getElementById('name').value);
             formData.append('email', document.getElementById('email').value);
             formData.append('street', document.getElementById('street').value);
@@ -748,6 +1010,41 @@
         document.getElementById('toStep3').addEventListener('click', () => { if (validateStep2()) { updateSummary(); goToStep(3); } });
         document.getElementById('backToStep2').addEventListener('click', () => goToStep(2));
         document.getElementById('payButton').addEventListener('click', submitOrder);
+
+        // Binding type selection
+        optBooklet.addEventListener('click', () => {
+            // Check of boekje wel mogelijk is (max 64 pagina's)
+            if (pageCount > MAX_BOOKLET_PAGES) {
+                return; // Niet toestaan
+            }
+            bindingType = 'booklet';
+            printSide = 'double'; // Boekjes zijn altijd dubbelzijdig
+            optBooklet.classList.add('selected');
+            optLoose.classList.remove('selected');
+            subOptions.classList.remove('visible');
+            updatePriceDisplay();
+        });
+        
+        optLoose.addEventListener('click', () => {
+            bindingType = 'loose';
+            optLoose.classList.add('selected');
+            optBooklet.classList.remove('selected');
+            subOptions.classList.add('visible');
+            updatePriceDisplay();
+        });
+        
+        // Print side selection (only for loose pages)
+        optDoubleSided.addEventListener('click', () => {
+            printSide = 'double';
+            optDoubleSided.classList.add('selected');
+            optSingleSided.classList.remove('selected');
+        });
+        
+        optSingleSided.addEventListener('click', () => {
+            printSide = 'single';
+            optSingleSided.classList.add('selected');
+            optDoubleSided.classList.remove('selected');
+        });
 
         document.querySelectorAll('#step2 input').forEach(input => {
             input.addEventListener('blur', function() {
