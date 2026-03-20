@@ -104,7 +104,7 @@
                                         <p style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 10px; font-weight: 600;">Inhoud</p>
                                         <p style="color: #1e293b; font-size: 14px; margin: 0; line-height: 1.6;">
                                             <strong>{{ $order->pdf_original_name }}</strong><br>
-                                            <span style="color: #64748b;">{{ $order->format }} · {{ $order->page_count }} pagina's · Ingebonden</span>
+                                            <span style="color: #64748b;">{{ $order->format }} · {{ $order->page_count }} pagina's · Geniet</span>
                                         </p>
                                     </td>
                                 </tr>

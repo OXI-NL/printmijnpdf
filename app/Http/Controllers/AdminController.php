@@ -158,7 +158,7 @@ class AdminController extends Controller
         
         // Extra regel voor inbinden
         $pdf->Cell(10, 8, '', 1, 0, 'C');
-        $pdf->Cell(95, 8, 'Wire-O inbinden', 1, 0, 'L');
+        $pdf->Cell(95, 8, 'Geniet gebrocheerd', 1, 0, 'L');
         $pdf->Cell(25, 8, '-', 1, 0, 'C');
         $pdf->Cell(25, 8, '-', 1, 0, 'C');
         $pdf->Cell(15, 8, '1', 1, 1, 'C');
@@ -172,7 +172,7 @@ class AdminController extends Controller
         $pdf->Ln(3);
         
         $pdf->SetFont('Arial', '', 10);
-        $pdf->MultiCell(0, 6, "- Geprint in full colour op hoogwaardig papier\n- Professioneel ingebonden met Wire-O binding\n- Bij vragen: info@printmijnpdf.nl", 0, 'L');
+        $pdf->MultiCell(0, 6, "- Geprint in full colour op hoogwaardig papier\n- Professioneel geniet (gebrocheerd)\n- Bij vragen: info@printmijnpdf.nl", 0, 'L');
         
         // Footer onderaan de pagina
         $pdf->SetY(-40);
@@ -209,18 +209,32 @@ class AdminController extends Controller
         
         $data = ['status' => $request->input('status')];
         
+        $shouldSendShippedEmail = false;
+        
         if ($request->input('status') === 'shipped') {
             $data['shipped_at'] = now();
             if ($request->input('track_trace')) {
                 $data['track_trace'] = $request->input('track_trace');
             }
-            
-            // Stuur verzendmail
-            \Illuminate\Support\Facades\Mail::to($order->customer_email)
-                ->send(new \App\Mail\OrderShipped($order));
+            $shouldSendShippedEmail = true;
         }
 
+        // EERST updaten
         $order->update($data);
+        
+        // Refresh om de nieuwe waarden te laden
+        $order->refresh();
+        
+        // DAN pas email verzenden (met de nieuwe track_trace waarde)
+        if ($shouldSendShippedEmail) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($order->customer_email)
+                    ->send(new \App\Mail\OrderShipped($order));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Verzendmail mislukt: ' . $e->getMessage());
+                return redirect()->back()->with('success', 'Status bijgewerkt, maar email kon niet worden verzonden: ' . $e->getMessage());
+            }
+        }
 
         return redirect()->back()->with('success', 'Status bijgewerkt naar: ' . $request->input('status'));
     }
