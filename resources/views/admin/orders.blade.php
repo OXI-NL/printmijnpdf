@@ -327,13 +327,22 @@
                                 </td>
                                 <td class="actions">
                                     @if($order->pdf_path)
-                                        <a href="/admin/orders/{{ $order->order_number }}/pdf" class="btn btn-secondary" title="Download PDF">
+                                        <a href="/admin/orders/{{ $order->order_number }}/pdf" class="btn btn-secondary" title="Download originele PDF">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                                 <polyline points="7 10 12 15 17 10"/>
                                                 <line x1="12" y1="15" x2="12" y2="3"/>
                                             </svg>
                                             PDF
+                                        </a>
+                                    @endif
+                                    @if($order->binding_type === 'booklet' && $order->status !== 'pending' && $order->status !== 'cancelled')
+                                        <a href="/admin/orders/{{ $order->order_number }}/imposed" class="btn btn-primary" title="Download inslag PDF (drukklaar)">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                                <line x1="12" y1="3" x2="12" y2="21"/>
+                                            </svg>
+                                            Inslag
                                         </a>
                                     @endif
                                     <a href="/admin/orders/{{ $order->order_number }}/pakbon" class="btn btn-secondary" target="_blank" title="Pakbon">

@@ -34,6 +34,8 @@ Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.log
 Route::prefix('admin')->middleware(\App\Http\Middleware\AdminAuth::class)->group(function () {
     Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');
     Route::get('/orders/{orderNumber}/pdf', [AdminController::class, 'downloadPdf'])->name('admin.order.pdf');
+    Route::get('/orders/{orderNumber}/imposed', [AdminController::class, 'downloadImposedPdf'])->name('admin.order.imposed');
+    Route::post('/orders/{orderNumber}/impose', [AdminController::class, 'generateImposition'])->name('admin.order.impose');
     Route::get('/orders/{orderNumber}/pakbon', [AdminController::class, 'pakbon'])->name('admin.order.pakbon');
     Route::post('/orders/{orderNumber}/ship', [AdminController::class, 'updateStatus'])->name('admin.order.ship');
 });

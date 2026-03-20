@@ -16,6 +16,7 @@ class Order extends Model
         'pdf_original_name',
         'pdf_stored_name',
         'pdf_path',
+        'pdf_imposed_path',
         'page_count',
         'format',
         'has_bleed',

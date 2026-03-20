@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Services\BookletImpositionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use FPDF;
@@ -21,7 +22,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Download de geüploade PDF
+     * Download de geüploade PDF (origineel)
      */
     public function downloadPdf(string $orderNumber)
     {
@@ -34,6 +35,68 @@ class AdminController extends Controller
         $filename = $order->order_number . '_' . $order->pdf_original_name;
         
         return Storage::disk('local')->download($order->pdf_path, $filename);
+    }
+
+    /**
+     * Download de geïmponeerde PDF (drukklaar voor boekje)
+     */
+    public function downloadImposedPdf(string $orderNumber)
+    {
+        $order = Order::where('order_number', $orderNumber)->firstOrFail();
+
+        // Check of het een boekje is
+        if ($order->binding_type !== 'booklet') {
+            abort(400, 'Impositie alleen beschikbaar voor boekjes');
+        }
+
+        // Check of impositie bestaat, zo niet: maak aan
+        $impositionService = new BookletImpositionService();
+        
+        if (!$impositionService->hasImposition($order)) {
+            $result = $impositionService->createImposition($order);
+            if (!$result['success']) {
+                abort(500, 'Impositie kon niet worden aangemaakt: ' . $result['message']);
+            }
+            $order->refresh();
+        }
+
+        $imposedPath = $impositionService->getImposedPath($order);
+        
+        if (!$imposedPath || !file_exists($imposedPath)) {
+            abort(404, 'Geïmponeerde PDF niet gevonden');
+        }
+
+        $filename = $order->order_number . '_INSLAG_' . pathinfo($order->pdf_original_name, PATHINFO_FILENAME) . '.pdf';
+        
+        return response()->download($imposedPath, $filename, [
+            'Content-Type' => 'application/pdf',
+        ]);
+    }
+
+    /**
+     * Genereer/regenereer impositie voor een order
+     */
+    public function generateImposition(string $orderNumber)
+    {
+        $order = Order::where('order_number', $orderNumber)->firstOrFail();
+
+        if ($order->binding_type !== 'booklet') {
+            return redirect()->back()->with('error', 'Impositie alleen beschikbaar voor boekjes');
+        }
+
+        $impositionService = new BookletImpositionService();
+        
+        // Verwijder oude impositie indien aanwezig
+        $impositionService->deleteImposition($order);
+        
+        // Maak nieuwe impositie
+        $result = $impositionService->createImposition($order);
+
+        if ($result['success']) {
+            return redirect()->back()->with('success', 'Impositie succesvol aangemaakt');
+        } else {
+            return redirect()->back()->with('error', 'Impositie mislukt: ' . $result['message']);
+        }
     }
 
     /**

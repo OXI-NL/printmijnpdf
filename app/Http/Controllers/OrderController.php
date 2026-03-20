@@ -6,6 +6,7 @@ use App\Mail\OrderConfirmation;
 use App\Mail\OrderShipped;
 use App\Mail\PaymentFailed;
 use App\Models\Order;
+use App\Services\BookletImpositionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -193,6 +194,9 @@ class OrderController extends Controller
                         'status' => 'paid',
                         'paid_at' => now(),
                     ]);
+                    
+                    // Maak impositie voor boekjes
+                    $this->createBookletImposition($order);
                     
                     // Stuur bevestigingsmail
                     $this->sendConfirmationEmail($order);
@@ -417,6 +421,30 @@ class OrderController extends Controller
             Log::info("Payment failed email sent for order {$order->order_number}");
         } catch (\Exception $e) {
             Log::error("Failed to send payment failed email for order {$order->order_number}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Maak boekje impositie (saddle stitch) voor betaalde orders
+     */
+    protected function createBookletImposition(Order $order)
+    {
+        // Alleen voor boekjes
+        if ($order->binding_type !== 'booklet') {
+            return;
+        }
+
+        try {
+            $impositionService = new BookletImpositionService();
+            $result = $impositionService->createImposition($order);
+            
+            if ($result['success']) {
+                Log::info("Imposition created for order {$order->order_number}: {$result['path']}");
+            } else {
+                Log::warning("Imposition failed for order {$order->order_number}: {$result['message']}");
+            }
+        } catch (\Exception $e) {
+            Log::error("Imposition error for order {$order->order_number}: " . $e->getMessage());
         }
     }
 
