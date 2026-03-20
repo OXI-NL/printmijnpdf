@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,4 +25,9 @@ Route::get('/bestelling/{orderNumber}', [OrderController::class, 'complete'])->n
 Route::get('/status/{orderNumber}', [OrderController::class, 'status'])->name('order.status');
 
 // Admin routes (later beveiligen met auth middleware)
-Route::post('/admin/orders/{orderNumber}/ship', [OrderController::class, 'ship'])->name('admin.order.ship');
+Route::prefix('admin')->group(function () {
+    Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');
+    Route::get('/orders/{orderNumber}/pdf', [AdminController::class, 'downloadPdf'])->name('admin.order.pdf');
+    Route::get('/orders/{orderNumber}/pakbon', [AdminController::class, 'pakbon'])->name('admin.order.pakbon');
+    Route::post('/orders/{orderNumber}/ship', [AdminController::class, 'updateStatus'])->name('admin.order.ship');
+});
