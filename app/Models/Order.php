@@ -39,14 +39,12 @@ class Order extends Model
         'track_trace',
         'shipped_at',
         'paid_at',
-        'reminder_sent_at',
     ];
 
     protected $casts = [
         'has_bleed' => 'boolean',
         'paid_at' => 'datetime',
         'shipped_at' => 'datetime',
-        'reminder_sent_at' => 'datetime',
     ];
 
     /**
