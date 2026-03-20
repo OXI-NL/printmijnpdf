@@ -61,6 +61,41 @@
         .status-badge.pending { background: #fff3cd; color: #856404; }
         .status-badge.processing { background: #e7e5ff; color: #6c63ff; }
         .status-badge.shipped { background: #d3f9d8; color: #2f9e44; }
+        .status-badge.cancelled, .status-badge.expired, .status-badge.failed { background: #fecaca; color: #dc2626; }
+        .error-icon {
+            width: 80px; height: 80px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
+        }
+        .error-icon svg { width: 40px; height: 40px; color: white; }
+        .warning-icon {
+            width: 80px; height: 80px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);
+        }
+        .warning-icon svg { width: 40px; height: 40px; color: white; }
+        .retry-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #e63946 0%, #d62839 100%);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            margin-top: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(230, 57, 70, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -79,6 +114,7 @@
 
         <div class="card">
             @if($order->isPaid())
+            {{-- BETAALD --}}
             <div class="success-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="20 6 9 17 4 12"></polyline>
@@ -86,9 +122,28 @@
             </div>
             <h1>Bedankt voor je bestelling!</h1>
             <p class="subtitle">We hebben je betaling ontvangen en gaan direct aan de slag.</p>
+            
+            @elseif(in_array($order->status, ['cancelled', 'expired', 'failed']))
+            {{-- MISLUKT --}}
+            <div class="error-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </div>
+            <h1>Betaling niet gelukt</h1>
+            <p class="subtitle">Je betaling is geannuleerd of mislukt. Je bestelling is niet verwerkt.</p>
+            
             @else
-            <h1>Bestelling aangemaakt</h1>
-            <p class="subtitle">We wachten nog op de betaling.</p>
+            {{-- PENDING --}}
+            <div class="warning-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+            </div>
+            <h1>Wachten op betaling</h1>
+            <p class="subtitle">We wachten nog op de bevestiging van je betaling.</p>
             @endif
 
             <div class="order-number">
@@ -110,11 +165,12 @@
                     <span class="details-value">{{ $order->format }} · {{ $order->page_count }} pagina's · @if($order->binding_type === 'booklet')Geniet boekje @else Losbladig ({{ $order->print_side === 'double' ? 'dubbelzijdig' : 'enkelzijdig' }})@endif</span>
                 </div>
                 <div class="details-row">
-                    <span class="details-label">Totaal betaald</span>
+                    <span class="details-label">Totaal</span>
                     <span class="details-value">{{ $order->formatted_total }}</span>
                 </div>
             </div>
 
+            @if($order->isPaid())
             <div class="details">
                 <div class="details-row">
                     <span class="details-label">Verzendadres</span>
@@ -126,7 +182,6 @@
                 </div>
             </div>
 
-            @if($order->isPaid())
             <div class="next-steps">
                 <h3>Wat gebeurt er nu?</h3>
                 <ol>
@@ -136,6 +191,8 @@
                     <li>Binnen 3 werkdagen wordt het bezorgd!</li>
                 </ol>
             </div>
+            @elseif(in_array($order->status, ['cancelled', 'expired', 'failed']))
+            <a href="/" class="retry-btn">Opnieuw bestellen</a>
             @endif
         </div>
 

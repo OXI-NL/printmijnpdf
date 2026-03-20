@@ -231,10 +231,40 @@ class OrderController extends Controller
 
     /**
      * Pagina na succesvolle betaling
+     * Check direct bij Mollie voor actuele status
      */
     public function complete(string $orderNumber)
     {
         $order = Order::where('order_number', $orderNumber)->firstOrFail();
+
+        // Check direct bij Mollie voor actuele status (webhook kan vertraagd zijn)
+        if ($order->status === 'pending' && $order->mollie_payment_id) {
+            try {
+                $payment = Mollie::api()->payments->get($order->mollie_payment_id);
+                
+                if ($payment->isPaid()) {
+                    $order->update([
+                        'status' => 'paid',
+                        'paid_at' => now(),
+                    ]);
+                    $order->refresh();
+                    
+                    // Stuur bevestigingsmail (als nog niet verstuurd)
+                    $this->sendConfirmationEmail($order);
+                    $this->notifyAdmin($order);
+                    
+                } elseif ($payment->isCanceled() || $payment->isExpired() || $payment->isFailed()) {
+                    $status = $payment->isCanceled() ? 'cancelled' : ($payment->isExpired() ? 'expired' : 'failed');
+                    $order->update(['status' => $status]);
+                    $order->refresh();
+                    
+                    // Stuur mislukte betaling email
+                    $this->sendPaymentFailedEmail($order);
+                }
+            } catch (\Exception $e) {
+                Log::error("Error checking Mollie status for {$orderNumber}: " . $e->getMessage());
+            }
+        }
 
         return view('order.complete', compact('order'));
     }

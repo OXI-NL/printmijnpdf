@@ -133,6 +133,8 @@ class Order extends Model
             'shipped' => 'Verzonden',
             'delivered' => 'Afgeleverd',
             'cancelled' => 'Geannuleerd',
+            'expired' => 'Verlopen',
+            'failed' => 'Mislukt',
             'refunded' => 'Terugbetaald',
             default => $this->status,
         };
@@ -149,8 +151,10 @@ class Order extends Model
             'processing' => 'purple',
             'shipped' => 'green',
             'delivered' => 'green',
-            'cancelled' => 'gray',
-            'refunded' => 'red',
+            'cancelled' => 'red',
+            'expired' => 'red',
+            'failed' => 'red',
+            'refunded' => 'gray',
             default => 'gray',
         };
     }
