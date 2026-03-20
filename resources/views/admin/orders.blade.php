@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="robots" content="noindex, nofollow">
     <title>Admin - Bestellingen | PrintMijnPDF</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,8 +27,26 @@
             align-items: center;
         }
         .header h1 { font-size: 1.5rem; font-weight: 700; }
+        .header-right { display: flex; align-items: center; gap: 1.5rem; }
         .header a { color: white; text-decoration: none; opacity: 0.9; }
         .header a:hover { opacity: 1; }
+        .header .user-info { font-size: 14px; opacity: 0.9; }
+        .header .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+        .header .logout-btn:hover { background: rgba(255,255,255,0.3); }
+        .header .logout-btn svg { width: 16px; height: 16px; }
         .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
         .stats {
             display: grid;
@@ -208,7 +227,21 @@
 <body>
     <div class="header">
         <h1>📦 Bestellingen</h1>
-        <a href="/">← Terug naar site</a>
+        <div class="header-right">
+            <span class="user-info">Ingelogd als: {{ session('admin_username', 'Admin') }}</span>
+            <a href="/">← Site bekijken</a>
+            <form action="{{ route('admin.logout') }}" method="POST" style="margin: 0;">
+                @csrf
+                <button type="submit" class="logout-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    Uitloggen
+                </button>
+            </form>
+        </div>
     </div>
 
     <div class="container">

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,8 +25,13 @@ Route::post('/webhook/mollie', [OrderController::class, 'webhook'])->name('webho
 Route::get('/bestelling/{orderNumber}', [OrderController::class, 'complete'])->name('order.complete');
 Route::get('/status/{orderNumber}', [OrderController::class, 'status'])->name('order.status');
 
-// Admin routes (later beveiligen met auth middleware)
-Route::prefix('admin')->group(function () {
+// Admin login routes
+Route::get('/admin/login', [AuthController::class, 'showLogin'])->name('admin.login');
+Route::post('/admin/login', [AuthController::class, 'login'])->name('admin.login.submit');
+Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
+
+// Admin routes (beveiligd met AdminAuth middleware)
+Route::prefix('admin')->middleware(\App\Http\Middleware\AdminAuth::class)->group(function () {
     Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');
     Route::get('/orders/{orderNumber}/pdf', [AdminController::class, 'downloadPdf'])->name('admin.order.pdf');
     Route::get('/orders/{orderNumber}/pakbon', [AdminController::class, 'pakbon'])->name('admin.order.pakbon');
