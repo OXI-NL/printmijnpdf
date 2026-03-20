@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>PrintMijnPDF.nl - Upload, print, klaar!</title>
+    <title>PrintMijnPDF.nl - Jouw PDF als ingebonden boekje thuisbezorgd</title>
+    <meta name="description" content="Ontvang je digitale magazines, brochures of documenten liever op papier? Upload je PDF en wij maken er een professioneel ingebonden boekje van. Full colour, tot 64 pagina's, binnen 3 werkdagen bezorgd.">
+    <meta name="keywords" content="PDF printen, boekje laten drukken, magazine printen, brochure afdrukken, PDF naar boek, digitaal naar papier">
+    <meta property="og:title" content="PrintMijnPDF.nl - Van digitaal naar écht papier">
+    <meta property="og:description" content="Upload je PDF en ontvang een professioneel ingebonden boekje. Full colour print, binnen 3 werkdagen thuisbezorgd.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://printmijnpdf.nl">
+    <link rel="canonical" href="https://printmijnpdf.nl">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -122,6 +129,67 @@
         .footer { text-align: center; margin-top: 1.5rem; font-size: 13px; color: #adb5bd; }
         .error-banner { background: #fee2e2; border: 1px solid #e63946; color: #991b1b; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; font-size: 14px; display: none; }
         .error-banner.visible { display: block; }
+        
+        /* Hero Section */
+        .hero-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            text-align: center;
+        }
+        .hero-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+        .hero-text {
+            font-size: 15px;
+            color: #495057;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+        .hero-text strong {
+            color: #1a1a2e;
+        }
+        .hero-features {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+        }
+        .hero-feature {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a2e;
+        }
+        .hero-feature-icon {
+            font-size: 18px;
+        }
+        .hero-note {
+            font-size: 13px;
+            color: #6c757d;
+            background: #f8f9fa;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            margin: 0;
+        }
+        .hero-note a {
+            color: #e63946;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .hero-note a:hover {
+            text-decoration: underline;
+        }
+        
         @media (max-width: 480px) {
             .container { padding: 1.5rem 1rem 2rem; }
             .card { padding: 1.5rem; border-radius: 16px; }
@@ -131,6 +199,10 @@
             .pdf-specs { grid-template-columns: 1fr; }
             .form-row { grid-template-columns: 1fr; }
             .form-row.postcode-city { grid-template-columns: 120px 1fr; }
+            .hero-section { padding: 1.5rem; }
+            .hero-title { font-size: 20px; }
+            .hero-features { gap: 1rem; }
+            .hero-feature { font-size: 13px; }
         }
     </style>
 </head>
@@ -150,6 +222,32 @@
             </div>
             <p class="tagline">Upload je PDF. Wij printen en versturen.</p>
         </header>
+
+        <!-- SEO Hero Section -->
+        <section class="hero-section">
+            <h1 class="hero-title">Van digitaal naar écht papier</h1>
+            <p class="hero-text">
+                Ontvang je wel eens een <strong>magazine, boekje of brochure</strong> per e-mail die je liever in je handen wilt houden? 
+                Wij maken er een professioneel <strong>ingebonden boekje</strong> van — gedrukt op hoogwaardig papier, zodat je het lekker kunt doorbladeren.
+            </p>
+            <div class="hero-features">
+                <div class="hero-feature">
+                    <span class="hero-feature-icon">📄</span>
+                    <span>Tot 64 pagina's</span>
+                </div>
+                <div class="hero-feature">
+                    <span class="hero-feature-icon">🎨</span>
+                    <span>Full colour print</span>
+                </div>
+                <div class="hero-feature">
+                    <span class="hero-feature-icon">📦</span>
+                    <span>Binnen 3 werkdagen thuis</span>
+                </div>
+            </div>
+            <p class="hero-note">
+                <strong>Meer dan 64 pagina's?</strong> Geen probleem! Neem contact op via <a href="mailto:info@printmijnpdf.nl">info@printmijnpdf.nl</a>
+            </p>
+        </section>
 
         <div class="progress-steps">
             <div class="progress-step active" data-step="1"></div>
