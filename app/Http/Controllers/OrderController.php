@@ -7,6 +7,7 @@ use App\Mail\OrderShipped;
 use App\Mail\PaymentFailed;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -201,23 +202,12 @@ class OrderController extends Controller
                     
                     Log::info("Order {$order->order_number} marked as paid");
                 }
-            } elseif ($payment->isCanceled()) {
+            } elseif ($payment->isCanceled() || $payment->isExpired() || $payment->isFailed()) {
+                // Gebruik alleen 'cancelled' (database ENUM ondersteunt geen 'expired'/'failed')
                 if ($order->status === 'pending') {
                     $order->update(['status' => 'cancelled']);
                     $this->sendPaymentFailedEmail($order);
-                    Log::info("Order {$order->order_number} cancelled");
-                }
-            } elseif ($payment->isExpired()) {
-                if ($order->status === 'pending') {
-                    $order->update(['status' => 'expired']);
-                    $this->sendPaymentFailedEmail($order);
-                    Log::info("Order {$order->order_number} expired");
-                }
-            } elseif ($payment->isFailed()) {
-                if ($order->status === 'pending') {
-                    $order->update(['status' => 'failed']);
-                    $this->sendPaymentFailedEmail($order);
-                    Log::info("Order {$order->order_number} payment failed");
+                    Log::info("Order {$order->order_number} payment failed/cancelled/expired");
                 }
             }
 
@@ -238,32 +228,39 @@ class OrderController extends Controller
         $order = Order::where('order_number', $orderNumber)->firstOrFail();
 
         // Check direct bij Mollie voor actuele status (webhook kan vertraagd zijn)
-        if ($order->status === 'pending' && $order->mollie_payment_id) {
+        if ($order->mollie_payment_id) {
             try {
                 $payment = Mollie::api()->payments->get($order->mollie_payment_id);
                 
-                if ($payment->isPaid()) {
+                if ($payment->isPaid() && $order->status === 'pending') {
                     $order->update([
                         'status' => 'paid',
                         'paid_at' => now(),
                     ]);
                     $order->refresh();
                     
-                    // Stuur bevestigingsmail (als nog niet verstuurd)
+                    // Stuur bevestigingsmail
                     $this->sendConfirmationEmail($order);
                     $this->notifyAdmin($order);
                     
                 } elseif ($payment->isCanceled() || $payment->isExpired() || $payment->isFailed()) {
-                    $status = $payment->isCanceled() ? 'cancelled' : ($payment->isExpired() ? 'expired' : 'failed');
-                    $order->update(['status' => $status]);
-                    $order->refresh();
+                    // Update status als nog pending - gebruik alleen 'cancelled' (database ENUM)
+                    if ($order->status === 'pending') {
+                        $order->update(['status' => 'cancelled']);
+                        $order->refresh();
+                    }
                     
-                    // Stuur mislukte betaling email
+                    // Stuur de mislukte betaling email (cache voorkomt dubbele)
                     $this->sendPaymentFailedEmail($order);
                 }
             } catch (\Exception $e) {
                 Log::error("Error checking Mollie status for {$orderNumber}: " . $e->getMessage());
             }
+        }
+        
+        // Als status al cancelled is, stuur alsnog email (cache voorkomt dubbele)
+        if ($order->status === 'cancelled') {
+            $this->sendPaymentFailedEmail($order);
         }
 
         return view('order.complete', compact('order'));
@@ -316,13 +313,24 @@ class OrderController extends Controller
     }
 
     /**
-     * Stuur bevestigingsmail naar klant
+     * Stuur bevestigingsmail naar klant (met dubbele-email preventie)
      */
     protected function sendConfirmationEmail(Order $order)
     {
+        // Voorkom dubbele emails met cache
+        $cacheKey = "confirmation_email_sent_{$order->id}";
+        
+        if (Cache::has($cacheKey)) {
+            Log::info("Confirmation email already sent for order {$order->order_number}, skipping");
+            return;
+        }
+        
         try {
             Mail::to($order->customer_email, $order->customer_name)
                 ->send(new OrderConfirmation($order));
+            
+            // Markeer als verzonden voor 24 uur
+            Cache::put($cacheKey, true, now()->addHours(24));
                 
             Log::info("Confirmation email sent for order {$order->order_number}");
         } catch (\Exception $e) {
@@ -346,10 +354,18 @@ class OrderController extends Controller
     }
 
     /**
-     * Notificeer admin over nieuwe betaalde order
+     * Notificeer admin over nieuwe betaalde order (met dubbele-email preventie)
      */
     protected function notifyAdmin(Order $order)
     {
+        // Voorkom dubbele admin notificaties met cache
+        $cacheKey = "admin_notified_{$order->id}";
+        
+        if (Cache::has($cacheKey)) {
+            Log::info("Admin already notified for order {$order->order_number}, skipping");
+            return;
+        }
+        
         try {
             // Stuur email naar admin
             $adminEmail = config('mail.admin_email', 'info@printmijnpdf.nl');
@@ -368,21 +384,35 @@ class OrderController extends Controller
                         ->subject("🆕 Nieuwe bestelling: {$order->order_number}");
                 }
             );
+            
+            // Markeer als verzonden voor 24 uur
+            Cache::put($cacheKey, true, now()->addHours(24));
+            
+            Log::info("Admin notified for order {$order->order_number}");
         } catch (\Exception $e) {
             Log::error("Failed to notify admin for order {$order->order_number}: " . $e->getMessage());
         }
-        
-        Log::info("New paid order: {$order->order_number} - {$order->formatted_total}");
     }
 
     /**
-     * Stuur email bij mislukte betaling
+     * Stuur email bij mislukte betaling (met dubbele-email preventie)
      */
     protected function sendPaymentFailedEmail(Order $order)
     {
+        // Voorkom dubbele emails met cache
+        $cacheKey = "payment_failed_email_sent_{$order->id}";
+        
+        if (Cache::has($cacheKey)) {
+            Log::info("Payment failed email already sent for order {$order->order_number}, skipping");
+            return;
+        }
+        
         try {
             Mail::to($order->customer_email, $order->customer_name)
                 ->send(new PaymentFailed($order));
+            
+            // Markeer als verzonden voor 24 uur
+            Cache::put($cacheKey, true, now()->addHours(24));
                 
             Log::info("Payment failed email sent for order {$order->order_number}");
         } catch (\Exception $e) {

@@ -61,7 +61,7 @@
         .status-badge.pending { background: #fff3cd; color: #856404; }
         .status-badge.processing { background: #e7e5ff; color: #6c63ff; }
         .status-badge.shipped { background: #d3f9d8; color: #2f9e44; }
-        .status-badge.cancelled, .status-badge.expired, .status-badge.failed { background: #fecaca; color: #dc2626; }
+        .status-badge.cancelled { background: #fecaca; color: #dc2626; }
         .error-icon {
             width: 80px; height: 80px;
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
@@ -123,7 +123,7 @@
             <h1>Bedankt voor je bestelling!</h1>
             <p class="subtitle">We hebben je betaling ontvangen en gaan direct aan de slag.</p>
             
-            @elseif(in_array($order->status, ['cancelled', 'expired', 'failed']))
+            @elseif($order->status === 'cancelled')
             {{-- MISLUKT --}}
             <div class="error-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -191,7 +191,7 @@
                     <li>Binnen 3 werkdagen wordt het bezorgd!</li>
                 </ol>
             </div>
-            @elseif(in_array($order->status, ['cancelled', 'expired', 'failed']))
+            @elseif($order->status === 'cancelled')
             <a href="/" class="retry-btn">Opnieuw bestellen</a>
             @endif
         </div>
