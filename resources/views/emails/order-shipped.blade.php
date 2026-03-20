@@ -18,11 +18,16 @@
                     
                     <!-- Header met logo -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #e63946 0%, #d62839 100%); padding: 35px 30px; text-align: center;">
+                        <td bgcolor="#e63946" style="background: #e63946; background: linear-gradient(135deg, #e63946 0%, #d62839 100%); padding: 35px 30px; text-align: center;">
+                            <!--[if mso]>
+                            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:520px;height:120px;">
+                            <v:fill type="gradient" color="#e63946" color2="#d62839" angle="135"/>
+                            <v:textbox inset="0,0,0,0">
+                            <![endif]-->
                             <!-- Logo -->
                             <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                                 <tr>
-                                    <td style="background: white; width: 50px; height: 50px; border-radius: 12px; text-align: center; vertical-align: middle;">
+                                    <td bgcolor="#ffffff" style="background: white; width: 50px; height: 50px; border-radius: 12px; text-align: center; vertical-align: middle;">
                                         <span style="color: #e63946; font-size: 24px; font-weight: bold;">P</span>
                                     </td>
                                     <td style="padding-left: 12px;">
@@ -31,12 +36,16 @@
                                 </tr>
                             </table>
                             <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 15px 0 0; font-weight: 400;">Je bestelling is onderweg!</p>
+                            <!--[if mso]>
+                            </v:textbox>
+                            </v:rect>
+                            <![endif]-->
                         </td>
                     </tr>
 
                     <!-- Blauwe verzonden banner -->
                     <tr>
-                        <td style="background: #3b82f6; padding: 14px 30px; text-align: center;">
+                        <td bgcolor="#3b82f6" style="background: #3b82f6; padding: 14px 30px; text-align: center;">
                             <span style="color: white; font-size: 14px; font-weight: 500;">🚚 Verzonden via PostNL</span>
                         </td>
                     </tr>
@@ -113,8 +122,9 @@
                     </tr>
 
                     <!-- Footer -->
+                    <!-- Footer -->
                     <tr>
-                        <td style="background: #1e293b; padding: 28px 30px; text-align: center;">
+                        <td bgcolor="#1e293b" style="background: #1e293b; padding: 28px 30px; text-align: center;">
                             <p style="color: #94a3b8; font-size: 13px; margin: 0 0 8px; line-height: 1.6;">
                                 Vragen over je bezorging?
                             </p>
