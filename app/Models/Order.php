@@ -37,6 +37,7 @@ class Order extends Model
         'address_postcode',
         'address_city',
         'address_country',
+        'delivery_type',
         'track_trace',
         'shipped_at',
         'paid_at',
@@ -63,7 +64,7 @@ class Order extends Model
     /**
      * Bereken de totaalprijs
      */
-    public static function calculatePrice(int $pageCount, string $format, string $bindingType = 'booklet'): array
+    public static function calculatePrice(int $pageCount, string $format, string $bindingType = 'booklet', string $deliveryType = 'shipping'): array
     {
         $pricePerPage = $format === 'A5' 
             ? config('pricing.per_page_a5', 7) 
@@ -72,7 +73,8 @@ class Order extends Model
         $startup = config('pricing.startup', 1000);
         // Alleen inbindkosten bij boekje, niet bij losbladig
         $binding = $bindingType === 'booklet' ? config('pricing.binding', 500) : 0;
-        $shipping = config('pricing.shipping', 500);
+        // Geen verzendkosten bij afhalen
+        $shipping = $deliveryType === 'pickup' ? 0 : config('pricing.shipping', 500);
         $pages = $pageCount * $pricePerPage;
         
         return [

@@ -12,10 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            // Voeg binding_type toe (default 'booklet' voor bestaande orders)
-            $table->enum('binding_type', ['booklet', 'loose'])->default('booklet')->after('bleed_mm');
-            // Voeg print_side toe (default 'double' voor bestaande orders)
-            $table->enum('print_side', ['single', 'double'])->default('double')->after('binding_type');
+            $table->enum('delivery_type', ['shipping', 'pickup'])
+                  ->default('shipping')
+                  ->after('address_country');
         });
     }
 
@@ -25,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumn(['binding_type', 'print_side']);
+            $table->dropColumn('delivery_type');
         });
     }
 };

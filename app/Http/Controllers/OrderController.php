@@ -73,6 +73,7 @@ class OrderController extends Controller
             'bleed_mm' => 'nullable|integer',
             'binding_type' => 'required|in:booklet,loose',
             'print_side' => 'required|in:single,double',
+            'delivery_type' => 'required|in:shipping,pickup',
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20',
@@ -90,11 +91,12 @@ class OrderController extends Controller
             $storedName = time() . '_' . uniqid() . '.pdf';
             $path = $pdf->storeAs('pdfs', $storedName, 'local');
 
-            // Bereken prijzen (binding_type bepaalt of er inbindkosten zijn)
+            // Bereken prijzen (binding_type en delivery_type bepalen kosten)
             $prices = Order::calculatePrice(
                 $request->input('page_count'),
                 $request->input('format'),
-                $request->input('binding_type')
+                $request->input('binding_type'),
+                $request->input('delivery_type')
             );
 
             // Maak order
@@ -123,6 +125,7 @@ class OrderController extends Controller
                 'address_addition' => $request->input('addition'),
                 'address_postcode' => strtoupper(str_replace(' ', '', $request->input('postcode'))),
                 'address_city' => $request->input('city'),
+                'delivery_type' => $request->input('delivery_type'),
             ]);
 
             // Maak Mollie betaling

@@ -305,6 +305,12 @@
                                         @else
                                             Losbladig {{ $order->print_side === 'double' ? '(2-z)' : '(1-z)' }}
                                         @endif
+                                        • 
+                                        @if($order->delivery_type === 'pickup')
+                                            <span style="color: #0369a1;">🏪 Afhalen</span>
+                                        @else
+                                            📦 Verzenden
+                                        @endif
                                     </div>
                                 </td>
                                 <td class="price">€ {{ number_format($order->price_total / 100, 2, ',', '.') }}</td>
