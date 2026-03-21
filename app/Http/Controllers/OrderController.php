@@ -21,43 +21,55 @@ class OrderController extends Controller
      */
     public function index()
     {
-        return view('welcome', [
-            'prices' => [
-                'a4' => config('pricing.per_page_a4', 10) / 100,
-                'a5' => config('pricing.per_page_a5', 7) / 100,
-                'startup' => config('pricing.startup', 1000) / 100,
-                'binding' => config('pricing.binding', 500) / 100,
-                'shipping' => config('pricing.shipping', 500) / 100,
-            ]
-        ]);
+        return view('welcome');
     }
 
     /**
-     * Bereken prijs voor AJAX request
+     * Bereken prijs voor AJAX request - analyseert PDF
      */
     public function calculatePrice(Request $request)
     {
         $request->validate([
-            'page_count' => 'required|integer|min:1',
-            'format' => 'required|in:A4,A5',
+            'pdf' => 'required|file|mimes:pdf|max:102400',
         ]);
 
-        $prices = Order::calculatePrice(
-            $request->input('page_count'),
-            $request->input('format')
-        );
+        try {
+            $pdf = $request->file('pdf');
+            $content = file_get_contents($pdf->getRealPath());
+            
+            // Tel paginas
+            $pageCount = preg_match_all("/\/Page\W/", $content, $matches);
+            if ($pageCount === 0) {
+                preg_match_all("/\/Type\s*\/Page[^s]/", $content, $matches);
+                $pageCount = count($matches[0]);
+            }
+            if ($pageCount === 0) $pageCount = 1;
 
-        return response()->json([
-            'success' => true,
-            'prices' => $prices,
-            'formatted' => [
-                'startup' => $this->formatPrice($prices['startup']),
-                'pages' => $this->formatPrice($prices['pages']),
-                'binding' => $this->formatPrice($prices['binding']),
-                'shipping' => $this->formatPrice($prices['shipping']),
-                'total' => $this->formatPrice($prices['total']),
-            ]
-        ]);
+            // Detecteer formaat (standaard A4)
+            $format = 'A4';
+            if (preg_match('/\/MediaBox\s*\[\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\]/', $content, $matches)) {
+                $width = floatval($matches[3]) - floatval($matches[1]);
+                $height = floatval($matches[4]) - floatval($matches[2]);
+                if ($width < $height) {
+                    list($width, $height) = [$height, $width];
+                }
+                if ($width < 500) $format = 'A5';
+            }
+
+            return response()->json([
+                'success' => true,
+                'page_count' => $pageCount,
+                'format' => $format,
+                'has_bleed' => false,
+                'bleed_mm' => 0,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('PDF analyse error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Kon PDF niet analyseren'
+            ], 400);
+        }
     }
 
     /**
