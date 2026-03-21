@@ -1,492 +1,174 @@
 #!/usr/bin/env python3
 """
-Saddle Stitch Booklet Imposition Script voor PrintMijnPDF.nl
-
-Dit script neemt een PDF en maakt er een print-ready impositie van voor
-geniet gebrocheerde boekjes. Features:
-
-- Detecteert TrimBox en snijdt indien nodig naar TrimBox
-- Vult aan tot pagina's deelbaar door 4 (blanco pagina's)
-- Maakt saddle stitch impositie (reader spreads naar printer spreads)
-- Voegt snijtekens en vouwlijn toe
-- Output op SRA3 (A4 boekje) of SRA4 (A5 boekje)
-
-Gebruik:
-    python impose_booklet.py input.pdf output.pdf [--format A4|A5]
+Booklet Imposition Script voor PrintMijnPDF
+Werkt met pikepdf 10.x+
 """
 
 import argparse
 import sys
 from pathlib import Path
-from typing import Tuple, List
-import pikepdf
-from pikepdf import Pdf, Page, Rectangle
-from reportlab.pdfgen import canvas
-from reportlab.lib.units import mm
-from reportlab.lib.colors import black, white
-from io import BytesIO
-import tempfile
-import os
 
+try:
+    import pikepdf
+except ImportError:
+    print("Error: pikepdf niet geinstalleerd", file=sys.stderr)
+    sys.exit(1)
 
-# Constanten (in punten, 1 punt = 1/72 inch)
-MM_TO_PT = 72 / 25.4
-
-# Paginaformaten
-FORMATS = {
-    'A4': {
-        'page_width': 210 * MM_TO_PT,
-        'page_height': 297 * MM_TO_PT,
-        'sheet_width': 450 * MM_TO_PT,   # SRA3 breedte
-        'sheet_height': 320 * MM_TO_PT,  # SRA3 hoogte
-        'name': 'A4 op SRA3'
-    },
-    'A5': {
-        'page_width': 148 * MM_TO_PT,
-        'page_height': 210 * MM_TO_PT,
-        'sheet_width': 320 * MM_TO_PT,   # SRA4 breedte  
-        'sheet_height': 225 * MM_TO_PT,  # SRA4 hoogte
-        'name': 'A5 op SRA4'
-    }
+# Sheet formaten in punten (72 punten = 1 inch)
+SHEET_FORMATS = {
+    'SRA3': {'width': 907, 'height': 1276},
+    'SRA4': {'width': 638, 'height': 907},
 }
 
-# Snijtekens instellingen
-CROP_MARK_LENGTH = 5 * MM_TO_PT
-CROP_MARK_OFFSET = 3 * MM_TO_PT  # Afstand vanaf trimbox
-CROP_MARK_WEIGHT = 0.25  # Lijndikte in punten
-
-
-def get_page_dimensions(page: Page) -> Tuple[float, float, Rectangle]:
-    """
-    Bepaal de effectieve pagina-afmetingen.
-    Geeft (width, height, box) terug.
+def calculate_booklet_pages(num_pages):
+    """Bereken de paginavolgorde voor saddle-stitch binding."""
+    total_pages = ((num_pages + 3) // 4) * 4
+    sheets = []
+    num_sheets = total_pages // 4
     
-    Prioriteit: TrimBox > CropBox > MediaBox
-    """
-    # Haal de verschillende boxes op
-    mediabox = page.mediabox
-    
-    # Probeer TrimBox (beste voor print)
-    try:
-        trimbox = page.trimbox
-        if trimbox and trimbox != mediabox:
-            width = float(trimbox[2]) - float(trimbox[0])
-            height = float(trimbox[3]) - float(trimbox[1])
-            return width, height, trimbox
-    except (KeyError, AttributeError):
-        pass
-    
-    # Probeer CropBox
-    try:
-        cropbox = page.cropbox
-        if cropbox and cropbox != mediabox:
-            width = float(cropbox[2]) - float(cropbox[0])
-            height = float(cropbox[3]) - float(cropbox[1])
-            return width, height, cropbox
-    except (KeyError, AttributeError):
-        pass
-    
-    # Fallback naar MediaBox
-    width = float(mediabox[2]) - float(mediabox[0])
-    height = float(mediabox[3]) - float(mediabox[1])
-    return width, height, mediabox
-
-
-def detect_format(width: float, height: float) -> str:
-    """Detecteer of het A4 of A5 is gebaseerd op afmetingen."""
-    # A4: 210x297mm, A5: 148x210mm
-    a4_w, a4_h = 210 * MM_TO_PT, 297 * MM_TO_PT
-    a5_w, a5_h = 148 * MM_TO_PT, 210 * MM_TO_PT
-    
-    # Tolerantie van 5mm
-    tolerance = 5 * MM_TO_PT
-    
-    # Check A4 (portrait of landscape)
-    if (abs(width - a4_w) < tolerance and abs(height - a4_h) < tolerance) or \
-       (abs(width - a4_h) < tolerance and abs(height - a4_w) < tolerance):
-        return 'A4'
-    
-    # Check A5 (portrait of landscape)
-    if (abs(width - a5_w) < tolerance and abs(height - a5_h) < tolerance) or \
-       (abs(width - a5_h) < tolerance and abs(height - a5_w) < tolerance):
-        return 'A5'
-    
-    # Default naar A4 als onduidelijk
-    return 'A4'
-
-
-def calculate_imposition_order(page_count: int) -> List[Tuple[int, int]]:
-    """
-    Bereken de impositie volgorde voor saddle stitch.
-    
-    Voor een 8-pagina boekje (2 vellen):
-    Vel 1 voorzijde: (8, 1)  - laatste + eerste
-    Vel 1 achterzijde: (2, 7)
-    Vel 2 voorzijde: (6, 3)
-    Vel 2 achterzijde: (4, 5)
-    
-    Returns: List van tuples (linker_pagina, rechter_pagina)
-             Pagina nummers zijn 1-indexed
-    """
-    spreads = []
-    sheets = page_count // 4
-    
-    for sheet in range(sheets):
-        # Elk vel heeft 4 pagina's (2 spreads: voor en achter)
-        # Voorzijde: buitenste pagina's
-        front_left = page_count - (sheet * 2)
-        front_right = 1 + (sheet * 2)
+    for sheet_num in range(num_sheets):
+        outer_left = total_pages - (sheet_num * 2)
+        outer_right = (sheet_num * 2) + 1
+        inner_left = (sheet_num * 2) + 2
+        inner_right = total_pages - (sheet_num * 2) - 1
         
-        # Achterzijde: binnenste pagina's  
-        back_left = 2 + (sheet * 2)
-        back_right = page_count - 1 - (sheet * 2)
-        
-        spreads.append((front_left, front_right))  # Voorzijde
-        spreads.append((back_left, back_right))    # Achterzijde
+        sheets.append({
+            'front': (outer_left, outer_right),
+            'back': (inner_left, inner_right)
+        })
     
-    return spreads
+    return sheets, total_pages
 
-
-def create_crop_marks_overlay(
-    sheet_width: float,
-    sheet_height: float,
-    page_width: float,
-    page_height: float
-) -> bytes:
-    """
-    Maak een PDF overlay met snijtekens en vouwlijn.
-    """
-    buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=(sheet_width, sheet_height))
+def impose_booklet(input_path, output_path, source_format='A4', quiet=False):
+    """Maak booklet impositie van een PDF."""
     
-    # Bereken posities
-    center_x = sheet_width / 2
-    center_y = sheet_height / 2
+    input_path = Path(input_path)
+    output_path = Path(output_path)
     
-    # Linker pagina positie
-    left_x = center_x - page_width
-    # Rechter pagina positie  
-    right_x = center_x
+    if not input_path.exists():
+        print(f"Error: Input bestand niet gevonden: {input_path}", file=sys.stderr)
+        return False
     
-    # Y posities (gecentreerd)
-    bottom_y = center_y - (page_height / 2)
-    top_y = center_y + (page_height / 2)
-    
-    c.setStrokeColor(black)
-    c.setLineWidth(CROP_MARK_WEIGHT)
-    
-    # === SNIJTEKENS ===
-    
-    # Hoekpunten waar snijtekens moeten komen
-    corners = [
-        # Linker pagina
-        (left_x, bottom_y),      # Links onder
-        (left_x, top_y),         # Links boven
-        # Midden (vouwlijn)
-        (center_x, bottom_y),    # Midden onder
-        (center_x, top_y),       # Midden boven
-        # Rechter pagina
-        (right_x + page_width, bottom_y),  # Rechts onder
-        (right_x + page_width, top_y),     # Rechts boven
-    ]
-    
-    # Teken snijtekens bij elke hoek
-    for x, y in corners:
-        # Horizontale lijnen
-        # Links van het punt
-        c.line(x - CROP_MARK_OFFSET - CROP_MARK_LENGTH, y,
-               x - CROP_MARK_OFFSET, y)
-        # Rechts van het punt
-        c.line(x + CROP_MARK_OFFSET, y,
-               x + CROP_MARK_OFFSET + CROP_MARK_LENGTH, y)
-        
-        # Verticale lijnen
-        # Onder het punt
-        c.line(x, y - CROP_MARK_OFFSET - CROP_MARK_LENGTH,
-               x, y - CROP_MARK_OFFSET)
-        # Boven het punt
-        c.line(x, y + CROP_MARK_OFFSET,
-               x, y + CROP_MARK_OFFSET + CROP_MARK_LENGTH)
-    
-    # === VOUWLIJN (stippellijn in het midden) ===
-    c.setDash(3, 3)  # Stippellijn: 3pt aan, 3pt uit
-    c.setStrokeColor(black)
-    
-    # Vouwlijn boven de pagina
-    c.line(center_x, top_y + CROP_MARK_OFFSET,
-           center_x, top_y + CROP_MARK_OFFSET + CROP_MARK_LENGTH * 2)
-    
-    # Vouwlijn onder de pagina  
-    c.line(center_x, bottom_y - CROP_MARK_OFFSET,
-           center_x, bottom_y - CROP_MARK_OFFSET - CROP_MARK_LENGTH * 2)
-    
-    c.save()
-    buffer.seek(0)
-    return buffer.getvalue()
-
-
-def impose_booklet(
-    input_path: str,
-    output_path: str,
-    format_override: str = None,
-    verbose: bool = True
-) -> dict:
-    """
-    Hoofdfunctie voor boekje impositie.
-    
-    Args:
-        input_path: Pad naar input PDF
-        output_path: Pad naar output PDF
-        format_override: 'A4' of 'A5' om formaat te forceren
-        verbose: Print status berichten
-    
-    Returns:
-        dict met informatie over de conversie
-    """
-    result = {
-        'success': False,
-        'input_pages': 0,
-        'output_pages': 0,
-        'pages_added': 0,
-        'format': None,
-        'sheets': 0,
-        'message': ''
-    }
+    sheet_format = 'SRA4' if source_format == 'A5' else 'SRA3'
+    sheet = SHEET_FORMATS[sheet_format]
     
     try:
-        # Open input PDF
-        pdf = Pdf.open(input_path)
-        original_page_count = len(pdf.pages)
-        result['input_pages'] = original_page_count
-        
-        if verbose:
-            print(f"📄 Input: {original_page_count} pagina's")
-        
-        if original_page_count == 0:
-            result['message'] = 'PDF heeft geen pagina\'s'
-            return result
-        
-        # Detecteer pagina formaat van eerste pagina
-        first_page = pdf.pages[0]
-        page_width, page_height, source_box = get_page_dimensions(first_page)
-        
-        # Zorg dat het portrait is (hoogte > breedte)
-        if page_width > page_height:
-            page_width, page_height = page_height, page_width
-        
-        # Bepaal formaat
-        if format_override:
-            page_format = format_override.upper()
-        else:
-            page_format = detect_format(page_width, page_height)
-        
-        result['format'] = page_format
-        fmt = FORMATS[page_format]
-        
-        if verbose:
-            print(f"📐 Formaat: {page_format} ({page_width/MM_TO_PT:.1f} x {page_height/MM_TO_PT:.1f} mm)")
-        
-        # === STAP 1: Pagina's aanvullen tot deelbaar door 4 ===
-        pages_needed = original_page_count
-        remainder = pages_needed % 4
-        if remainder != 0:
-            pages_needed = original_page_count + (4 - remainder)
-        
-        pages_to_add = pages_needed - original_page_count
-        result['pages_added'] = pages_to_add
-        
-        if pages_to_add > 0:
-            if verbose:
-                print(f"➕ {pages_to_add} blanco pagina('s) toevoegen (totaal: {pages_needed})")
+        with pikepdf.open(input_path) as pdf:
+            num_pages = len(pdf.pages)
             
-            # Maak blanco pagina's
-            for _ in range(pages_to_add):
-                # Maak een lege pagina met dezelfde afmetingen
-                blank = pdf.make_indirect(
-                    pikepdf.Dictionary(
-                        Type=pikepdf.Name.Page,
-                        MediaBox=[0, 0, fmt['page_width'], fmt['page_height']],
-                        Resources=pikepdf.Dictionary()
-                    )
-                )
-                pdf.pages.append(Page(blank))
-        
-        total_pages = len(pdf.pages)
-        sheets = total_pages // 4
-        result['sheets'] = sheets
-        result['output_pages'] = sheets * 2  # Elk vel = 2 pagina's (voor + achter)
-        
-        if verbose:
-            print(f"📑 Output: {sheets} vel(len), {result['output_pages']} pagina's")
-        
-        # === STAP 2: Bereken impositie volgorde ===
-        imposition_order = calculate_imposition_order(total_pages)
-        
-        if verbose:
-            print(f"🔢 Impositie volgorde:")
-            for i, (left, right) in enumerate(imposition_order):
-                side = "voorzijde" if i % 2 == 0 else "achterzijde"
-                sheet_num = (i // 2) + 1
-                print(f"   Vel {sheet_num} {side}: pagina {left} + {right}")
-        
-        # === STAP 3: Maak snijtekens overlay ===
-        crop_marks_pdf_data = create_crop_marks_overlay(
-            fmt['sheet_width'],
-            fmt['sheet_height'],
-            fmt['page_width'],
-            fmt['page_height']
-        )
-        
-        # Laad crop marks als PDF
-        crop_marks_pdf = Pdf.open(BytesIO(crop_marks_pdf_data))
-        crop_marks_page = crop_marks_pdf.pages[0]
-        
-        # === STAP 4: Maak output PDF ===
-        output_pdf = Pdf.new()
-        
-        for spread_idx, (left_page_num, right_page_num) in enumerate(imposition_order):
-            # Maak nieuw vel
-            sheet = pikepdf.Dictionary(
-                Type=pikepdf.Name.Page,
-                MediaBox=[0, 0, fmt['sheet_width'], fmt['sheet_height']],
-                Resources=pikepdf.Dictionary(),
-                Contents=pikepdf.Stream(output_pdf, b'')
-            )
-            sheet_page = Page(output_pdf.make_indirect(sheet))
+            if num_pages == 0:
+                print("Error: PDF heeft geen paginas", file=sys.stderr)
+                return False
             
-            # Bereken posities
-            center_x = fmt['sheet_width'] / 2
-            center_y = fmt['sheet_height'] / 2
+            sheets, total_pages = calculate_booklet_pages(num_pages)
             
-            # Offset voor centreren
-            y_offset = center_y - (fmt['page_height'] / 2)
+            if not quiet:
+                print(f"Input: {num_pages} pagina's")
+                print(f"Output: {len(sheets)} vellen ({sheet_format})")
             
-            # Linker pagina (left_page_num is 1-indexed)
-            left_idx = left_page_num - 1
-            if 0 <= left_idx < len(pdf.pages):
-                source_page = pdf.pages[left_idx]
-                
-                # Maak Form XObject van bronpagina
-                form_xobj = sheet_page.add_content_as_form_xobject(
-                    pdf_page=source_page,
-                    name=f"/Page{left_page_num}"
-                )
-                
-                # Plaats linker pagina
-                x_pos = center_x - fmt['page_width']
-                
-                # Schaal berekenen indien nodig
-                src_width, src_height, _ = get_page_dimensions(source_page)
-                scale_x = fmt['page_width'] / src_width if src_width > 0 else 1
-                scale_y = fmt['page_height'] / src_height if src_height > 0 else 1
-                scale = min(scale_x, scale_y)
-                
-                # Content stream voor linker pagina
-                content = f"q {scale} 0 0 {scale} {x_pos} {y_offset} cm /Page{left_page_num} Do Q\n"
-                
-                # Voeg toe aan sheet
-                sheet_page.contents = pikepdf.Stream(
-                    output_pdf,
-                    sheet_page.contents.read_bytes() + content.encode()
-                )
+            output_pdf = pikepdf.new()
+            half_width = sheet['width'] / 2
             
-            # Rechter pagina
-            right_idx = right_page_num - 1
-            if 0 <= right_idx < len(pdf.pages):
-                source_page = pdf.pages[right_idx]
+            for sheet_data in sheets:
+                # Voorkant
+                front = create_sheet_page(output_pdf, sheet, pdf, sheet_data['front'], num_pages, half_width)
+                output_pdf.pages.append(front)
                 
-                form_xobj = sheet_page.add_content_as_form_xobject(
-                    pdf_page=source_page,
-                    name=f"/Page{right_page_num}"
-                )
-                
-                # Plaats rechter pagina
-                x_pos = center_x
-                
-                src_width, src_height, _ = get_page_dimensions(source_page)
-                scale_x = fmt['page_width'] / src_width if src_width > 0 else 1
-                scale_y = fmt['page_height'] / src_height if src_height > 0 else 1
-                scale = min(scale_x, scale_y)
-                
-                content = f"q {scale} 0 0 {scale} {x_pos} {y_offset} cm /Page{right_page_num} Do Q\n"
-                
-                sheet_page.contents = pikepdf.Stream(
-                    output_pdf,
-                    sheet_page.contents.read_bytes() + content.encode()
-                )
+                # Achterkant
+                back = create_sheet_page(output_pdf, sheet, pdf, sheet_data['back'], num_pages, half_width)
+                output_pdf.pages.append(back)
             
-            # Voeg snijtekens toe
-            crop_form = sheet_page.add_content_as_form_xobject(
-                pdf_page=crop_marks_page,
-                name="/CropMarks"
-            )
-            content = "q /CropMarks Do Q\n"
-            sheet_page.contents = pikepdf.Stream(
-                output_pdf,
-                sheet_page.contents.read_bytes() + content.encode()
-            )
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_pdf.save(output_path)
             
-            output_pdf.pages.append(sheet_page)
-        
-        # Sla op
-        output_pdf.save(output_path)
-        
-        result['success'] = True
-        result['message'] = f"Impositie succesvol: {sheets} vel(len) op {fmt['name']}"
-        
-        if verbose:
-            print(f"✅ Opgeslagen: {output_path}")
-        
-        return result
-        
+            if not quiet:
+                print(f"Output opgeslagen: {output_path}")
+            
+            return True
+            
     except Exception as e:
-        result['message'] = f"Fout: {str(e)}"
-        if verbose:
-            print(f"❌ Fout: {e}")
+        print(f"Error: {e}", file=sys.stderr)
         import traceback
         traceback.print_exc()
-        return result
+        return False
 
+def create_sheet_page(output_pdf, sheet, source_pdf, page_nums, num_pages, half_width):
+    """Maak een sheet pagina met twee bronpagina's naast elkaar."""
+    
+    left_num, right_num = page_nums
+    
+    # Start met lege pagina
+    sheet_page = pikepdf.Page(pikepdf.Dictionary(
+        Type=pikepdf.Name.Page,
+        MediaBox=[0, 0, sheet['width'], sheet['height']],
+        Resources=pikepdf.Dictionary(XObject=pikepdf.Dictionary()),
+        Contents=pikepdf.Stream(output_pdf, b"")
+    ))
+    
+    content_parts = []
+    xobject_counter = 0
+    
+    # Linker pagina
+    if 1 <= left_num <= num_pages:
+        xobject_counter += 1
+        name = f"P{xobject_counter}"
+        place_page(output_pdf, sheet_page, source_pdf.pages[left_num - 1], name, 0, 0, half_width, sheet['height'])
+        content_parts.append(f"q 1 0 0 1 0 0 cm /{name} Do Q")
+    
+    # Rechter pagina
+    if 1 <= right_num <= num_pages:
+        xobject_counter += 1
+        name = f"P{xobject_counter}"
+        place_page(output_pdf, sheet_page, source_pdf.pages[right_num - 1], name, half_width, 0, half_width, sheet['height'])
+        content_parts.append(f"q 1 0 0 1 0 0 cm /{name} Do Q")
+    
+    return sheet_page
+
+def place_page(output_pdf, sheet_page, source_page, name, x, y, target_w, target_h):
+    """Plaats een pagina als Form XObject op de sheet."""
+    
+    # Haal source dimensies
+    mb = source_page.mediabox
+    src_w = float(mb[2]) - float(mb[0])
+    src_h = float(mb[3]) - float(mb[1])
+    
+    # Bereken schaal
+    scale = min(target_w / src_w, target_h / src_h) * 0.95
+    
+    # Centreer
+    scaled_w = src_w * scale
+    scaled_h = src_h * scale
+    x_off = x + (target_w - scaled_w) / 2
+    y_off = y + (target_h - scaled_h) / 2
+    
+    # Kopieer pagina als form xobject
+    form = output_pdf.make_stream(source_page.contents.read_bytes() if source_page.contents else b"")
+    form.stream_dict[pikepdf.Name.Type] = pikepdf.Name.XObject
+    form.stream_dict[pikepdf.Name.Subtype] = pikepdf.Name.Form
+    form.stream_dict[pikepdf.Name.BBox] = source_page.mediabox
+    
+    # Kopieer resources
+    if '/Resources' in source_page:
+        form.stream_dict[pikepdf.Name.Resources] = output_pdf.copy_foreign(source_page.Resources)
+    
+    # Voeg toe aan sheet
+    sheet_page.Resources.XObject[pikepdf.Name(name)] = form
+    
+    # Update content stream
+    new_content = f"q {scale:.4f} 0 0 {scale:.4f} {x_off:.2f} {y_off:.2f} cm /{name} Do Q\n"
+    existing = sheet_page.Contents.read_bytes() if sheet_page.Contents else b""
+    sheet_page.Contents = pikepdf.Stream(output_pdf, existing + new_content.encode())
 
 def main():
-    parser = argparse.ArgumentParser(
-        description='Maak saddle stitch impositie van PDF voor boekjes',
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Voorbeelden:
-  python impose_booklet.py brochure.pdf brochure_imposed.pdf
-  python impose_booklet.py --format A5 flyer.pdf flyer_print.pdf
-  
-Het script:
-  - Detecteert TrimBox en snijdt indien nodig
-  - Vult aan tot pagina's deelbaar door 4
-  - Maakt saddle stitch impositie
-  - Voegt snijtekens en vouwlijn toe
-        """
-    )
-    
-    parser.add_argument('input', help='Input PDF bestand')
-    parser.add_argument('output', help='Output PDF bestand')
-    parser.add_argument('--format', '-f', choices=['A4', 'A5'],
-                        help='Forceer formaat (anders auto-detect)')
-    parser.add_argument('--quiet', '-q', action='store_true',
-                        help='Geen output naar console')
+    parser = argparse.ArgumentParser(description='Booklet Imposition')
+    parser.add_argument('input', help='Input PDF')
+    parser.add_argument('output', help='Output PDF')
+    parser.add_argument('--format', choices=['A4', 'A5'], default='A4')
+    parser.add_argument('--quiet', '-q', action='store_true')
     
     args = parser.parse_args()
-    
-    if not Path(args.input).exists():
-        print(f"❌ Bestand niet gevonden: {args.input}")
-        sys.exit(1)
-    
-    result = impose_booklet(
-        args.input,
-        args.output,
-        format_override=args.format,
-        verbose=not args.quiet
-    )
-    
-    sys.exit(0 if result['success'] else 1)
-
+    success = impose_booklet(args.input, args.output, args.format, args.quiet)
+    sys.exit(0 if success else 1)
 
 if __name__ == '__main__':
     main()
