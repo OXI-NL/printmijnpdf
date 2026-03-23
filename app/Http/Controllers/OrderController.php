@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\AdminOrderNotification;
 use App\Mail\OrderConfirmation;
 use App\Mail\OrderShipped;
 use App\Mail\PaymentFailed;
@@ -386,23 +387,10 @@ class OrderController extends Controller
         }
         
         try {
-            // Stuur email naar admin
             $adminEmail = config('mail.admin_email', 'info@printmijnpdf.nl');
-            
-            Mail::raw(
-                "Nieuwe bestelling ontvangen!\n\n" .
-                "Bestelnummer: {$order->order_number}\n" .
-                "Klant: {$order->customer_name}\n" .
-                "Email: {$order->customer_email}\n" .
-                "Bestand: {$order->pdf_original_name}\n" .
-                "Formaat: {$order->format} - {$order->page_count} pagina's\n" .
-                "Totaal: {$order->formatted_total}\n\n" .
-                "Adres:\n{$order->full_address}",
-                function ($message) use ($adminEmail, $order) {
-                    $message->to($adminEmail)
-                        ->subject("🆕 Nieuwe bestelling: {$order->order_number}");
-                }
-            );
+
+            Mail::to($adminEmail)
+                ->send(new AdminOrderNotification($order));
             
             // Markeer als verzonden voor 24 uur
             Cache::put($cacheKey, true, now()->addHours(24));
