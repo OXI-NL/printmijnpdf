@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>PrintMijnPDF.nl - Print je PDF. Morgen in huis.</title>
-    <meta name="description" content="Upload je PDF en ontvang een professioneel geprint document. Boekje of losse pagina's, full colour, binnen 3 werkdagen thuisbezorgd of gratis afhalen.">
-    <meta name="keywords" content="PDF printen, boekje laten drukken, magazine printen, brochure afdrukken, PDF naar boek">
-    <meta property="og:title" content="PrintMijnPDF.nl - Print je PDF. Morgen in huis.">
-    <meta property="og:description" content="Upload je PDF en ontvang een professioneel geprint document. Binnen 3 werkdagen thuisbezorgd.">
+    <title>PrintMijnPDF.nl - Full colour PDF printen | Boekje of losse pagina's thuisbezorgd</title>
+    <meta name="description" content="Full colour PDF printen in drukwerkkwaliteit. Upload je PDF en ontvang een professioneel geniet boekje of losse pagina's. Scherpe kleuren, hoogwaardig papier, binnen 3 werkdagen bezorgd of gratis afhalen.">
+    <meta name="keywords" content="PDF printen, full colour printen, boekje laten drukken, PDF in kleur printen, magazine printen, brochure afdrukken, PDF naar boek, drukwerkkwaliteit, full color print">
+    <meta property="og:title" content="PrintMijnPDF.nl - Full colour PDF printen in drukwerkkwaliteit">
+    <meta property="og:description" content="Upload je PDF en ontvang full colour printwerk in drukwerkkwaliteit. Professioneel boekje of losse pagina's, binnen 3 werkdagen thuisbezorgd.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://printmijnpdf.nl">
     <link rel="canonical" href="https://printmijnpdf.nl">
@@ -925,7 +925,7 @@
 
     <!-- Hero Section -->
     <section class="hero">
-        <h1>Print je PDF. Morgen in huis.</h1>
+        <h1>Full colour PDF printen in drukwerkkwaliteit</h1>
         <p class="subtext"><span>Upload</span> → <span>kies afwerking</span> → <span>betaal</span>. Klaar.</p>
         
         <!-- Upload Dropzone -->
@@ -962,6 +962,12 @@
         
         <!-- Trust Line -->
         <div class="trust-line">
+            <div class="trust-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Full colour drukwerkkwaliteit
+            </div>
             <div class="trust-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="20 6 9 17 4 12"/>
@@ -1095,7 +1101,7 @@
                 </div>
                 <div class="price-row" id="priceShippingRow">
                     <span id="priceShippingLabel">Verzending (PostNL)</span>
-                    <span id="priceShippingValue">€5,00</span>
+                    <span id="priceShippingValue">€6,75</span>
                 </div>
                 <div class="price-row subtle">
                     <span>Incl. voorbereiding & kwaliteitscheck</span>
@@ -1182,9 +1188,9 @@
                         <div class="delivery-title">Thuisbezorgd</div>
                         <div class="delivery-subtitle">Binnen 3 werkdagen in huis</div>
                     </div>
-                    <div class="delivery-price">€5,00</div>
+                    <div class="delivery-price">€6,75</div>
                 </label>
-                
+
                 <label class="delivery-option" id="deliveryPickup">
                     <input type="radio" name="delivery_type" value="pickup">
                     <div class="delivery-radio"></div>
@@ -1235,14 +1241,19 @@
         
         <details>
             <summary>Wat als mijn PDF meer dan 64 pagina's heeft?</summary>
-            <p>Documenten boven 64 pagina's printen we als losse pagina's in plaats van een geniet boekje. De prijs per pagina blijft gelijk.</p>
+            <p>Bij meer dan 64 pagina's worden uw pagina's standaard als losse pagina's geleverd. Heeft u andere wensen, zoals ringband of lijmbinding? Dat is zeker mogelijk, maar gaat niet via deze website. Neem rechtstreeks contact op met onze drukkerij via <a href="mailto:info@printmijnpdf.nl" style="color: var(--primary); text-decoration: none; font-weight: 500;">info@printmijnpdf.nl</a>. Vermeld uw naam en telefoonnummer, dan bellen wij u op om de mogelijkheden te bespreken.</p>
+        </details>
+
+        <details>
+            <summary>Op welk papier wordt er geprint?</summary>
+            <p>Wij printen op hoogwaardig wit papier van professionele kwaliteit. De printkwaliteit is echte drukwerkkwaliteit — vergelijkbaar met wat u kent van professionele magazines en brochures. Kleuren komen helder en scherp van het papier, zowel bij foto's als bij tekst en afbeeldingen.</p>
         </details>
         
         <details>
-            <summary>Op welk papier wordt er geprint?</summary>
-            <p>We printen in full colour op 120 grams wit papier. Professionele kwaliteit, geschikt voor rapporten, scripties en presentaties.</p>
+            <summary>Is de print in kleur of zwart-wit?</summary>
+            <p>Al ons printwerk is standaard in full colour. Uw PDF wordt geprint precies zoals u het op uw scherm ziet, met alle kleuren, foto's en afbeeldingen in volle kwaliteit.</p>
         </details>
-        
+
         <details>
             <summary>Kan ik mijn bestelling nog annuleren?</summary>
             <p>Neem zo snel mogelijk contact met ons op via info@printmijnpdf.nl. Is je bestelling nog niet geprint? Dan annuleren we kosteloos.</p>
@@ -1300,7 +1311,7 @@
             perPageA4: 10,
             perPageA5: 7,
             binding: 500,
-            shipping: 500
+            shipping: 675
         };
 
         // State

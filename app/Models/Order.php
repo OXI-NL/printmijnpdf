@@ -74,7 +74,7 @@ class Order extends Model
         // Alleen inbindkosten bij boekje, niet bij losbladig
         $binding = $bindingType === 'booklet' ? config('pricing.binding', 500) : 0;
         // Geen verzendkosten bij afhalen
-        $shipping = $deliveryType === 'pickup' ? 0 : config('pricing.shipping', 500);
+        $shipping = $deliveryType === 'pickup' ? 0 : config('pricing.shipping', 675);
         $pages = $pageCount * $pricePerPage;
         
         return [

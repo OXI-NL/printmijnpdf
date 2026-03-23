@@ -17,5 +17,5 @@ return [
     // Vaste kosten
     'startup' => env('PRICE_STARTUP', 1000),        // €10.00
     'binding' => env('PRICE_BINDING', 500),         // €5.00
-    'shipping' => env('PRICE_SHIPPING', 500),       // €5.00
+    'shipping' => env('PRICE_SHIPPING', 675),       // €6.75
 ];
