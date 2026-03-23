@@ -925,8 +925,8 @@
 
     <!-- Hero Section -->
     <section class="hero">
-        <h1>Full colour PDF printen in drukwerkkwaliteit</h1>
-        <p class="subtext"><span>Upload</span> → <span>kies afwerking</span> → <span>betaal</span>. Klaar.</p>
+        <h1>Van PDF op je scherm naar print in je hand.</h1>
+        <p class="subtext">Blader door je bestand zoals het bedoeld is – haarscherp geprint in full colour.</p>
         
         <!-- Upload Dropzone -->
         <div class="dropzone" id="dropzone">
@@ -1251,7 +1251,7 @@
         
         <details>
             <summary>Is de print in kleur of zwart-wit?</summary>
-            <p>Al ons printwerk is standaard in full colour. Uw PDF wordt geprint precies zoals u het op uw scherm ziet, met alle kleuren, foto's en afbeeldingen in volle kwaliteit.</p>
+            <p>Al ons printwerk is standaard in full colour. Uw PDF wordt geprint in CMYK, met alle kleuren, foto's en afbeeldingen in volle kwaliteit.</p>
         </details>
 
         <details>
