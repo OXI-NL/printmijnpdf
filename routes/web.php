@@ -3,6 +3,7 @@
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContactController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,6 +18,9 @@ Route::get('/', [OrderController::class, 'index'])->name('home');
 // API endpoints
 Route::post('/api/calculate-price', [OrderController::class, 'calculatePrice'])->name('api.calculate');
 Route::post('/api/order', [OrderController::class, 'store'])->name('api.order');
+
+// Contactformulier
+Route::post('/api/contact', [ContactController::class, 'send'])->name('api.contact');
 
 // Mollie webhook (CSRF uitgezonderd in bootstrap/app.php)
 Route::post('/webhook/mollie', [OrderController::class, 'webhook'])->name('webhook.mollie');

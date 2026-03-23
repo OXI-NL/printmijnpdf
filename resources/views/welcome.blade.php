@@ -793,6 +793,93 @@
         .error-message.visible { display: flex; align-items: center; gap: 12px; }
         .error-message svg { width: 24px; height: 24px; color: #b91c1c; flex-shrink: 0; }
         .error-message p { font-size: 14px; color: #b91c1c; }
+
+        /* ===== CONTACT MODAL ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        .modal-overlay.visible { display: flex; }
+        .modal-box {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .modal-box h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        .modal-box .modal-sub {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+        .modal-box label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .modal-box input,
+        .modal-box textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        .modal-box input:focus,
+        .modal-box textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .modal-box textarea { resize: vertical; min-height: 100px; }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: var(--text-muted);
+            line-height: 1;
+        }
+        .modal-success {
+            text-align: center;
+            padding: 1rem 0;
+        }
+        .modal-success svg {
+            width: 48px;
+            height: 48px;
+            color: #16a34a;
+            margin-bottom: 0.75rem;
+        }
+        .modal-success h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .modal-success p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
     </style>
 </head>
 <body>
@@ -807,8 +894,34 @@
             </div>
             <span class="logo-text">Print<span>Mijn</span>PDF</span>
         </a>
-        <a href="mailto:info@printmijnpdf.nl" class="header-link">Hulp nodig?</a>
+        <a href="#" class="header-link" id="openContactModal">Hulp nodig?</a>
     </header>
+
+    <!-- Contact Modal -->
+    <div class="modal-overlay" id="contactModal">
+        <div class="modal-box">
+            <button class="modal-close" id="closeContactModal">&times;</button>
+            <div id="contactForm">
+                <h2>Stel je vraag</h2>
+                <p class="modal-sub">We reageren meestal binnen 24 uur. Je ontvangt een kopie per e-mail.</p>
+                <label for="contactName">Naam</label>
+                <input type="text" id="contactName" placeholder="Je naam" required>
+                <label for="contactEmail">E-mailadres</label>
+                <input type="email" id="contactEmail" placeholder="je@email.nl" required>
+                <label for="contactQuestion">Je vraag</label>
+                <textarea id="contactQuestion" placeholder="Waar kunnen we je mee helpen?" required></textarea>
+                <button type="button" class="btn btn-primary" id="contactSubmit" style="width:100%">Verstuur vraag</button>
+            </div>
+            <div id="contactSuccess" class="modal-success" style="display:none">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <h3>Verstuurd!</h3>
+                <p>Bedankt voor je bericht. We reageren zo snel mogelijk. Je ontvangt een kopie per e-mail.</p>
+            </div>
+        </div>
+    </div>
 
     <!-- Hero Section -->
     <section class="hero">
@@ -1117,7 +1230,7 @@
         
         <details>
             <summary>Kan ik mijn bestelling afhalen?</summary>
-            <p>Ja! Afhalen is gratis. Elke werkdag tussen 17:00 en 17:30 bij NIVO, Exportweg 11, 2645ED Delfgauw.</p>
+            <p>Ja! Afhalen is gratis en kan vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO, Exportweg 11, 2645ED Delfgauw. Heb je je bestelling dezelfde dag nog nodig? Bel ons dan even op <a href="tel:0152192525">015-219 2525</a>, dan kijken we wat er mogelijk is.</p>
         </details>
         
         <details>
@@ -1146,6 +1259,7 @@
             <div class="footer-col">
                 <h4>Contact</h4>
                 <p>info@printmijnpdf.nl</p>
+                <p><a href="tel:0152192525" style="color: inherit; text-decoration: none;">015-219 2525</a></p>
                 <p>Reactie binnen 24 uur</p>
             </div>
             <div class="footer-col">
@@ -1621,6 +1735,58 @@
             }
         }, { threshold: 0.3 });
         addressObserver.observe(addressSection);
+
+        // Contact modal
+        const contactModal = document.getElementById('contactModal');
+        const contactFormDiv = document.getElementById('contactForm');
+        const contactSuccessDiv = document.getElementById('contactSuccess');
+
+        document.getElementById('openContactModal').addEventListener('click', (e) => {
+            e.preventDefault();
+            contactFormDiv.style.display = '';
+            contactSuccessDiv.style.display = 'none';
+            contactModal.classList.add('visible');
+        });
+
+        document.getElementById('closeContactModal').addEventListener('click', () => {
+            contactModal.classList.remove('visible');
+        });
+
+        contactModal.addEventListener('click', (e) => {
+            if (e.target === contactModal) contactModal.classList.remove('visible');
+        });
+
+        document.getElementById('contactSubmit').addEventListener('click', async () => {
+            const name = document.getElementById('contactName').value.trim();
+            const email = document.getElementById('contactEmail').value.trim();
+            const question = document.getElementById('contactQuestion').value.trim();
+
+            if (!name || !email || !question) return;
+
+            const btn = document.getElementById('contactSubmit');
+            btn.disabled = true;
+            btn.textContent = 'Versturen...';
+
+            try {
+                const res = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    body: JSON.stringify({ name, email, question }),
+                });
+
+                if (!res.ok) throw new Error();
+
+                contactFormDiv.style.display = 'none';
+                contactSuccessDiv.style.display = '';
+            } catch {
+                btn.disabled = false;
+                btn.textContent = 'Verstuur vraag';
+                alert('Er ging iets mis. Probeer het opnieuw of mail naar info@printmijnpdf.nl');
+            }
+        });
     </script>
 </body>
 </html>
