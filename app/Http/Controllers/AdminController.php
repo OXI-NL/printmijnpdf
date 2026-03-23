@@ -173,4 +173,50 @@ class AdminController extends Controller
         $statusLabel = $isPickup ? 'Klaar voor afhalen' : $request->input('status');
         return redirect()->back()->with('success', 'Status bijgewerkt naar: ' . $statusLabel);
     }
+
+    /**
+     * Verwijder een enkele bestelling
+     */
+    public function destroy(string $orderNumber)
+    {
+        $order = Order::where('order_number', $orderNumber)->firstOrFail();
+
+        // Verwijder bijbehorende bestanden
+        if ($order->pdf_path && Storage::disk('local')->exists($order->pdf_path)) {
+            Storage::disk('local')->delete($order->pdf_path);
+        }
+        if ($order->pdf_imposed_path && Storage::disk('local')->exists($order->pdf_imposed_path)) {
+            Storage::disk('local')->delete($order->pdf_imposed_path);
+        }
+
+        $order->delete();
+
+        return redirect()->back()->with('success', "Bestelling {$orderNumber} verwijderd.");
+    }
+
+    /**
+     * Verwijder meerdere bestellingen tegelijk
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'order_numbers' => 'required|array|min:1',
+            'order_numbers.*' => 'string',
+        ]);
+
+        $orders = Order::whereIn('order_number', $request->input('order_numbers'))->get();
+
+        foreach ($orders as $order) {
+            if ($order->pdf_path && Storage::disk('local')->exists($order->pdf_path)) {
+                Storage::disk('local')->delete($order->pdf_path);
+            }
+            if ($order->pdf_imposed_path && Storage::disk('local')->exists($order->pdf_imposed_path)) {
+                Storage::disk('local')->delete($order->pdf_imposed_path);
+            }
+            $order->delete();
+        }
+
+        $count = $orders->count();
+        return redirect()->back()->with('success', "{$count} bestelling(en) verwijderd.");
+    }
 }

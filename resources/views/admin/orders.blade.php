@@ -121,6 +121,32 @@
         .status.delivered { background: #e2e3e5; color: #383d41; }
         .status.cancelled { background: #f8d7da; color: #721c24; }
         .status.pending { background: #ffeeba; color: #856404; }
+        .checkbox-cell { width: 40px; text-align: center; }
+        .checkbox-cell input[type="checkbox"] {
+            width: 18px; height: 18px; cursor: pointer; accent-color: #e63946;
+        }
+        .bulk-bar {
+            display: none;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1.5rem;
+            background: #fff3cd;
+            border-bottom: 1px solid #ffc107;
+            font-size: 14px;
+        }
+        .bulk-bar.active { display: flex; }
+        .bulk-bar .count { font-weight: 600; }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover { background: #c82333; }
+        .btn-danger-outline {
+            background: transparent;
+            color: #dc3545;
+            border: 1px solid #dc3545;
+        }
+        .btn-danger-outline:hover { background: #dc3545; color: white; }
         .actions { display: flex; gap: 8px; }
         .btn {
             display: inline-flex;
@@ -278,9 +304,22 @@
             </div>
 
             @if($orders->count() > 0)
+                <div class="bulk-bar" id="bulkBar">
+                    <span><span class="count" id="selectedCount">0</span> geselecteerd</span>
+                    <button type="button" class="btn btn-danger" onclick="confirmBulkDelete()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+                            <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                        Verwijderen
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="clearSelection()">Annuleren</button>
+                </div>
+                <form id="bulkDeleteForm" method="POST" action="{{ route('admin.orders.bulk-delete') }}">
+                    @csrf
                 <table>
                     <thead>
                         <tr>
+                            <th class="checkbox-cell"><input type="checkbox" id="selectAll" onclick="toggleAll(this)"></th>
                             <th>Bestelnr.</th>
                             <th>Klant</th>
                             <th>Bestand</th>
@@ -293,6 +332,9 @@
                     <tbody>
                         @foreach($orders as $order)
                             <tr>
+                                <td class="checkbox-cell">
+                                    <input type="checkbox" name="order_numbers[]" value="{{ $order->order_number }}" class="order-checkbox" onchange="updateBulkBar()">
+                                </td>
                                 <td>
                                     <span class="order-number">{{ $order->order_number }}</span>
                                 </td>
@@ -365,6 +407,11 @@
                                         </svg>
                                         Pakbon
                                     </a>
+                                    <button type="button" class="btn btn-danger-outline" onclick="confirmDelete('{{ $order->order_number }}')" title="Verwijderen">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                        </svg>
+                                    </button>
                                     @if($order->status === 'paid')
                                         @if($order->delivery_type === 'pickup')
                                             <form method="POST" action="/admin/orders/{{ $order->order_number }}/ship" style="display:inline;">
@@ -396,6 +443,13 @@
                         @endforeach
                     </tbody>
                 </table>
+
+                </form>
+
+                <form id="singleDeleteForm" method="POST" style="display:none;">
+                    @csrf
+                    @method('DELETE')
+                </form>
 
                 @if($orders->hasPages())
                     <div class="pagination">
@@ -472,6 +526,48 @@
         document.getElementById('shipModal').addEventListener('click', function(e) {
             if (e.target === this) closeShipModal();
         });
+
+        // Delete functionality
+        function confirmDelete(orderNumber) {
+            if (confirm('Weet je zeker dat je bestelling ' + orderNumber + ' wilt verwijderen?')) {
+                const form = document.getElementById('singleDeleteForm');
+                form.action = '/admin/orders/' + orderNumber;
+                form.submit();
+            }
+        }
+
+        // Bulk selection
+        function toggleAll(source) {
+            document.querySelectorAll('.order-checkbox').forEach(cb => cb.checked = source.checked);
+            updateBulkBar();
+        }
+
+        function updateBulkBar() {
+            const checked = document.querySelectorAll('.order-checkbox:checked');
+            const bar = document.getElementById('bulkBar');
+            const count = document.getElementById('selectedCount');
+            const selectAll = document.getElementById('selectAll');
+            const allBoxes = document.querySelectorAll('.order-checkbox');
+
+            count.textContent = checked.length;
+            bar.classList.toggle('active', checked.length > 0);
+            selectAll.checked = allBoxes.length > 0 && checked.length === allBoxes.length;
+            selectAll.indeterminate = checked.length > 0 && checked.length < allBoxes.length;
+        }
+
+        function clearSelection() {
+            document.querySelectorAll('.order-checkbox').forEach(cb => cb.checked = false);
+            document.getElementById('selectAll').checked = false;
+            updateBulkBar();
+        }
+
+        function confirmBulkDelete() {
+            const checked = document.querySelectorAll('.order-checkbox:checked');
+            if (checked.length === 0) return;
+            if (confirm('Weet je zeker dat je ' + checked.length + ' bestelling(en) wilt verwijderen?')) {
+                document.getElementById('bulkDeleteForm').submit();
+            }
+        }
     </script>
 </body>
 </html>
