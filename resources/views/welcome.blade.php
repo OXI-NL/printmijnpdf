@@ -80,7 +80,7 @@
                 "name": "Hoe snel wordt mijn bestelling geleverd?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Bestel je vóór 11:00 op een werkdag? Dan is je pakket binnen 3 werkdagen in huis. Je ontvangt een track & trace code zodra we verzenden."
+                    "text": "Bestel je vóór 11:00 op een werkdag? Dan is je pakket binnen 3 werkdagen in huis. Je ontvangt een track & trace code zodra we verzenden. Heb je je bestelling dezelfde dag nog nodig? Bel ons dan even op 015-219 2525, dan kijken we wat er mogelijk is."
                 }
             },
             {
