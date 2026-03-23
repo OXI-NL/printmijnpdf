@@ -5,11 +5,11 @@ namespace App\Mail;
 use App\Models\Order;
 use App\Services\PakbonService;
 use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Attachment;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class AdminOrderNotification extends Mailable
 {
@@ -38,11 +38,25 @@ class AdminOrderNotification extends Mailable
 
     public function attachments(): array
     {
-        return [
-            Attachment::fromData(
-                fn () => PakbonService::generate($this->order),
-                PakbonService::filename($this->order)
-            )->withMime('application/pdf'),
-        ];
+        return [];
+    }
+
+    /**
+     * Build the message met pakbon PDF als bijlage
+     */
+    public function build()
+    {
+        try {
+            $pdfData = PakbonService::generate($this->order);
+            $filename = PakbonService::filename($this->order);
+
+            $this->attachData($pdfData, $filename, [
+                'mime' => 'application/pdf',
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Kon pakbon niet genereren voor order {$this->order->order_number}: " . $e->getMessage());
+        }
+
+        return $this;
     }
 }
