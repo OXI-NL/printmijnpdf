@@ -11,7 +11,64 @@
     <meta property="og:description" content="Upload je PDF en ontvang full colour printwerk in drukwerkkwaliteit. Professioneel boekje of losse pagina's, binnen 3 werkdagen thuisbezorgd.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://printmijnpdf.nl">
+    <meta property="og:image" content="https://printmijnpdf.nl/og-image.jpg">
+    <meta property="og:locale" content="nl_NL">
+    <meta property="og:site_name" content="PrintMijnPDF.nl">
     <link rel="canonical" href="https://printmijnpdf.nl">
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9F48GD4CX5"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-9F48GD4CX5');
+    </script>
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "PrintMijnPDF.nl",
+        "url": "https://printmijnpdf.nl",
+        "description": "Full colour PDF printen in drukwerkkwaliteit. Upload je PDF en ontvang een professioneel geniet boekje of losse pagina's.",
+        "priceRange": "€",
+        "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "NL"
+        },
+        "areaServed": {
+            "@type": "Country",
+            "name": "Nederland"
+        },
+        "sameAs": [],
+        "offers": {
+            "@type": "AggregateOffer",
+            "priceCurrency": "EUR",
+            "availability": "https://schema.org/InStock",
+            "offerCount": "3",
+            "offers": [
+                {
+                    "@type": "Offer",
+                    "name": "Geniet boekje A4",
+                    "description": "Full colour geniet boekje op A4 formaat"
+                },
+                {
+                    "@type": "Offer",
+                    "name": "Geniet boekje A5",
+                    "description": "Full colour geniet boekje op A5 formaat"
+                },
+                {
+                    "@type": "Offer",
+                    "name": "Losse pagina's",
+                    "description": "Full colour losse pagina's printen"
+                }
+            ]
+        }
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
