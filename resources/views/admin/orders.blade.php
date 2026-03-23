@@ -366,15 +366,30 @@
                                         Pakbon
                                     </a>
                                     @if($order->status === 'paid')
-                                        <button class="btn btn-success" onclick="openShipModal('{{ $order->order_number }}')" title="Markeer als verzonden">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <rect x="1" y="3" width="15" height="13"/>
-                                                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
-                                                <circle cx="5.5" cy="18.5" r="2.5"/>
-                                                <circle cx="18.5" cy="18.5" r="2.5"/>
-                                            </svg>
-                                            Verzenden
-                                        </button>
+                                        @if($order->delivery_type === 'pickup')
+                                            <form method="POST" action="/admin/orders/{{ $order->order_number }}/ship" style="display:inline;">
+                                                @csrf
+                                                <input type="hidden" name="status" value="shipped">
+                                                <input type="hidden" name="pickup" value="1">
+                                                <button type="submit" class="btn btn-success" title="Markeer als klaar voor afhalen">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                                        <polyline points="9 22 9 12 15 12 15 22"/>
+                                                    </svg>
+                                                    Klaar voor afhalen
+                                                </button>
+                                            </form>
+                                        @else
+                                            <button class="btn btn-success" onclick="openShipModal('{{ $order->order_number }}')" title="Markeer als verzonden">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <rect x="1" y="3" width="15" height="13"/>
+                                                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                                                    <circle cx="5.5" cy="18.5" r="2.5"/>
+                                                    <circle cx="18.5" cy="18.5" r="2.5"/>
+                                                </svg>
+                                                Verzenden
+                                            </button>
+                                        @endif
                                     @endif
                                 </td>
                             </tr>

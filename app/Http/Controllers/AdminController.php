@@ -282,39 +282,47 @@ class AdminController extends Controller
         $request->validate([
             'status' => 'required|in:paid,processing,shipped,delivered,cancelled',
             'track_trace' => 'nullable|string|max:50',
+            'pickup' => 'nullable|boolean',
         ]);
 
         $order = Order::where('order_number', $orderNumber)->firstOrFail();
-        
+
         $data = ['status' => $request->input('status')];
-        
-        $shouldSendShippedEmail = false;
-        
+        $isPickup = $request->boolean('pickup');
+
+        $shouldSendEmail = false;
+
         if ($request->input('status') === 'shipped') {
             $data['shipped_at'] = now();
-            if ($request->input('track_trace')) {
+            if (!$isPickup && $request->input('track_trace')) {
                 $data['track_trace'] = $request->input('track_trace');
             }
-            $shouldSendShippedEmail = true;
+            $shouldSendEmail = true;
         }
 
         // EERST updaten
         $order->update($data);
-        
+
         // Refresh om de nieuwe waarden te laden
         $order->refresh();
-        
-        // DAN pas email verzenden (met de nieuwe track_trace waarde)
-        if ($shouldSendShippedEmail) {
+
+        // DAN pas email verzenden
+        if ($shouldSendEmail) {
             try {
-                \Illuminate\Support\Facades\Mail::to($order->customer_email)
-                    ->send(new \App\Mail\OrderShipped($order));
+                if ($isPickup) {
+                    \Illuminate\Support\Facades\Mail::to($order->customer_email)
+                        ->send(new \App\Mail\OrderReadyForPickup($order));
+                } else {
+                    \Illuminate\Support\Facades\Mail::to($order->customer_email)
+                        ->send(new \App\Mail\OrderShipped($order));
+                }
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Verzendmail mislukt: ' . $e->getMessage());
-                return redirect()->back()->with('success', 'Status bijgewerkt, maar email kon niet worden verzonden: ' . $e->getMessage());
+                \Illuminate\Support\Facades\Log::error('E-mail mislukt: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Status bijgewerkt, maar email kon niet worden verzonden: ' . $e->getMessage());
             }
         }
 
-        return redirect()->back()->with('success', 'Status bijgewerkt naar: ' . $request->input('status'));
+        $statusLabel = $isPickup ? 'Klaar voor afhalen' : $request->input('status');
+        return redirect()->back()->with('success', 'Status bijgewerkt naar: ' . $statusLabel);
     }
 }
