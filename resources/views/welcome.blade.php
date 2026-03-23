@@ -722,6 +722,8 @@
         }
         
         /* ===== MOBILE STICKY BAR ===== */
+        .mobile-sticky-bar { display: none; }
+
         @media (max-width: 640px) {
             .hero h1 { font-size: 26px; }
             .hero .subtext { font-size: 16px; }
