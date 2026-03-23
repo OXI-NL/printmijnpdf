@@ -1215,12 +1215,12 @@
             
             <div class="price-summary">
                 <div class="price-row">
-                    <span id="pricePageLabel">0 pagina's × €0,10</span>
+                    <span id="pricePageLabel">0 pagina's × €0,15</span>
                     <span id="pricePagesValue">€0,00</span>
                 </div>
                 <div class="price-row" id="priceBindingRow" style="display: none;">
                     <span>Nieten (boekje)</span>
-                    <span id="priceBindingValue">€5,00</span>
+                    <span id="priceBindingValue">€7,50</span>
                 </div>
                 <div class="price-row" id="priceShippingRow">
                     <span id="priceShippingLabel">Verzending (PostNL)</span>
@@ -1431,9 +1431,9 @@
         const MAX_BOOKLET_PAGES = 64;
         const PRICES = {
             startup: 1000,
-            perPageA4: 10,
-            perPageA5: 7,
-            binding: 500,
+            perPageA4: 15,
+            perPageA5: 10,
+            binding: 750,
             shipping: 675
         };
 

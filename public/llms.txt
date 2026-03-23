@@ -22,9 +22,9 @@ PrintMijnPDF.nl is een Nederlandse online printservice waar je eenvoudig een PDF
 ## Prijzen
 
 - Startkosten: €10,00 per bestelling
-- Per pagina A4: €0,10
-- Per pagina A5: €0,07
-- Nieten (boekje): €5,00
+- Per pagina A4: €0,15
+- Per pagina A5: €0,10
+- Nieten (boekje): €7,50
 - Verzendkosten: €6,75 (of gratis afhalen)
 
 ## Levertijd
