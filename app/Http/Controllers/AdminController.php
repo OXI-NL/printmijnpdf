@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Services\BookletImpositionService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use FPDF;
 
@@ -46,31 +47,36 @@ class AdminController extends Controller
 
         // Check of het een boekje is
         if ($order->binding_type !== 'booklet') {
-            abort(400, 'Impositie alleen beschikbaar voor boekjes');
+            return redirect()->back()->with('error', 'Impositie alleen beschikbaar voor boekjes');
         }
 
-        // Check of impositie bestaat, zo niet: maak aan
-        $impositionService = new BookletImpositionService();
-        
-        if (!$impositionService->hasImposition($order)) {
-            $result = $impositionService->createImposition($order);
-            if (!$result['success']) {
-                abort(500, 'Impositie kon niet worden aangemaakt: ' . $result['message']);
+        try {
+            $impositionService = new BookletImpositionService();
+
+            // Check of impositie bestaat, zo niet: maak aan
+            if (!$impositionService->hasImposition($order)) {
+                $result = $impositionService->createImposition($order);
+                if (!$result['success']) {
+                    return redirect()->back()->with('error', 'Impositie kon niet worden aangemaakt: ' . $result['message']);
+                }
+                $order->refresh();
             }
-            $order->refresh();
-        }
 
-        $imposedPath = $impositionService->getImposedPath($order);
-        
-        if (!$imposedPath || !file_exists($imposedPath)) {
-            abort(404, 'Geïmponeerde PDF niet gevonden');
-        }
+            $imposedPath = $impositionService->getImposedPath($order);
 
-        $filename = $order->order_number . '_INSLAG_' . pathinfo($order->pdf_original_name, PATHINFO_FILENAME) . '.pdf';
-        
-        return response()->download($imposedPath, $filename, [
-            'Content-Type' => 'application/pdf',
-        ]);
+            if (!$imposedPath || !file_exists($imposedPath)) {
+                return redirect()->back()->with('error', 'Geïmponeerde PDF niet gevonden');
+            }
+
+            $filename = $order->order_number . '_INSLAG_' . pathinfo($order->pdf_original_name, PATHINFO_FILENAME) . '.pdf';
+
+            return response()->download($imposedPath, $filename, [
+                'Content-Type' => 'application/pdf',
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Imposition download failed for {$orderNumber}: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Impositie mislukt: ' . $e->getMessage());
+        }
     }
 
     /**

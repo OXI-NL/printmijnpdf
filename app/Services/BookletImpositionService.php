@@ -64,9 +64,22 @@ class BookletImpositionService
         // Bepaal formaat
         $format = $order->format; // A4 of A5
 
+        // Check of Python beschikbaar is
+        $pythonCheck = [];
+        $pythonReturnCode = 0;
+        exec("{$this->pythonBin} --version 2>&1", $pythonCheck, $pythonReturnCode);
+        if ($pythonReturnCode !== 0) {
+            Log::error("Imposition: Python niet gevonden ({$this->pythonBin})");
+            return [
+                'success' => false,
+                'path' => null,
+                'message' => "Python ({$this->pythonBin}) niet beschikbaar op de server"
+            ];
+        }
+
         // Voer Python script uit
         $command = sprintf(
-            '%s %s %s %s --format %s --quiet 2>&1',
+            '%s %s %s %s --format %s 2>&1',
             escapeshellcmd($this->pythonBin),
             escapeshellarg($this->scriptPath),
             escapeshellarg($inputPath),
@@ -80,13 +93,15 @@ class BookletImpositionService
         $returnCode = 0;
         exec($command, $output, $returnCode);
 
+        $outputMsg = implode("\n", $output);
+        Log::info("Imposition output for {$order->order_number}: {$outputMsg}");
+
         if ($returnCode !== 0) {
-            $errorMsg = implode("\n", $output);
-            Log::error("Imposition failed for order {$order->order_number}: {$errorMsg}");
+            Log::error("Imposition failed for order {$order->order_number} (exit code {$returnCode}): {$outputMsg}");
             return [
                 'success' => false,
                 'path' => null,
-                'message' => "Script fout: {$errorMsg}"
+                'message' => "Script fout (code {$returnCode}): {$outputMsg}"
             ];
         }
 

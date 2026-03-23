@@ -124,36 +124,51 @@ def create_sheet_page(output_pdf, sheet, source_pdf, page_nums, num_pages, half_
     
     return sheet_page
 
+def get_page_content_bytes(page):
+    """Lees content bytes van een pagina, ook als Contents een array is."""
+    if page.Contents is None:
+        return b""
+    contents = page.Contents
+    if isinstance(contents, pikepdf.Array):
+        parts = []
+        for stream in contents:
+            parts.append(stream.read_bytes())
+        return b"\n".join(parts)
+    return contents.read_bytes()
+
 def place_page(output_pdf, sheet_page, source_page, name, x, y, target_w, target_h):
     """Plaats een pagina als Form XObject op de sheet."""
-    
+
     # Haal source dimensies
     mb = source_page.mediabox
     src_w = float(mb[2]) - float(mb[0])
     src_h = float(mb[3]) - float(mb[1])
-    
+
     # Bereken schaal
     scale = min(target_w / src_w, target_h / src_h) * 0.95
-    
+
     # Centreer
     scaled_w = src_w * scale
     scaled_h = src_h * scale
     x_off = x + (target_w - scaled_w) / 2
     y_off = y + (target_h - scaled_h) / 2
-    
+
     # Kopieer pagina als form xobject
-    form = output_pdf.make_stream(source_page.contents.read_bytes() if source_page.contents else b"")
+    content_bytes = get_page_content_bytes(source_page)
+    form = output_pdf.make_stream(content_bytes)
     form.stream_dict[pikepdf.Name.Type] = pikepdf.Name.XObject
     form.stream_dict[pikepdf.Name.Subtype] = pikepdf.Name.Form
     form.stream_dict[pikepdf.Name.BBox] = source_page.mediabox
-    
-    # Kopieer resources
+
+    # Kopieer resources (verplicht voor fonts/afbeeldingen)
     if '/Resources' in source_page:
         form.stream_dict[pikepdf.Name.Resources] = output_pdf.copy_foreign(source_page.Resources)
-    
+    else:
+        form.stream_dict[pikepdf.Name.Resources] = pikepdf.Dictionary()
+
     # Voeg toe aan sheet
     sheet_page.Resources.XObject[pikepdf.Name(name)] = form
-    
+
     # Update content stream
     new_content = f"q {scale:.4f} 0 0 {scale:.4f} {x_off:.2f} {y_off:.2f} cm /{name} Do Q\n"
     existing = sheet_page.Contents.read_bytes() if sheet_page.Contents else b""
