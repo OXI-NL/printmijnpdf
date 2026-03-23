@@ -69,6 +69,72 @@
     }
     </script>
 
+    <!-- FAQ Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "Hoe snel wordt mijn bestelling geleverd?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Bestel je vóór 11:00 op een werkdag? Dan is je pakket binnen 3 werkdagen in huis. Je ontvangt een track & trace code zodra we verzenden."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Welke bestandsformaten accepteren jullie?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "We accepteren alleen PDF-bestanden. Heb je een Word- of ander document? Sla het eerst op als PDF."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Kan ik mijn bestelling afhalen?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Ja! Afhalen is gratis en kan vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO, Exportweg 11, 2645ED Delfgauw."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Wat als mijn PDF meer dan 64 pagina's heeft?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Bij meer dan 64 pagina's worden uw pagina's standaard als losse pagina's geleverd. Heeft u andere wensen, zoals ringband of lijmbinding? Neem rechtstreeks contact op via info@printmijnpdf.nl."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Op welk papier wordt er geprint?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Wij printen op hoogwaardig wit papier van professionele kwaliteit. De printkwaliteit is echte drukwerkkwaliteit, vergelijkbaar met professionele magazines en brochures."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Is de print in kleur of zwart-wit?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Al ons printwerk is standaard in full colour. Uw PDF wordt geprint in CMYK, met alle kleuren, foto's en afbeeldingen in volle kwaliteit."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Kan ik mijn bestelling nog annuleren?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Neem zo snel mogelijk contact met ons op via info@printmijnpdf.nl. Is je bestelling nog niet geprint? Dan annuleren we kosteloos."
+                }
+            }
+        ]
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
