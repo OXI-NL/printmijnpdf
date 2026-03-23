@@ -77,8 +77,8 @@
             align-items: center;
         }
         .card-header h2 { font-size: 1.1rem; font-weight: 600; }
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th, td { padding: 0.75rem 0.75rem; text-align: left; overflow: hidden; text-overflow: ellipsis; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem 0.75rem; text-align: left; white-space: nowrap; }
         th {
             background: #f8f9fa;
             font-size: 12px;
@@ -98,7 +98,7 @@
         }
         .customer-name { font-weight: 500; }
         .customer-email { font-size: 13px; color: #6c757d; }
-        .file-info { font-size: 13px; }
+        .file-info { font-size: 13px; white-space: normal; }
         .file-name { 
             max-width: 200px; 
             overflow: hidden; 
@@ -147,7 +147,7 @@
             border: 1px solid #dc3545;
         }
         .btn-danger-outline:hover { background: #dc3545; color: white; }
-        .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        .actions { display: flex; gap: 6px; white-space: nowrap; }
         .btn {
             display: inline-flex;
             align-items: center;
@@ -319,13 +319,13 @@
                 <table>
                     <thead>
                         <tr>
-                            <th class="checkbox-cell" style="width:40px;"><input type="checkbox" id="selectAll" onclick="toggleAll(this)"></th>
-                            <th style="width:12%;">Bestelnr.</th>
-                            <th style="width:15%;">Klant</th>
-                            <th style="width:18%;">Bestand</th>
-                            <th style="width:7%;">Totaal</th>
-                            <th style="width:10%;">Status</th>
-                            <th style="width:8%;">Datum</th>
+                            <th class="checkbox-cell"><input type="checkbox" id="selectAll" onclick="toggleAll(this)"></th>
+                            <th>Bestelnr.</th>
+                            <th>Klant</th>
+                            <th>Bestand</th>
+                            <th>Totaal</th>
+                            <th>Status</th>
+                            <th>Datum</th>
                             <th>Acties</th>
                         </tr>
                     </thead>
