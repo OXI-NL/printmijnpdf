@@ -925,8 +925,8 @@
 
     <!-- Hero Section -->
     <section class="hero">
-        <h1>Van PDF op je scherm naar print in je hand.</h1>
-        <p class="subtext">Blader door je bestand zoals het bedoeld is – haarscherp geprint in full colour.</p>
+        <h1>Van PDF op je scherm<br>naar print in je hand.</h1>
+        <p class="subtext">Blader door je bestand zoals het bedoeld is,<br>haarscherp geprint in full colour.</p>
         
         <!-- Upload Dropzone -->
         <div class="dropzone" id="dropzone">
