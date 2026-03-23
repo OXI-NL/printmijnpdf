@@ -255,7 +255,7 @@
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                                 <tr>
                                     <td style="text-align: center; padding: 16px; background: #f8fafc; border-radius: 12px;">
-                                        <a href="{{ url('/admin') }}" style="color: #e63946; font-size: 14px; font-weight: 600; text-decoration: none;">Bekijk in admin panel &rarr;</a>
+                                        <a href="{{ route('admin.orders') }}" style="color: #e63946; font-size: 14px; font-weight: 600; text-decoration: none;">Bekijk in admin panel &rarr;</a>
                                     </td>
                                 </tr>
                             </table>
