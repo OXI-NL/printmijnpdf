@@ -121,7 +121,7 @@
         .status.delivered { background: #e2e3e5; color: #383d41; }
         .status.cancelled { background: #f8d7da; color: #721c24; }
         .status.pending { background: #ffeeba; color: #856404; }
-        .checkbox-cell { width: 40px; text-align: center; }
+        .checkbox-cell { width: 40px; text-align: center; overflow: visible; text-overflow: clip; }
         .checkbox-cell input[type="checkbox"] {
             width: 18px; height: 18px; cursor: pointer; accent-color: #e63946;
         }
@@ -407,11 +407,6 @@
                                         </svg>
                                         Pakbon
                                     </a>
-                                    <button type="button" class="btn btn-danger-outline" onclick="confirmDelete('{{ $order->order_number }}')" title="Verwijderen">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                        </svg>
-                                    </button>
                                     @if($order->status === 'paid')
                                         @if($order->delivery_type === 'pickup')
                                             <form method="POST" action="/admin/orders/{{ $order->order_number }}/ship" style="display:inline;">
