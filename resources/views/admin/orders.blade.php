@@ -446,6 +446,12 @@
                                                 </svg>
                                                 Factuur
                                             </a>
+                                            <button type="button" class="btn btn-secondary" onclick="resendInvoice('{{ $order->order_number }}', '{{ $invoice->invoice_number }}', '{{ $order->customer_email }}')" title="Factuur nogmaals mailen naar {{ $order->customer_email }}">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <line x1="22" y1="2" x2="11" y2="13"/>
+                                                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                                                </svg>
+                                            </button>
                                         @else
                                             <button type="button" class="btn btn-secondary" onclick="createInvoice('{{ $order->order_number }}')" title="Factuur aanmaken voor deze bestelling" style="border: 1px dashed #6c757d;">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -498,6 +504,10 @@
                 </form>
 
                 <form id="createInvoiceForm" method="POST" style="display:none;">
+                    @csrf
+                </form>
+
+                <form id="resendInvoiceForm" method="POST" style="display:none;">
                     @csrf
                 </form>
 
@@ -582,6 +592,15 @@
             const form = document.getElementById('createInvoiceForm');
             form.action = '/admin/orders/' + orderNumber + '/invoice';
             form.submit();
+        }
+
+        // Resend invoice email
+        function resendInvoice(orderNumber, invoiceNumber, email) {
+            if (confirm('Factuur ' + invoiceNumber + ' nogmaals versturen naar ' + email + '?')) {
+                const form = document.getElementById('resendInvoiceForm');
+                form.action = '/admin/orders/' + orderNumber + '/invoice/resend';
+                form.submit();
+            }
         }
 
         // Delete functionality

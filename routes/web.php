@@ -48,5 +48,6 @@ Route::prefix('admin')->middleware(\App\Http\Middleware\AdminAuth::class)->group
     // Facturatie
     Route::post('/orders/{orderNumber}/invoice', [AdminController::class, 'createInvoice'])->name('admin.order.invoice.create');
     Route::get('/orders/{orderNumber}/invoice', [AdminController::class, 'downloadInvoice'])->name('admin.order.invoice.download');
+    Route::post('/orders/{orderNumber}/invoice/resend', [AdminController::class, 'resendInvoice'])->name('admin.order.invoice.resend');
     Route::get('/invoices/monthly', [AdminController::class, 'monthlySummary'])->name('admin.invoices.monthly');
 });

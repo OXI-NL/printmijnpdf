@@ -257,6 +257,25 @@ class AdminController extends Controller
     }
 
     /**
+     * Verstuur factuur nogmaals per e-mail
+     */
+    public function resendInvoice(string $orderNumber)
+    {
+        $order = Order::where('order_number', $orderNumber)->firstOrFail();
+        $invoice = Invoice::where('order_id', $order->id)->firstOrFail();
+
+        try {
+            Mail::to($order->customer_email, $order->customer_name)
+                ->send(new InvoiceMail($invoice, $order));
+            Log::info("Factuur {$invoice->invoice_number} opnieuw gemaild naar {$order->customer_email}");
+            return redirect()->back()->with('success', "Factuur {$invoice->invoice_number} opnieuw verstuurd naar {$order->customer_email}.");
+        } catch (\Exception $e) {
+            Log::error("Factuur hermail mislukt voor {$orderNumber}: " . $e->getMessage());
+            return redirect()->back()->with('error', 'E-mail kon niet worden verzonden: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Download factuur PDF
      */
     public function downloadInvoice(string $orderNumber)
