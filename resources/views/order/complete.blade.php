@@ -162,7 +162,7 @@
                 </div>
                 <div class="details-row">
                     <span class="details-label">Formaat</span>
-                    <span class="details-value">{{ $order->format }} · {{ $order->page_count }} pagina's · @if($order->binding_type === 'booklet')Geniet boekje @else Losbladig ({{ $order->print_side === 'double' ? 'dubbelzijdig' : 'enkelzijdig' }})@endif</span>
+                    <span class="details-value">{{ $order->format }} · {{ $order->page_count }} pagina's · @if($order->binding_type === 'booklet')Geniet boekje @else Losbladig ({{ $order->print_side === 'double' ? 'dubbelzijdig' : 'enkelzijdig' }})@endif · {{ $order->quantity ?? 1 }} {{ ($order->quantity ?? 1) === 1 ? 'exemplaar' : 'exemplaren' }}</span>
                 </div>
                 <div class="details-row">
                     <span class="details-label">Totaal</span>

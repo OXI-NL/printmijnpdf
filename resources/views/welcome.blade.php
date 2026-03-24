@@ -532,7 +532,65 @@
         .sub-option.selected { border-color: var(--primary); background: #fff5f6; }
         
         .sub-option .title { font-size: 14px; font-weight: 500; color: var(--text); }
-        
+
+        /* ===== QUANTITY ===== */
+        .quantity-section {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+        .quantity-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            display: block;
+            margin-bottom: 8px;
+        }
+        .quantity-control {
+            display: inline-flex;
+            align-items: center;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .qty-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: var(--bg);
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            transition: background 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .qty-btn:hover:not(:disabled) { background: #e2e8f0; }
+        .qty-btn:disabled { color: #cbd5e1; cursor: not-allowed; }
+        .qty-input {
+            width: 48px;
+            height: 40px;
+            border: none;
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            background: white;
+            -moz-appearance: textfield;
+        }
+        .qty-input::-webkit-outer-spin-button,
+        .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .quantity-hint {
+            display: block;
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
         /* ===== PRICE SUMMARY ===== */
         .price-summary {
             background: var(--bg);
@@ -1201,6 +1259,16 @@
                     <div class="title">Enkelzijdig</div>
                 </div>
             </div>
+
+            <div class="quantity-section">
+                <label class="quantity-label">Aantal exemplaren</label>
+                <div class="quantity-control">
+                    <button type="button" class="qty-btn" id="qtyMinus" disabled>−</button>
+                    <input type="number" id="qtyInput" class="qty-input" value="1" min="1" readonly>
+                    <button type="button" class="qty-btn" id="qtyPlus">+</button>
+                </div>
+                <span class="quantity-hint">Extra exemplaar: €2,50 startkosten per stuk</span>
+            </div>
         </section>
 
         <!-- Section: Prijsoverzicht -->
@@ -1219,7 +1287,7 @@
                     <span id="pricePagesValue">€0,00</span>
                 </div>
                 <div class="price-row" id="priceBindingRow" style="display: none;">
-                    <span>Nieten (boekje)</span>
+                    <span id="priceBindingLabel">Nieten (boekje)</span>
                     <span id="priceBindingValue">€7,50</span>
                 </div>
                 <div class="price-row" id="priceShippingRow">
@@ -1227,8 +1295,8 @@
                     <span id="priceShippingValue">€6,75</span>
                 </div>
                 <div class="price-row subtle">
-                    <span>Incl. voorbereiding & kwaliteitscheck</span>
-                    <span>€10,00</span>
+                    <span id="priceStartupLabel">Incl. voorbereiding & kwaliteitscheck</span>
+                    <span id="priceStartupValue">€10,00</span>
                 </div>
                 <div class="price-row total">
                     <span>Totaal</span>
@@ -1431,6 +1499,7 @@
         const MAX_BOOKLET_PAGES = 64;
         const PRICES = {
             startup: 1000,
+            startupExtra: 250,
             perPageA4: 15,
             perPageA5: 10,
             binding: 750,
@@ -1446,6 +1515,7 @@
         let bindingType = 'booklet';
         let printSide = 'double';
         let deliveryType = 'shipping';
+        let quantity = 1;
 
         // DOM elements
         const dropzone = document.getElementById('dropzone');
@@ -1642,6 +1712,9 @@
             subOptions.classList.remove('visible');
             bindingType = 'booklet';
             printSide = 'double';
+            quantity = 1;
+            document.getElementById('qtyInput').value = 1;
+            document.getElementById('qtyMinus').disabled = true;
 
             mobileSticky.classList.remove('visible');
             document.body.classList.remove('has-sticky');
@@ -1649,26 +1722,34 @@
 
         function calculatePrices() {
             const pricePerPage = detectedFormat === 'A4' ? PRICES.perPageA4 : PRICES.perPageA5;
-            const pagesCost = pageCount * pricePerPage;
-            const bindingCost = bindingType === 'booklet' ? PRICES.binding : 0;
+            const pagesCost = pageCount * pricePerPage * quantity;
+            const bindingCost = (bindingType === 'booklet' ? PRICES.binding : 0) * quantity;
             const shippingCost = deliveryType === 'shipping' ? PRICES.shipping : 0;
-            const total = PRICES.startup + pagesCost + bindingCost + shippingCost;
+            const startupCost = PRICES.startup + ((quantity - 1) * PRICES.startupExtra);
+            const total = startupCost + pagesCost + bindingCost + shippingCost;
 
-            return { pagesCost, bindingCost, shippingCost, total };
+            return { pagesCost, bindingCost, shippingCost, startupCost, total };
         }
 
         function updatePriceDisplay() {
             const prices = calculatePrices();
             const pricePerPage = detectedFormat === 'A4' ? PRICES.perPageA4 : PRICES.perPageA5;
 
-            document.getElementById('pricePageLabel').textContent = 
-                `${pageCount} pagina's × ${formatPrice(pricePerPage)}`;
+            if (quantity > 1) {
+                document.getElementById('pricePageLabel').textContent =
+                    `${pageCount} pag. × ${formatPrice(pricePerPage)} × ${quantity} ex.`;
+            } else {
+                document.getElementById('pricePageLabel').textContent =
+                    `${pageCount} pagina's × ${formatPrice(pricePerPage)}`;
+            }
             document.getElementById('pricePagesValue').textContent = formatPrice(prices.pagesCost);
 
             const bindingRow = document.getElementById('priceBindingRow');
             if (bindingType === 'booklet') {
                 bindingRow.style.display = 'flex';
-                document.getElementById('priceBindingValue').textContent = formatPrice(PRICES.binding);
+                document.getElementById('priceBindingLabel').textContent =
+                    quantity > 1 ? `Nieten (boekje) × ${quantity}` : 'Nieten (boekje)';
+                document.getElementById('priceBindingValue').textContent = formatPrice(prices.bindingCost);
             } else {
                 bindingRow.style.display = 'none';
             }
@@ -1681,8 +1762,17 @@
                 document.getElementById('priceShippingValue').textContent = formatPrice(PRICES.shipping);
             }
 
+            document.getElementById('priceStartupValue').textContent = formatPrice(prices.startupCost);
+            if (quantity > 1) {
+                document.getElementById('priceStartupLabel').textContent =
+                    `Voorbereiding (1× €10,00 + ${quantity - 1}× €2,50)`;
+            } else {
+                document.getElementById('priceStartupLabel').textContent =
+                    'Incl. voorbereiding & kwaliteitscheck';
+            }
+
             document.getElementById('priceTotalValue').textContent = formatPrice(prices.total);
-            document.getElementById('payButtonText').textContent = 
+            document.getElementById('payButtonText').textContent =
                 `Afrekenen met iDEAL – ${formatPrice(prices.total)}`;
             document.getElementById('mobileTotalPrice').textContent = formatPrice(prices.total);
 
@@ -1763,6 +1853,7 @@
             formData.append('bleed_mm', bleedMM);
             formData.append('binding_type', bindingType);
             formData.append('print_side', printSide);
+            formData.append('quantity', quantity);
             formData.append('delivery_type', deliveryType);
             formData.append('name', document.getElementById('name').value);
             formData.append('email', document.getElementById('email').value);
@@ -1844,6 +1935,22 @@
             deliveryPickup.classList.remove('selected');
             pickupInfo.classList.remove('visible');
             updatePriceDisplay();
+        });
+
+        document.getElementById('qtyPlus').addEventListener('click', () => {
+            quantity++;
+            document.getElementById('qtyInput').value = quantity;
+            document.getElementById('qtyMinus').disabled = (quantity <= 1);
+            updatePriceDisplay();
+        });
+
+        document.getElementById('qtyMinus').addEventListener('click', () => {
+            if (quantity > 1) {
+                quantity--;
+                document.getElementById('qtyInput').value = quantity;
+                document.getElementById('qtyMinus').disabled = (quantity <= 1);
+                updatePriceDisplay();
+            }
         });
 
         deliveryPickup.addEventListener('click', () => {

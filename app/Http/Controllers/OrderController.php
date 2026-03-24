@@ -86,6 +86,7 @@ class OrderController extends Controller
             'bleed_mm' => 'nullable|integer',
             'binding_type' => 'required|in:booklet,loose',
             'print_side' => 'required|in:single,double',
+            'quantity' => 'required|integer|min:1',
             'delivery_type' => 'required|in:shipping,pickup',
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
@@ -109,7 +110,8 @@ class OrderController extends Controller
                 $request->input('page_count'),
                 $request->input('format'),
                 $request->input('binding_type'),
-                $request->input('delivery_type')
+                $request->input('delivery_type'),
+                $request->input('quantity')
             );
 
             // Maak order
@@ -125,6 +127,7 @@ class OrderController extends Controller
                 'bleed_mm' => $request->input('bleed_mm'),
                 'binding_type' => $request->input('binding_type'),
                 'print_side' => $request->input('print_side'),
+                'quantity' => $request->input('quantity'),
                 'price_startup' => $prices['startup'],
                 'price_pages' => $prices['pages'],
                 'price_binding' => $prices['binding'],

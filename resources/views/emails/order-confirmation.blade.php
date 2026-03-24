@@ -112,6 +112,16 @@
                                         </span>
                                     </td>
                                 </tr>
+                                @if($order->quantity > 1)
+                                <tr>
+                                    <td style="padding: 14px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                                        <span style="color: #64748b; font-size: 13px;">Aantal exemplaren</span>
+                                    </td>
+                                    <td style="padding: 14px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; text-align: right;">
+                                        <span style="color: #1e293b; font-size: 13px; font-weight: 500;">{{ $order->quantity }}</span>
+                                    </td>
+                                </tr>
+                                @endif
                                 <tr>
                                     <td style="padding: 16px; background: #1e293b;">
                                         <span style="color: white; font-size: 14px; font-weight: 600;">Totaal betaald</span>

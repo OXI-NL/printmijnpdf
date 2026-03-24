@@ -181,6 +181,14 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td style="padding: 12px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                                        <span style="color: #64748b; font-size: 13px;">Aantal exemplaren</span>
+                                    </td>
+                                    <td style="padding: 12px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; text-align: right;">
+                                        <span style="color: #1e293b; font-size: 13px; font-weight: 600;">{{ $order->quantity ?? 1 }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td style="padding: 12px 16px; background: #f8fafc;">
                                         <span style="color: #64748b; font-size: 13px;">Print</span>
                                     </td>
@@ -199,7 +207,7 @@
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
                                 <tr>
                                     <td style="padding: 10px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                                        <span style="color: #64748b; font-size: 13px;">Opstartkosten</span>
+                                        <span style="color: #64748b; font-size: 13px;">Opstartkosten{{ ($order->quantity ?? 1) > 1 ? ' ('.$order->quantity.'×)' : '' }}</span>
                                     </td>
                                     <td style="padding: 10px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; text-align: right;">
                                         <span style="color: #1e293b; font-size: 13px;">&euro; {{ number_format($order->price_startup / 100, 2, ',', '.') }}</span>
@@ -207,7 +215,7 @@
                                 </tr>
                                 <tr>
                                     <td style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0;">
-                                        <span style="color: #64748b; font-size: 13px;">{{ $order->page_count }} pagina's &times; &euro; {{ number_format($order->price_pages / $order->page_count / 100, 2, ',', '.') }}</span>
+                                        <span style="color: #64748b; font-size: 13px;">{{ $order->page_count }} pag.{{ ($order->quantity ?? 1) > 1 ? ' × '.$order->quantity.' ex.' : '' }} &times; &euro; {{ number_format($order->price_pages / $order->page_count / ($order->quantity ?? 1) / 100, 2, ',', '.') }}</span>
                                     </td>
                                     <td style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; text-align: right;">
                                         <span style="color: #1e293b; font-size: 13px;">&euro; {{ number_format($order->price_pages / 100, 2, ',', '.') }}</span>

@@ -23,6 +23,7 @@ class Order extends Model
         'bleed_mm',
         'binding_type',
         'print_side',
+        'quantity',
         'price_startup',
         'price_pages',
         'price_binding',
@@ -64,25 +65,31 @@ class Order extends Model
     /**
      * Bereken de totaalprijs
      */
-    public static function calculatePrice(int $pageCount, string $format, string $bindingType = 'booklet', string $deliveryType = 'shipping'): array
+    public static function calculatePrice(int $pageCount, string $format, string $bindingType = 'booklet', string $deliveryType = 'shipping', int $quantity = 1): array
     {
-        $pricePerPage = $format === 'A5' 
-            ? config('pricing.per_page_a5', 7) 
+        $pricePerPage = $format === 'A5'
+            ? config('pricing.per_page_a5', 7)
             : config('pricing.per_page_a4', 10);
-        
-        $startup = config('pricing.startup', 1000);
-        // Alleen inbindkosten bij boekje, niet bij losbladig
+
+        // Eerste exemplaar: volledige startkosten, extra exemplaren: €2,50 per stuk
+        $startupFirst = config('pricing.startup', 1000);
+        $startupExtra = config('pricing.startup_extra', 250);
+        $startup = $startupFirst + (($quantity - 1) * $startupExtra);
+
+        // Pagina- en inbindkosten vermenigvuldigen met aantal exemplaren
         $binding = $bindingType === 'booklet' ? config('pricing.binding', 500) : 0;
-        // Geen verzendkosten bij afhalen
+        $pages = $pageCount * $pricePerPage * $quantity;
+        $bindingTotal = $binding * $quantity;
+
+        // Verzendkosten blijven gelijk ongeacht aantal
         $shipping = $deliveryType === 'pickup' ? 0 : config('pricing.shipping', 675);
-        $pages = $pageCount * $pricePerPage;
-        
+
         return [
             'startup' => $startup,
             'pages' => $pages,
-            'binding' => $binding,
+            'binding' => $bindingTotal,
             'shipping' => $shipping,
-            'total' => $startup + $pages + $binding + $shipping,
+            'total' => $startup + $pages + $bindingTotal + $shipping,
         ];
     }
 

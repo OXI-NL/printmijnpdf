@@ -345,7 +345,7 @@
                                 <td class="file-info">
                                     <span class="file-name" title="{{ $order->pdf_original_name }}">{{ $order->pdf_original_name }}</span>
                                     <div class="file-meta">
-                                        {{ $order->format }} • {{ $order->page_count }} pag. • 
+                                        {{ $order->format }} • {{ $order->page_count }} pag. • {{ $order->quantity ?? 1 }}× •
                                         @if($order->binding_type === 'booklet')
                                             Geniet
                                         @else

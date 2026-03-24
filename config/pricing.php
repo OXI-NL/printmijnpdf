@@ -16,6 +16,7 @@ return [
 
     // Vaste kosten
     'startup' => env('PRICE_STARTUP', 1000),        // €10.00
+    'startup_extra' => env('PRICE_STARTUP_EXTRA', 250), // €2.50 per extra exemplaar
     'binding' => env('PRICE_BINDING', 750),         // €7.50
     'shipping' => env('PRICE_SHIPPING', 675),       // €6.75
 ];
