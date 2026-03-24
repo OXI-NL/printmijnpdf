@@ -447,18 +447,15 @@
                                                 Factuur
                                             </a>
                                         @else
-                                            <form method="POST" action="/admin/orders/{{ $order->order_number }}/invoice" style="display:inline;">
-                                                @csrf
-                                                <button type="submit" class="btn btn-secondary" title="Factuur aanmaken voor deze bestelling" style="border: 1px dashed #6c757d;">
-                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                                        <polyline points="14 2 14 8 20 8"/>
-                                                        <line x1="12" y1="11" x2="12" y2="17"/>
-                                                        <line x1="9" y1="14" x2="15" y2="14"/>
-                                                    </svg>
-                                                    + Factuur
-                                                </button>
-                                            </form>
+                                            <button type="button" class="btn btn-secondary" onclick="createInvoice('{{ $order->order_number }}')" title="Factuur aanmaken voor deze bestelling" style="border: 1px dashed #6c757d;">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                                    <polyline points="14 2 14 8 20 8"/>
+                                                    <line x1="12" y1="11" x2="12" y2="17"/>
+                                                    <line x1="9" y1="14" x2="15" y2="14"/>
+                                                </svg>
+                                                + Factuur
+                                            </button>
                                         @endif
                                     @endif
                                     @if($order->status === 'paid')
@@ -498,6 +495,10 @@
                 <form id="singleDeleteForm" method="POST" style="display:none;">
                     @csrf
                     @method('DELETE')
+                </form>
+
+                <form id="createInvoiceForm" method="POST" style="display:none;">
+                    @csrf
                 </form>
 
                 @if($orders->hasPages())
@@ -575,6 +576,13 @@
         document.getElementById('shipModal').addEventListener('click', function(e) {
             if (e.target === this) closeShipModal();
         });
+
+        // Invoice creation
+        function createInvoice(orderNumber) {
+            const form = document.getElementById('createInvoiceForm');
+            form.action = '/admin/orders/' + orderNumber + '/invoice';
+            form.submit();
+        }
 
         // Delete functionality
         function confirmDelete(orderNumber) {
