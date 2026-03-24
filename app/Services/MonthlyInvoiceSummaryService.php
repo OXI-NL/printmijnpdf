@@ -3,12 +3,16 @@
 namespace App\Services;
 
 use App\Models\Invoice;
+use App\Models\Order;
+use Illuminate\Support\Facades\Log;
+use Mollie\Laravel\Facades\Mollie;
 use FPDF;
 
 class MonthlyInvoiceSummaryService
 {
     /**
-     * Genereer maandelijks overzicht PDF
+     * Genereer maandelijks overzicht PDF van ALLE betaalde bestellingen
+     * (niet alleen gefactureerde — dit is voor je eigen boekhouding)
      *
      * @param int $year  Jaar (bijv. 2026)
      * @param int $month Maand (1-12)
@@ -16,10 +20,14 @@ class MonthlyInvoiceSummaryService
      */
     public static function generate(int $year, int $month): string
     {
-        $invoices = Invoice::whereYear('invoice_date', $year)
-            ->whereMonth('invoice_date', $month)
-            ->orderBy('invoice_number')
-            ->with('order')
+        $btwPercentage = config('invoice.btw_percentage', 21);
+
+        // Alle betaalde orders van deze maand (betaald, in productie, verzonden, afgeleverd)
+        $orders = Order::whereIn('status', ['paid', 'processing', 'shipped', 'delivered'])
+            ->whereYear('paid_at', $year)
+            ->whereMonth('paid_at', $month)
+            ->orderBy('paid_at')
+            ->with('invoice')
             ->get();
 
         $monthName = self::dutchMonth($month);
@@ -43,17 +51,17 @@ class MonthlyInvoiceSummaryService
 
         $pdf->SetFont('Arial', 'B', 16);
         $pdf->SetTextColor(0, 0, 0);
-        $pdf->Cell(0, 10, 'MAANDOVERZICHT FACTUREN - ' . strtoupper($periodLabel), 0, 1, 'L');
+        $pdf->Cell(0, 10, 'MAANDOVERZICHT BESTELLINGEN - ' . strtoupper($periodLabel), 0, 1, 'L');
 
         $pdf->SetDrawColor(230, 57, 70);
         $pdf->SetLineWidth(0.5);
         $pdf->Line(15, $pdf->GetY(), 282, $pdf->GetY());
         $pdf->Ln(6);
 
-        if ($invoices->isEmpty()) {
+        if ($orders->isEmpty()) {
             $pdf->SetFont('Arial', 'I', 12);
             $pdf->SetTextColor(100, 100, 100);
-            $pdf->Cell(0, 20, 'Geen facturen in deze periode.', 0, 1, 'C');
+            $pdf->Cell(0, 20, 'Geen betaalde bestellingen in deze periode.', 0, 1, 'C');
         } else {
             // === TABEL HEADER ===
             $pdf->SetFont('Arial', 'B', 8);
@@ -61,17 +69,18 @@ class MonthlyInvoiceSummaryService
             $pdf->SetTextColor(255, 255, 255);
 
             // Kolombreedtes (totaal = 267mm voor landscape A4 met 15mm marges)
-            $w = [30, 30, 50, 30, 30, 25, 25, 25, 22];
+            $w = [28, 28, 45, 28, 25, 25, 23, 23, 22, 20];
 
-            $pdf->Cell($w[0], 7, 'Factuurnr', 1, 0, 'L', true);
-            $pdf->Cell($w[1], 7, 'Bestelnr', 1, 0, 'L', true);
+            $pdf->Cell($w[0], 7, 'Bestelnr', 1, 0, 'L', true);
+            $pdf->Cell($w[1], 7, 'Factuurnr', 1, 0, 'L', true);
             $pdf->Cell($w[2], 7, 'Klant', 1, 0, 'L', true);
             $pdf->Cell($w[3], 7, 'Excl. BTW', 1, 0, 'R', true);
             $pdf->Cell($w[4], 7, 'BTW 21%', 1, 0, 'R', true);
             $pdf->Cell($w[5], 7, 'Incl. BTW', 1, 0, 'R', true);
             $pdf->Cell($w[6], 7, 'Mollie fee', 1, 0, 'R', true);
             $pdf->Cell($w[7], 7, 'Netto ontv.', 1, 0, 'R', true);
-            $pdf->Cell($w[8], 7, 'Datum', 1, 1, 'C', true);
+            $pdf->Cell($w[8], 7, 'Betaald op', 1, 0, 'C', true);
+            $pdf->Cell($w[9], 7, 'Status', 1, 1, 'C', true);
 
             // === TABEL RIJEN ===
             $pdf->SetFont('Arial', '', 8);
@@ -84,31 +93,65 @@ class MonthlyInvoiceSummaryService
             $totalMollie = 0;
             $totalNet = 0;
 
-            foreach ($invoices as $inv) {
+            foreach ($orders as $order) {
                 $pdf->SetFillColor($fill ? 245 : 255, $fill ? 245 : 255, $fill ? 245 : 255);
 
-                $customerName = $inv->customer_name;
-                if (strlen($customerName) > 28) {
-                    $customerName = substr($customerName, 0, 25) . '...';
+                // BTW terugrekenen uit inclusieve prijs
+                $inclTotal = $order->price_total;
+                $exclTotal = (int) round($inclTotal / (1 + $btwPercentage / 100));
+                $btwAmount = $inclTotal - $exclTotal;
+
+                // Mollie fee: uit invoice als beschikbaar, anders proberen op te halen
+                $mollieFee = null;
+                $netReceived = null;
+
+                if ($order->invoice) {
+                    $mollieFee = $order->invoice->mollie_fee;
+                    $netReceived = $order->invoice->net_received;
+                } elseif ($order->mollie_payment_id) {
+                    try {
+                        $payment = Mollie::api()->payments->get($order->mollie_payment_id);
+                        if (isset($payment->settlementAmount)) {
+                            $settlementCents = (int) round(floatval($payment->settlementAmount->value) * 100);
+                            $mollieFee = $inclTotal - $settlementCents;
+                            $netReceived = $settlementCents;
+                        }
+                    } catch (\Exception $e) {
+                        // Geen probleem, laat leeg
+                    }
                 }
 
-                $orderNumber = $inv->order ? $inv->order->order_number : '-';
+                $customerName = $order->customer_name;
+                if (strlen($customerName) > 25) {
+                    $customerName = substr($customerName, 0, 22) . '...';
+                }
 
-                $pdf->Cell($w[0], 6, $inv->invoice_number, 1, 0, 'L', $fill);
-                $pdf->Cell($w[1], 6, $orderNumber, 1, 0, 'L', $fill);
+                $invoiceNumber = $order->invoice ? $order->invoice->invoice_number : '-';
+
+                $statusLabel = match($order->status) {
+                    'paid' => 'Betaald',
+                    'processing' => 'Productie',
+                    'shipped' => 'Verzonden',
+                    'delivered' => 'Afgeleverd',
+                    default => $order->status,
+                };
+
+                $pdf->Cell($w[0], 6, $order->order_number, 1, 0, 'L', $fill);
+                $pdf->Cell($w[1], 6, $invoiceNumber, 1, 0, 'L', $fill);
                 $pdf->Cell($w[2], 6, $customerName, 1, 0, 'L', $fill);
-                $pdf->Cell($w[3], 6, self::formatCents($inv->amount_excl_btw), 1, 0, 'R', $fill);
-                $pdf->Cell($w[4], 6, self::formatCents($inv->amount_btw), 1, 0, 'R', $fill);
-                $pdf->Cell($w[5], 6, self::formatCents($inv->amount_incl_btw), 1, 0, 'R', $fill);
-                $pdf->Cell($w[6], 6, $inv->mollie_fee !== null ? self::formatCents($inv->mollie_fee) : '-', 1, 0, 'R', $fill);
-                $pdf->Cell($w[7], 6, $inv->net_received !== null ? self::formatCents($inv->net_received) : '-', 1, 0, 'R', $fill);
-                $pdf->Cell($w[8], 6, $inv->invoice_date->format('d-m'), 1, 1, 'C', $fill);
+                $pdf->Cell($w[3], 6, self::formatCents($exclTotal), 1, 0, 'R', $fill);
+                $pdf->Cell($w[4], 6, self::formatCents($btwAmount), 1, 0, 'R', $fill);
+                $pdf->Cell($w[5], 6, self::formatCents($inclTotal), 1, 0, 'R', $fill);
+                $pdf->Cell($w[6], 6, $mollieFee !== null ? self::formatCents($mollieFee) : '-', 1, 0, 'R', $fill);
+                $pdf->Cell($w[7], 6, $netReceived !== null ? self::formatCents($netReceived) : '-', 1, 0, 'R', $fill);
+                $pdf->Cell($w[8], 6, $order->paid_at ? $order->paid_at->format('d-m') : '-', 1, 0, 'C', $fill);
+                $pdf->Cell($w[9], 6, $statusLabel, 1, 1, 'C', $fill);
 
-                $totalExcl += $inv->amount_excl_btw;
-                $totalBtw += $inv->amount_btw;
-                $totalIncl += $inv->amount_incl_btw;
-                $totalMollie += $inv->mollie_fee ?? 0;
-                $totalNet += $inv->net_received ?? 0;
+                $totalExcl += $exclTotal;
+                $totalBtw += $btwAmount;
+                $totalIncl += $inclTotal;
+                $totalMollie += $mollieFee ?? 0;
+                $totalNet += $netReceived ?? 0;
 
                 $fill = !$fill;
             }
@@ -117,13 +160,16 @@ class MonthlyInvoiceSummaryService
             $pdf->SetFont('Arial', 'B', 9);
             $pdf->SetFillColor(230, 230, 230);
 
-            $pdf->Cell($w[0] + $w[1] + $w[2], 8, 'TOTAAL (' . $invoices->count() . ' facturen)', 1, 0, 'L', true);
+            $countLabel = $orders->count() . ' bestelling' . ($orders->count() !== 1 ? 'en' : '');
+            $invoicedCount = $orders->filter(fn($o) => $o->invoice)->count();
+
+            $pdf->Cell($w[0] + $w[1] + $w[2], 8, "TOTAAL ({$countLabel})", 1, 0, 'L', true);
             $pdf->Cell($w[3], 8, self::formatCents($totalExcl), 1, 0, 'R', true);
             $pdf->Cell($w[4], 8, self::formatCents($totalBtw), 1, 0, 'R', true);
             $pdf->Cell($w[5], 8, self::formatCents($totalIncl), 1, 0, 'R', true);
             $pdf->Cell($w[6], 8, self::formatCents($totalMollie), 1, 0, 'R', true);
             $pdf->Cell($w[7], 8, self::formatCents($totalNet), 1, 0, 'R', true);
-            $pdf->Cell($w[8], 8, '', 1, 1, 'C', true);
+            $pdf->Cell($w[8] + $w[9], 8, '', 1, 1, 'C', true);
 
             // === SAMENVATTING ===
             $pdf->Ln(10);
@@ -140,9 +186,16 @@ class MonthlyInvoiceSummaryService
             $labelW = 55;
             $valW = 35;
 
-            $pdf->Cell($labelW, 7, 'Aantal facturen:', 0, 0);
+            $pdf->Cell($labelW, 7, 'Totaal bestellingen:', 0, 0);
             $pdf->SetFont('Arial', 'B', 10);
-            $pdf->Cell($valW, 7, (string) $invoices->count(), 0, 1);
+            $pdf->Cell($valW, 7, (string) $orders->count(), 0, 1);
+
+            $pdf->SetFont('Arial', '', 10);
+            $pdf->Cell($labelW, 7, 'Waarvan gefactureerd:', 0, 0);
+            $pdf->SetFont('Arial', 'B', 10);
+            $pdf->Cell($valW, 7, (string) $invoicedCount, 0, 1);
+
+            $pdf->Ln(3);
 
             $pdf->SetFont('Arial', '', 10);
             $pdf->Cell($labelW, 7, 'Omzet excl. BTW:', 0, 0);
@@ -193,7 +246,7 @@ class MonthlyInvoiceSummaryService
     public static function filename(int $year, int $month): string
     {
         $monthName = self::dutchMonth($month);
-        return "Maandoverzicht_facturen_{$monthName}_{$year}.pdf";
+        return "Maandoverzicht_bestellingen_{$monthName}_{$year}.pdf";
     }
 
     /**
