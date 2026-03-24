@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bestelling bevestigd - PrintMijnPDF.nl</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -121,7 +122,7 @@
                 </svg>
             </div>
             <h1>Bedankt voor je bestelling!</h1>
-            <p class="subtitle">We hebben je betaling ontvangen en gaan direct aan de slag.</p>
+            <p class="subtitle">We hebben je betaling ontvangen en<br>gaan direct aan de slag.</p>
             
             @elseif($order->status === 'cancelled')
             {{-- MISLUKT --}}

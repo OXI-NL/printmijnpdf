@@ -14,6 +14,7 @@
     <meta property="og:image" content="https://printmijnpdf.nl/og-image.jpg">
     <meta property="og:locale" content="nl_NL">
     <meta property="og:site_name" content="PrintMijnPDF.nl">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="canonical" href="https://printmijnpdf.nl">
 
     <!-- Google Analytics 4 -->
@@ -1086,7 +1087,7 @@
             <button class="modal-close" id="closeContactModal">&times;</button>
             <div id="contactForm">
                 <h2>Stel je vraag</h2>
-                <p class="modal-sub">We reageren meestal binnen 24 uur. Je ontvangt een kopie per e-mail.</p>
+                <p class="modal-sub">We reageren binnen 24 uur. Je ontvangt een kopie per e-mail.</p>
                 <label for="contactName">Naam</label>
                 <input type="text" id="contactName" placeholder="Je naam" required>
                 <label for="contactEmail">E-mailadres</label>
@@ -1149,25 +1150,19 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="20 6 9 17 4 12"/>
                 </svg>
-                Full colour drukwerkkwaliteit
+                Binnen 3 werkdagen bezorgd
             </div>
             <div class="trust-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="20 6 9 17 4 12"/>
                 </svg>
-                Binnen 3 werkdagen
+                of gratis afhalen
             </div>
             <div class="trust-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="20 6 9 17 4 12"/>
                 </svg>
                 Veilig betalen
-            </div>
-            <div class="trust-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                Gratis afhalen
             </div>
         </div>
     </section>
@@ -1277,8 +1272,8 @@
         <section class="section hidden" id="sectionPrice">
             <h3 class="section-title">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="1" x2="12" y2="23"/>
-                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    <circle cx="12" cy="12" r="10"/>
+                    <text x="12" y="16.5" text-anchor="middle" font-size="14" font-weight="bold" fill="currentColor" stroke="none">€</text>
                 </svg>
                 Prijsoverzicht
             </h3>

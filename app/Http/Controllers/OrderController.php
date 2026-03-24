@@ -261,10 +261,9 @@ class OrderController extends Controller
                         'paid_at' => now(),
                     ]);
                     $order->refresh();
-                    
-                    // Stuur bevestigingsmail
-                    $this->sendConfirmationEmail($order);
-                    $this->notifyAdmin($order);
+
+                    // Emails worden via de webhook verstuurd, niet hier
+                    // (voorkomt dubbele emails bij race condition)
                     
                 } elseif ($payment->isCanceled() || $payment->isExpired() || $payment->isFailed()) {
                     // Update status als nog pending - gebruik alleen 'cancelled' (database ENUM)

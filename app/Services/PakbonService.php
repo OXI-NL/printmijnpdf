@@ -125,9 +125,7 @@ class PakbonService
 
         if ($order->binding_type === 'booklet') {
             $pdf->Cell(105, 8, 'Geniet gebrocheerd', 1, 0, 'L');
-            $pdf->Cell(25, 8, '-', 1, 0, 'C');
-            $pdf->Cell(20, 8, '-', 1, 0, 'C');
-            $pdf->Cell(20, 8, $quantity, 1, 1, 'C');
+            $pdf->Cell(65, 8, '', 1, 1, 'C');
         }
 
         $pdf->Ln(15);
