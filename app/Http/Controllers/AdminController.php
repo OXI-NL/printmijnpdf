@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\InvoiceMail;
 use App\Models\Invoice;
 use App\Models\Order;
 use App\Services\BookletImpositionService;
@@ -10,6 +11,7 @@ use App\Services\MonthlyInvoiceSummaryService;
 use App\Services\PakbonService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use FPDF;
 
@@ -236,7 +238,18 @@ class AdminController extends Controller
 
         try {
             $invoice = InvoiceService::createForOrder($order);
-            return redirect()->back()->with('success', "Factuur {$invoice->invoice_number} aangemaakt voor bestelling {$orderNumber}.");
+
+            // Stuur factuur per e-mail naar de klant
+            try {
+                Mail::to($order->customer_email, $order->customer_name)
+                    ->send(new InvoiceMail($invoice, $order));
+                Log::info("Factuur {$invoice->invoice_number} gemaild naar {$order->customer_email}");
+            } catch (\Exception $e) {
+                Log::error("Factuur e-mail mislukt voor {$orderNumber}: " . $e->getMessage());
+                return redirect()->back()->with('error', "Factuur {$invoice->invoice_number} aangemaakt, maar e-mail kon niet worden verzonden: " . $e->getMessage());
+            }
+
+            return redirect()->back()->with('success', "Factuur {$invoice->invoice_number} aangemaakt en gemaild naar {$order->customer_email}.");
         } catch (\Exception $e) {
             Log::error("Invoice creation failed for {$orderNumber}: " . $e->getMessage());
             return redirect()->back()->with('error', 'Factuur aanmaken mislukt: ' . $e->getMessage());
