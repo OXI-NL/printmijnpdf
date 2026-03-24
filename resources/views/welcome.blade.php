@@ -911,6 +911,8 @@
             .binding-options { grid-template-columns: 1fr; }
             .form-row.triple { grid-template-columns: 1fr 1fr; }
             
+            #sectionPay { display: none; }
+
             .mobile-sticky-bar {
                 position: fixed;
                 bottom: 0;
