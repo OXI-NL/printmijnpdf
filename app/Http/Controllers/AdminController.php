@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Invoice;
 use App\Models\Order;
 use App\Services\BookletImpositionService;
+use App\Services\InvoiceService;
+use App\Services\MonthlyInvoiceSummaryService;
 use App\Services\PakbonService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -218,5 +221,69 @@ class AdminController extends Controller
 
         $count = $orders->count();
         return redirect()->back()->with('success', "{$count} bestelling(en) verwijderd.");
+    }
+
+    /**
+     * Maak een factuur aan voor een order (op verzoek van klant)
+     */
+    public function createInvoice(string $orderNumber)
+    {
+        $order = Order::where('order_number', $orderNumber)->firstOrFail();
+
+        if (!$order->isPaid()) {
+            return redirect()->back()->with('error', 'Factuur kan alleen worden aangemaakt voor betaalde bestellingen.');
+        }
+
+        try {
+            $invoice = InvoiceService::createForOrder($order);
+            return redirect()->back()->with('success', "Factuur {$invoice->invoice_number} aangemaakt voor bestelling {$orderNumber}.");
+        } catch (\Exception $e) {
+            Log::error("Invoice creation failed for {$orderNumber}: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Factuur aanmaken mislukt: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download factuur PDF
+     */
+    public function downloadInvoice(string $orderNumber)
+    {
+        $order = Order::where('order_number', $orderNumber)->firstOrFail();
+        $invoice = Invoice::where('order_id', $order->id)->firstOrFail();
+
+        if (!$invoice->pdf_path || !Storage::disk('local')->exists($invoice->pdf_path)) {
+            abort(404, 'Factuur PDF niet gevonden');
+        }
+
+        $filename = 'Factuur_' . $invoice->invoice_number . '.pdf';
+
+        return Storage::disk('local')->download($invoice->pdf_path, $filename);
+    }
+
+    /**
+     * Maandelijks facturatieoverzicht (eigen administratie)
+     */
+    public function monthlySummary(Request $request)
+    {
+        $year = (int) $request->input('year', now()->year);
+        $month = (int) $request->input('month', now()->month);
+
+        // Valideer
+        if ($month < 1 || $month > 12 || $year < 2024 || $year > 2100) {
+            return redirect()->back()->with('error', 'Ongeldige maand of jaar.');
+        }
+
+        try {
+            $pdfData = MonthlyInvoiceSummaryService::generate($year, $month);
+            $filename = MonthlyInvoiceSummaryService::filename($year, $month);
+
+            return response($pdfData, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Monthly summary generation failed: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Overzicht genereren mislukt: ' . $e->getMessage());
+        }
     }
 }

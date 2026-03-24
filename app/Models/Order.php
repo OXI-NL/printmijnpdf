@@ -51,6 +51,14 @@ class Order extends Model
     ];
 
     /**
+     * Relatie naar factuur
+     */
+    public function invoice()
+    {
+        return $this->hasOne(\App\Models\Invoice::class);
+    }
+
+    /**
      * Genereer een uniek ordernummer
      */
     public static function generateOrderNumber(): string

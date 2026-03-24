@@ -298,6 +298,34 @@
             </div>
         </div>
 
+        <!-- Maandoverzicht facturen -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <h2>Maandoverzicht facturen</h2>
+                <form method="GET" action="{{ route('admin.invoices.monthly') }}" target="_blank" style="display: flex; gap: 10px; align-items: center;">
+                    <select name="month" style="padding: 6px 10px; border: 2px solid #e9ecef; border-radius: 8px; font-family: inherit; font-size: 14px;">
+                        @foreach(['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'] as $i => $maand)
+                            <option value="{{ $i + 1 }}" {{ (int)now()->month === $i + 1 ? 'selected' : '' }}>{{ ucfirst($maand) }}</option>
+                        @endforeach
+                    </select>
+                    <select name="year" style="padding: 6px 10px; border: 2px solid #e9ecef; border-radius: 8px; font-family: inherit; font-size: 14px;">
+                        @for($y = now()->year; $y >= 2024; $y--)
+                            <option value="{{ $y }}">{{ $y }}</option>
+                        @endfor
+                    </select>
+                    <button type="submit" class="btn btn-primary">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                        </svg>
+                        Overzicht genereren
+                    </button>
+                </form>
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-header">
                 <h2>Alle bestellingen</h2>
@@ -407,6 +435,32 @@
                                         </svg>
                                         Pakbon
                                     </a>
+                                    @if($order->isPaid())
+                                        @php $invoice = \App\Models\Invoice::where('order_id', $order->id)->first(); @endphp
+                                        @if($invoice)
+                                            <a href="/admin/orders/{{ $order->order_number }}/invoice" class="btn btn-secondary" target="_blank" title="Download factuur {{ $invoice->invoice_number }}">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                                    <polyline points="14 2 14 8 20 8"/>
+                                                    <line x1="9" y1="15" x2="15" y2="15"/>
+                                                </svg>
+                                                Factuur
+                                            </a>
+                                        @else
+                                            <form method="POST" action="/admin/orders/{{ $order->order_number }}/invoice" style="display:inline;">
+                                                @csrf
+                                                <button type="submit" class="btn btn-secondary" title="Factuur aanmaken voor deze bestelling" style="border: 1px dashed #6c757d;">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                                        <polyline points="14 2 14 8 20 8"/>
+                                                        <line x1="12" y1="11" x2="12" y2="17"/>
+                                                        <line x1="9" y1="14" x2="15" y2="14"/>
+                                                    </svg>
+                                                    + Factuur
+                                                </button>
+                                            </form>
+                                        @endif
+                                    @endif
                                     @if($order->status === 'paid')
                                         @if($order->delivery_type === 'pickup')
                                             <form method="POST" action="/admin/orders/{{ $order->order_number }}/ship" style="display:inline;">
