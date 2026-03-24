@@ -422,7 +422,7 @@
                                                 </button>
                                             </form>
                                         @else
-                                            <button class="btn btn-success" onclick="openShipModal('{{ $order->order_number }}')" title="Markeer als verzonden">
+                                            <button type="button" class="btn btn-success" onclick="openShipModal('{{ $order->order_number }}')" title="Markeer als verzonden">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <rect x="1" y="3" width="15" height="13"/>
                                                     <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
