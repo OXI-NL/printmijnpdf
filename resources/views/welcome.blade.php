@@ -97,7 +97,7 @@
                 "name": "Welke afmetingen worden ondersteund?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Alle PDF's worden automatisch herkend als A4 of A5. Dit zijn de formaten waarop wij boekjes en losbladige prints maken. Bij boekjes wordt A4 opengeslagen op A3-formaat geprint, en A5 opengeslagen op A4-formaat."
+                    "text": "PDF-bestanden worden bij ons automatisch herkend als A4 of A5, tenzij het originele bestand een afwijkend formaat heeft. In dat geval raden we je aan even contact met ons op te nemen. A4 en A5 zijn de standaardformaten die we gebruiken voor zowel boekjes als losbladige prints. Voor boekjes geldt: A4 wordt verwerkt als liggend A3 (opengeslagen), A5 wordt verwerkt als liggend A4 (opengeslagen). Laat het gerust weten als je vragen hebt of als je bestand afwijkt van deze formaten."
                 }
             },
             {
@@ -1426,7 +1426,13 @@
 
         <details>
             <summary>Welke afmetingen worden ondersteund?</summary>
-            <p>Alle PDF's worden automatisch herkend als A4 of A5. Dit zijn de formaten waarop wij boekjes en losbladige prints maken. Bij boekjes wordt A4 opengeslagen op A3-formaat geprint, en A5 opengeslagen op A4-formaat.</p>
+            <p>PDF-bestanden worden bij ons automatisch herkend als A4 of A5, tenzij het originele bestand een afwijkend formaat heeft. In dat geval raden we je aan even <a href="mailto:info@printmijnpdf.nl" style="color: var(--primary); text-decoration: none; font-weight: 500;">contact met ons op te nemen</a>.</p>
+            <p>A4 en A5 zijn de standaardformaten die we gebruiken voor zowel boekjes als losbladige prints. Voor boekjes geldt:</p>
+            <ul style="margin: 0.5rem 0 0.5rem 1.5rem;">
+                <li>A4 wordt verwerkt als liggend A3 (opengeslagen)</li>
+                <li>A5 wordt verwerkt als liggend A4 (opengeslagen)</li>
+            </ul>
+            <p>Laat het gerust weten als je vragen hebt of als je bestand afwijkt van deze formaten.</p>
         </details>
         
         <details>
