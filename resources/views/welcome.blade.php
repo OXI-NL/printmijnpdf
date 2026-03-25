@@ -94,6 +94,14 @@
             },
             {
                 "@type": "Question",
+                "name": "Welke afmetingen worden ondersteund?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Alle PDF's worden automatisch herkend als A4 of A5. Dit zijn de formaten waarop wij boekjes en losbladige prints maken. Bij boekjes wordt A4 opengeslagen op A3-formaat geprint, en A5 opengeslagen op A4-formaat."
+                }
+            },
+            {
+                "@type": "Question",
                 "name": "Kan ik mijn bestelling afhalen?",
                 "acceptedAnswer": {
                     "@type": "Answer",
@@ -1414,6 +1422,11 @@
         <details>
             <summary>Welke bestandsformaten accepteren jullie?</summary>
             <p>We accepteren alleen PDF-bestanden. Heb je een Word- of ander document? Sla het eerst op als PDF.</p>
+        </details>
+
+        <details>
+            <summary>Welke afmetingen worden ondersteund?</summary>
+            <p>Alle PDF's worden automatisch herkend als A4 of A5. Dit zijn de formaten waarop wij boekjes en losbladige prints maken. Bij boekjes wordt A4 opengeslagen op A3-formaat geprint, en A5 opengeslagen op A4-formaat.</p>
         </details>
         
         <details>
