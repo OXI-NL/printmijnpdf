@@ -1072,6 +1072,54 @@
             font-size: 14px;
             color: var(--text-muted);
         }
+        .modal-warning-icon {
+            width: 48px;
+            height: 48px;
+            color: #f59e0b;
+            margin: 0 auto 0.75rem;
+        }
+        .modal-box .modal-sub-warning {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 1.25rem;
+            line-height: 1.5;
+        }
+        .modal-box .field-error {
+            color: #dc2626;
+            font-size: 12px;
+            margin-top: -0.75rem;
+            margin-bottom: 0.75rem;
+            display: none;
+        }
+        .modal-box input.input-error {
+            border-color: #dc2626;
+        }
+        .custom-format-upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .custom-format-upload-area:hover {
+            border-color: var(--primary);
+            background: #fef2f2;
+        }
+        .custom-format-upload-area.has-file {
+            border-color: #16a34a;
+            background: #f0fdf4;
+        }
+        .custom-format-upload-area p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .custom-format-upload-area .file-name {
+            color: var(--text);
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -1111,6 +1159,51 @@
                 </svg>
                 <h3>Verstuurd!</h3>
                 <p>Bedankt voor je bericht. We reageren zo snel mogelijk. Je ontvangt een kopie per e-mail.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Format Modal -->
+    <div class="modal-overlay" id="customFormatModal">
+        <div class="modal-box">
+            <button class="modal-close" id="closeCustomFormatModal">&times;</button>
+            <div id="customFormatForm">
+                <div class="modal-warning-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                </div>
+                <h2 style="text-align:center">Afwijkend formaat</h2>
+                <p class="modal-sub-warning" style="text-align:center">
+                    Dit bestand heeft een formaat dat niet via onze standaard workflow verwerkt kan worden.<br>
+                    Stuur je bestand via dit formulier. We kijken ernaar en nemen contact met je op.
+                </p>
+                <label for="cfName">Naam *</label>
+                <input type="text" id="cfName" placeholder="Je naam" required>
+                <p class="field-error" id="cfNameError">Vul je naam in.</p>
+                <label for="cfEmail">E-mailadres *</label>
+                <input type="email" id="cfEmail" placeholder="je@email.nl" required>
+                <p class="field-error" id="cfEmailError">Vul een geldig e-mailadres in.</p>
+                <label for="cfPhone">Telefoonnummer *</label>
+                <input type="tel" id="cfPhone" placeholder="06-12345678" required>
+                <p class="field-error" id="cfPhoneError">Vul je telefoonnummer in.</p>
+                <label>Bestand *</label>
+                <div class="custom-format-upload-area" id="cfUploadArea">
+                    <input type="file" accept=".pdf,application/pdf" id="cfFileInput" style="display:none">
+                    <p id="cfUploadText">Klik om je PDF te selecteren</p>
+                </div>
+                <p class="field-error" id="cfFileError">Upload je PDF-bestand.</p>
+                <button type="button" class="btn btn-primary" id="cfSubmit" style="width:100%">Verstuur aanvraag</button>
+            </div>
+            <div id="customFormatSuccess" class="modal-success" style="display:none">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <h3>Aanvraag verstuurd!</h3>
+                <p>Bedankt. We bekijken je bestand en nemen zo snel mogelijk contact met je op. Je ontvangt een bevestiging per e-mail.</p>
             </div>
         </div>
     </div>
@@ -1639,6 +1732,13 @@
 
                 const data = await response.json();
 
+                if (data.format_rejected) {
+                    clearInterval(progressInterval);
+                    resetUpload();
+                    openCustomFormatModal(file);
+                    return;
+                }
+
                 if (!data.success) {
                     throw new Error(data.message || 'Er ging iets mis bij het analyseren');
                 }
@@ -1986,6 +2086,124 @@
             }
         }, { threshold: 0.3 });
         addressObserver.observe(addressSection);
+
+        // Custom Format modal
+        const cfModal = document.getElementById('customFormatModal');
+        const cfFormDiv = document.getElementById('customFormatForm');
+        const cfSuccessDiv = document.getElementById('customFormatSuccess');
+        const cfUploadArea = document.getElementById('cfUploadArea');
+        const cfFileInput = document.getElementById('cfFileInput');
+        let cfFile = null;
+
+        function openCustomFormatModal(file) {
+            cfFormDiv.style.display = '';
+            cfSuccessDiv.style.display = 'none';
+            // Pre-load het afgewezen bestand
+            if (file) {
+                cfFile = file;
+                document.getElementById('cfUploadText').innerHTML = '<span class="file-name">' + file.name + '</span>';
+                cfUploadArea.classList.add('has-file');
+            }
+            cfModal.classList.add('visible');
+        }
+
+        document.getElementById('closeCustomFormatModal').addEventListener('click', () => {
+            cfModal.classList.remove('visible');
+        });
+
+        cfModal.addEventListener('click', (e) => {
+            if (e.target === cfModal) cfModal.classList.remove('visible');
+        });
+
+        cfUploadArea.addEventListener('click', () => cfFileInput.click());
+
+        cfFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                cfFile = file;
+                document.getElementById('cfUploadText').innerHTML = '<span class="file-name">' + file.name + '</span>';
+                cfUploadArea.classList.add('has-file');
+                document.getElementById('cfFileError').style.display = 'none';
+            }
+        });
+
+        document.getElementById('cfSubmit').addEventListener('click', async () => {
+            const name = document.getElementById('cfName').value.trim();
+            const email = document.getElementById('cfEmail').value.trim();
+            const phone = document.getElementById('cfPhone').value.trim();
+            let hasErrors = false;
+
+            // Reset errors
+            ['cfNameError','cfEmailError','cfPhoneError','cfFileError'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+            ['cfName','cfEmail','cfPhone'].forEach(id => {
+                document.getElementById(id).classList.remove('input-error');
+            });
+
+            if (!name) {
+                document.getElementById('cfNameError').style.display = 'block';
+                document.getElementById('cfName').classList.add('input-error');
+                hasErrors = true;
+            }
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                document.getElementById('cfEmailError').style.display = 'block';
+                document.getElementById('cfEmail').classList.add('input-error');
+                hasErrors = true;
+            }
+            if (!phone) {
+                document.getElementById('cfPhoneError').style.display = 'block';
+                document.getElementById('cfPhone').classList.add('input-error');
+                hasErrors = true;
+            }
+            if (!cfFile) {
+                document.getElementById('cfFileError').style.display = 'block';
+                hasErrors = true;
+            }
+
+            if (hasErrors) return;
+
+            const btn = document.getElementById('cfSubmit');
+            btn.disabled = true;
+            btn.textContent = 'Versturen...';
+
+            try {
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('email', email);
+                formData.append('phone', phone);
+                formData.append('pdf', cfFile);
+
+                const res = await fetch('/api/contact/custom-format', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrfToken },
+                    body: formData,
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    if (data.errors) {
+                        // Server-side validatie fouten
+                        if (data.errors.name) { document.getElementById('cfNameError').textContent = data.errors.name[0]; document.getElementById('cfNameError').style.display = 'block'; }
+                        if (data.errors.email) { document.getElementById('cfEmailError').textContent = data.errors.email[0]; document.getElementById('cfEmailError').style.display = 'block'; }
+                        if (data.errors.phone) { document.getElementById('cfPhoneError').textContent = data.errors.phone[0]; document.getElementById('cfPhoneError').style.display = 'block'; }
+                        if (data.errors.pdf) { document.getElementById('cfFileError').textContent = data.errors.pdf[0]; document.getElementById('cfFileError').style.display = 'block'; }
+                        btn.disabled = false;
+                        btn.textContent = 'Verstuur aanvraag';
+                        return;
+                    }
+                    throw new Error(data.message || 'Er ging iets mis');
+                }
+
+                cfFormDiv.style.display = 'none';
+                cfSuccessDiv.style.display = '';
+            } catch (err) {
+                btn.disabled = false;
+                btn.textContent = 'Verstuur aanvraag';
+                alert('Er ging iets mis. Probeer het opnieuw of mail naar info@printmijnpdf.nl');
+            }
+        });
 
         // Contact modal
         const contactModal = document.getElementById('contactModal');

@@ -8,6 +8,7 @@ use App\Mail\OrderShipped;
 use App\Mail\PaymentFailed;
 use App\Models\Order;
 use App\Services\BookletImpositionService;
+use App\Services\PdfFormatValidator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -37,7 +38,7 @@ class OrderController extends Controller
         try {
             $pdf = $request->file('pdf');
             $content = file_get_contents($pdf->getRealPath());
-            
+
             // Tel paginas
             $pageCount = preg_match_all("/\/Page\W/", $content, $matches);
             if ($pageCount === 0) {
@@ -46,16 +47,22 @@ class OrderController extends Controller
             }
             if ($pageCount === 0) $pageCount = 1;
 
-            // Detecteer formaat (standaard A4)
-            $format = 'A4';
-            if (preg_match('/\/MediaBox\s*\[\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\]/', $content, $matches)) {
-                $width = floatval($matches[3]) - floatval($matches[1]);
-                $height = floatval($matches[4]) - floatval($matches[2]);
-                if ($width < $height) {
-                    list($width, $height) = [$height, $width];
-                }
-                if ($width < 500) $format = 'A5';
+            // Valideer formaat via PdfFormatValidator (TrimBox > CropBox > BleedBox > MediaBox)
+            $validator = new PdfFormatValidator();
+            $formatResult = $validator->validate($pdf->getRealPath());
+
+            if (!$formatResult['valid']) {
+                return response()->json([
+                    'success' => false,
+                    'format_rejected' => true,
+                    'message' => $formatResult['reason'] ?? 'Dit bestand heeft een afwijkend formaat.',
+                    'detected_width_mm' => $formatResult['detected_width_mm'],
+                    'detected_height_mm' => $formatResult['detected_height_mm'],
+                    'box_used' => $formatResult['box_used'],
+                ], 422);
             }
+
+            $format = $formatResult['format'];
 
             return response()->json([
                 'success' => true,

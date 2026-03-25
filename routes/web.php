@@ -21,6 +21,7 @@ Route::post('/api/order', [OrderController::class, 'store'])->name('api.order');
 
 // Contactformulier
 Route::post('/api/contact', [ContactController::class, 'send'])->name('api.contact');
+Route::post('/api/contact/custom-format', [ContactController::class, 'sendCustomFormat'])->name('api.contact.custom-format');
 
 // Mollie webhook (CSRF uitgezonderd in bootstrap/app.php)
 Route::post('/webhook/mollie', [OrderController::class, 'webhook'])->name('webhook.mollie');
