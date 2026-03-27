@@ -637,7 +637,90 @@
             align-items: center;
             gap: 6px;
         }
-        
+
+        .price-row.discount {
+            color: #16a34a;
+            font-weight: 500;
+        }
+
+        /* ===== PROMO CODE ===== */
+        .promo-banner {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .promo-banner-title {
+            font-weight: 700;
+            font-size: 16px;
+            color: #15803d;
+            margin-bottom: 4px;
+        }
+        .promo-banner-text {
+            font-size: 13px;
+            color: #166534;
+            line-height: 1.5;
+        }
+        .promo-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+        .promo-input-row {
+            display: flex;
+            gap: 8px;
+        }
+        .promo-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        .promo-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .promo-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary);
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .promo-btn:hover { opacity: 0.9; }
+        .promo-msg {
+            font-size: 13px;
+            margin-top: 6px;
+        }
+        .promo-msg.success { color: #16a34a; }
+        .promo-msg.error { color: #dc2626; }
+        .promo-active {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            color: #15803d;
+        }
+        .promo-remove {
+            background: none;
+            border: none;
+            color: #dc2626;
+            cursor: pointer;
+            font-size: 13px;
+            text-decoration: underline;
+        }
+
         /* ===== FORM ===== */
         .form-row {
             display: grid;
@@ -1212,7 +1295,15 @@
     <section class="hero">
         <h1>Van PDF op je scherm<br>naar print in je hand.</h1>
         <p class="subtext">Blader door je bestand zoals het bedoeld is,<br>haarscherp geprint in full colour.</p>
-        
+
+        <div class="promo-banner">
+            <div class="promo-banner-title">Introductieaanbieding</div>
+            <div class="promo-banner-text">
+                Gebruik code <strong>PMP NIEUW</strong> en ontvang 25% korting<br>
+                op afdrukken, startkosten en afwerking
+            </div>
+        </div>
+
         <!-- Upload Dropzone -->
         <div class="dropzone" id="dropzone">
             <input type="file" accept=".pdf,application/pdf" class="file-input" id="fileInput">
@@ -1359,7 +1450,7 @@
                     <input type="number" id="qtyInput" class="qty-input" value="1" min="1" readonly>
                     <button type="button" class="qty-btn" id="qtyPlus">+</button>
                 </div>
-                <span class="quantity-hint">Extra exemplaar: €2,50 startkosten per stuk</span>
+                <span class="quantity-hint">Elk extra exemplaar wordt mee gedrukt</span>
             </div>
         </section>
 
@@ -1390,11 +1481,30 @@
                     <span id="priceStartupLabel">Incl. voorbereiding & kwaliteitscheck</span>
                     <span id="priceStartupValue">€10,00</span>
                 </div>
+                <div class="price-row discount" id="priceDiscountRow" style="display: none;">
+                    <span id="priceDiscountLabel">Korting (25%)</span>
+                    <span id="priceDiscountValue">-€0,00</span>
+                </div>
                 <div class="price-row total">
                     <span>Totaal</span>
                     <span id="priceTotalValue">€0,00</span>
                 </div>
             </div>
+
+            <div class="promo-section" id="promoSection">
+                <div id="promoInputArea">
+                    <div class="promo-input-row">
+                        <input type="text" class="promo-input" id="promoInput" placeholder="Kortingscode">
+                        <button type="button" class="promo-btn" id="promoApplyBtn">Toepassen</button>
+                    </div>
+                    <div class="promo-msg" id="promoMsg"></div>
+                </div>
+                <div class="promo-active" id="promoActive" style="display: none;">
+                    <span id="promoActiveText"></span>
+                    <button type="button" class="promo-remove" id="promoRemoveBtn">Verwijderen</button>
+                </div>
+            </div>
+
             <p class="price-note">💡 Geen verborgen kosten. Prijs inclusief BTW.</p>
         </section>
 
@@ -1602,11 +1712,14 @@
         const MAX_BOOKLET_PAGES = 64;
         const PRICES = {
             startup: 1000,
-            startupExtra: 250,
             perPageA4: 15,
             perPageA5: 10,
             binding: 750,
             shipping: 675
+        };
+
+        const PROMO_CODES = {
+            'PMPNIEUW': { discountPercent: 25, appliesTo: ['pages', 'startup', 'binding'] }
         };
 
         // State
@@ -1619,6 +1732,7 @@
         let printSide = 'double';
         let deliveryType = 'shipping';
         let quantity = 1;
+        let activePromo = null;
 
         // DOM elements
         const dropzone = document.getElementById('dropzone');
@@ -1832,13 +1946,22 @@
 
         function calculatePrices() {
             const pricePerPage = detectedFormat === 'A4' ? PRICES.perPageA4 : PRICES.perPageA5;
-            const pagesCost = pageCount * pricePerPage * quantity;
-            const bindingCost = (bindingType === 'booklet' ? PRICES.binding : 0) * quantity;
+            let pagesCost = pageCount * pricePerPage * quantity;
+            let bindingCost = (bindingType === 'booklet' ? PRICES.binding : 0) * quantity;
             const shippingCost = deliveryType === 'shipping' ? PRICES.shipping : 0;
-            const startupCost = PRICES.startup + ((quantity - 1) * PRICES.startupExtra);
-            const total = startupCost + pagesCost + bindingCost + shippingCost;
+            let startupCost = PRICES.startup;
 
-            return { pagesCost, bindingCost, shippingCost, startupCost, total };
+            let discount = 0;
+            if (activePromo) {
+                const pct = activePromo.discountPercent / 100;
+                if (activePromo.appliesTo.includes('pages')) discount += Math.round(pagesCost * pct);
+                if (activePromo.appliesTo.includes('startup')) discount += Math.round(startupCost * pct);
+                if (activePromo.appliesTo.includes('binding')) discount += Math.round(bindingCost * pct);
+            }
+
+            const total = startupCost + pagesCost + bindingCost + shippingCost - discount;
+
+            return { pagesCost, bindingCost, shippingCost, startupCost, discount, total };
         }
 
         function updatePriceDisplay() {
@@ -1873,12 +1996,15 @@
             }
 
             document.getElementById('priceStartupValue').textContent = formatPrice(prices.startupCost);
-            if (quantity > 1) {
-                document.getElementById('priceStartupLabel').textContent =
-                    `Voorbereiding (1× €10,00 + ${quantity - 1}× €2,50)`;
+            document.getElementById('priceStartupLabel').textContent = 'Incl. voorbereiding & kwaliteitscheck';
+
+            const discountRow = document.getElementById('priceDiscountRow');
+            if (prices.discount > 0) {
+                discountRow.style.display = 'flex';
+                document.getElementById('priceDiscountLabel').textContent = `Korting (${activePromo.discountPercent}%)`;
+                document.getElementById('priceDiscountValue').textContent = `-${formatPrice(prices.discount)}`;
             } else {
-                document.getElementById('priceStartupLabel').textContent =
-                    'Incl. voorbereiding & kwaliteitscheck';
+                discountRow.style.display = 'none';
             }
 
             document.getElementById('priceTotalValue').textContent = formatPrice(prices.total);
@@ -1965,6 +2091,7 @@
             formData.append('print_side', printSide);
             formData.append('quantity', quantity);
             formData.append('delivery_type', deliveryType);
+            if (activePromo) formData.append('promo_code', document.getElementById('promoInput').value.toUpperCase().replace(/\s+/g, ''));
             formData.append('name', document.getElementById('name').value);
             formData.append('email', document.getElementById('email').value);
             formData.append('phone', document.getElementById('phone').value);
@@ -2074,6 +2201,39 @@
         document.querySelectorAll('#sectionAddress input').forEach(input => {
             input.addEventListener('blur', () => validateField(input));
             input.addEventListener('input', () => validateForm());
+        });
+
+        // Promo code
+        document.getElementById('promoApplyBtn').addEventListener('click', () => {
+            const code = document.getElementById('promoInput').value.toUpperCase().replace(/\s+/g, '');
+            const msg = document.getElementById('promoMsg');
+            if (PROMO_CODES[code]) {
+                activePromo = PROMO_CODES[code];
+                msg.textContent = '';
+                msg.className = 'promo-msg';
+                document.getElementById('promoInputArea').style.display = 'none';
+                document.getElementById('promoActive').style.display = 'flex';
+                document.getElementById('promoActiveText').textContent = `${code} – ${activePromo.discountPercent}% korting toegepast`;
+                updatePriceDisplay();
+            } else {
+                msg.textContent = 'Ongeldige kortingscode';
+                msg.className = 'promo-msg error';
+                activePromo = null;
+                updatePriceDisplay();
+            }
+        });
+
+        document.getElementById('promoInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') document.getElementById('promoApplyBtn').click();
+        });
+
+        document.getElementById('promoRemoveBtn').addEventListener('click', () => {
+            activePromo = null;
+            document.getElementById('promoInput').value = '';
+            document.getElementById('promoInputArea').style.display = 'block';
+            document.getElementById('promoActive').style.display = 'none';
+            document.getElementById('promoMsg').textContent = '';
+            updatePriceDisplay();
         });
 
         payButton.addEventListener('click', submitOrder);

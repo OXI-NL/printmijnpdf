@@ -103,6 +103,7 @@ class OrderController extends Controller
             'addition' => 'nullable|string|max:20',
             'postcode' => 'required|string|regex:/^\d{4}\s?[A-Za-z]{2}$/',
             'city' => 'required|string|max:255',
+            'promo_code' => 'nullable|string|max:50',
         ]);
 
         try {
@@ -112,13 +113,24 @@ class OrderController extends Controller
             $storedName = time() . '_' . uniqid() . '.pdf';
             $path = $pdf->storeAs('pdfs', $storedName, 'local');
 
+            // Valideer kortingscode
+            $promoCode = $request->input('promo_code') ? strtoupper(str_replace(' ', '', $request->input('promo_code'))) : null;
+            if ($promoCode) {
+                $promoCodes = config('pricing.promo_codes', []);
+                $promo = $promoCodes[$promoCode] ?? null;
+                if (!$promo || !($promo['active'] ?? false)) {
+                    $promoCode = null; // Ongeldige of inactieve code negeren
+                }
+            }
+
             // Bereken prijzen (binding_type en delivery_type bepalen kosten)
             $prices = Order::calculatePrice(
                 $request->input('page_count'),
                 $request->input('format'),
                 $request->input('binding_type'),
                 $request->input('delivery_type'),
-                $request->input('quantity')
+                $request->input('quantity'),
+                $promoCode
             );
 
             // Maak order
@@ -135,10 +147,12 @@ class OrderController extends Controller
                 'binding_type' => $request->input('binding_type'),
                 'print_side' => $request->input('print_side'),
                 'quantity' => $request->input('quantity'),
+                'promo_code' => $promoCode,
                 'price_startup' => $prices['startup'],
                 'price_pages' => $prices['pages'],
                 'price_binding' => $prices['binding'],
                 'price_shipping' => $prices['shipping'],
+                'price_discount' => $prices['discount'],
                 'price_total' => $prices['total'],
                 'customer_name' => $request->input('name'),
                 'customer_email' => $request->input('email'),

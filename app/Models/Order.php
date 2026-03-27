@@ -24,10 +24,12 @@ class Order extends Model
         'binding_type',
         'print_side',
         'quantity',
+        'promo_code',
         'price_startup',
         'price_pages',
         'price_binding',
         'price_shipping',
+        'price_discount',
         'price_total',
         'customer_name',
         'customer_email',
@@ -73,16 +75,13 @@ class Order extends Model
     /**
      * Bereken de totaalprijs
      */
-    public static function calculatePrice(int $pageCount, string $format, string $bindingType = 'booklet', string $deliveryType = 'shipping', int $quantity = 1): array
+    public static function calculatePrice(int $pageCount, string $format, string $bindingType = 'booklet', string $deliveryType = 'shipping', int $quantity = 1, ?string $promoCode = null): array
     {
         $pricePerPage = $format === 'A5'
             ? config('pricing.per_page_a5', 7)
             : config('pricing.per_page_a4', 10);
 
-        // Eerste exemplaar: volledige startkosten, extra exemplaren: €2,50 per stuk
-        $startupFirst = config('pricing.startup', 1000);
-        $startupExtra = config('pricing.startup_extra', 250);
-        $startup = $startupFirst + (($quantity - 1) * $startupExtra);
+        $startup = config('pricing.startup', 1000);
 
         // Pagina- en inbindkosten vermenigvuldigen met aantal exemplaren
         $binding = $bindingType === 'booklet' ? config('pricing.binding', 500) : 0;
@@ -92,12 +91,27 @@ class Order extends Model
         // Verzendkosten blijven gelijk ongeacht aantal
         $shipping = $deliveryType === 'pickup' ? 0 : config('pricing.shipping', 675);
 
+        // Kortingscode toepassen
+        $discount = 0;
+        if ($promoCode) {
+            $promoCodes = config('pricing.promo_codes', []);
+            $promo = $promoCodes[$promoCode] ?? null;
+            if ($promo && ($promo['active'] ?? false)) {
+                $pct = $promo['discount_percent'] / 100;
+                $appliesTo = $promo['applies_to'] ?? [];
+                if (in_array('pages', $appliesTo)) $discount += (int) round($pages * $pct);
+                if (in_array('startup', $appliesTo)) $discount += (int) round($startup * $pct);
+                if (in_array('binding', $appliesTo)) $discount += (int) round($bindingTotal * $pct);
+            }
+        }
+
         return [
             'startup' => $startup,
             'pages' => $pages,
             'binding' => $bindingTotal,
             'shipping' => $shipping,
-            'total' => $startup + $pages + $bindingTotal + $shipping,
+            'discount' => $discount,
+            'total' => $startup + $pages + $bindingTotal + $shipping - $discount,
         ];
     }
 

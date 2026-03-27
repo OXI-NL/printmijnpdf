@@ -245,6 +245,16 @@
                                         </span>
                                     </td>
                                 </tr>
+                                @if(($order->price_discount ?? 0) > 0)
+                                <tr>
+                                    <td style="padding: 10px 16px; background: #f0fdf4; border-bottom: 1px solid #e2e8f0;">
+                                        <span style="color: #16a34a; font-size: 13px;">Korting ({{ $order->promo_code }})</span>
+                                    </td>
+                                    <td style="padding: 10px 16px; background: #f0fdf4; border-bottom: 1px solid #e2e8f0; text-align: right;">
+                                        <span style="color: #16a34a; font-size: 13px;">-&euro; {{ number_format($order->price_discount / 100, 2, ',', '.') }}</span>
+                                    </td>
+                                </tr>
+                                @endif
                                 <tr>
                                     <td style="padding: 14px 16px; background: #1e293b;">
                                         <span style="color: white; font-size: 15px; font-weight: 700;">Totaal (incl. BTW)</span>
