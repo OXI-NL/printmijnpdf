@@ -160,7 +160,7 @@ class PdfFormatValidator
             $dimensions = $this->extractBox($pageContent, $boxName);
 
             // Als de box niet direct op de pagina staat, zoek in het parent Pages-object
-            if ($dimensions === null && $boxName === 'MediaBox') {
+            if ($dimensions === null) {
                 $dimensions = $this->extractBoxFromParent($pageContent, $fullContent, $boxName);
             }
 
@@ -185,7 +185,7 @@ class PdfFormatValidator
             if ($width > $height) {
                 // Liggend formaat → niet toegestaan
                 $format = $this->matchFormat($height, $width);
-                return [$this->rejectIfLandscape($format), $boxName, $width, $height];
+                return [null, $boxName, $width, $height];
             }
 
             $format = $this->matchFormat($width, $height);
@@ -264,15 +264,6 @@ class PdfFormatValidator
             }
         }
 
-        return null;
-    }
-
-    /**
-     * Liggend formaat is niet toegestaan, zelfs als de afmetingen A4/A5 matchen.
-     */
-    private function rejectIfLandscape(?string $format): ?string
-    {
-        // Retourneer null om aan te geven dat het formaat niet is toegestaan
         return null;
     }
 
