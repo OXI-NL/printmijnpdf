@@ -84,9 +84,16 @@ class Order extends Model
         $startup = config('pricing.startup', 1000);
 
         // Pagina- en inbindkosten vermenigvuldigen met aantal exemplaren
-        $binding = $bindingType === 'booklet' ? config('pricing.binding', 500) : 0;
         $pages = $pageCount * $pricePerPage * $quantity;
-        $bindingTotal = $binding * $quantity;
+
+        // Nieten: eerste boekje €7,50, elk extra boekje €2,50
+        if ($bindingType === 'booklet') {
+            $bindingFirst = config('pricing.binding', 750);
+            $bindingExtra = config('pricing.binding_extra', 250);
+            $bindingTotal = $bindingFirst + (($quantity - 1) * $bindingExtra);
+        } else {
+            $bindingTotal = 0;
+        }
 
         // Verzendkosten blijven gelijk ongeacht aantal
         $shipping = $deliveryType === 'pickup' ? 0 : config('pricing.shipping', 675);

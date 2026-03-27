@@ -1450,7 +1450,6 @@
                     <input type="number" id="qtyInput" class="qty-input" value="1" min="1" readonly>
                     <button type="button" class="qty-btn" id="qtyPlus">+</button>
                 </div>
-                <span class="quantity-hint">Elk extra exemplaar wordt mee gedrukt</span>
             </div>
         </section>
 
@@ -1715,6 +1714,7 @@
             perPageA4: 15,
             perPageA5: 10,
             binding: 750,
+            bindingExtra: 250,
             shipping: 675
         };
 
@@ -1947,7 +1947,9 @@
         function calculatePrices() {
             const pricePerPage = detectedFormat === 'A4' ? PRICES.perPageA4 : PRICES.perPageA5;
             let pagesCost = pageCount * pricePerPage * quantity;
-            let bindingCost = (bindingType === 'booklet' ? PRICES.binding : 0) * quantity;
+            let bindingCost = bindingType === 'booklet'
+                ? PRICES.binding + ((quantity - 1) * PRICES.bindingExtra)
+                : 0;
             const shippingCost = deliveryType === 'shipping' ? PRICES.shipping : 0;
             let startupCost = PRICES.startup;
 
@@ -1981,7 +1983,7 @@
             if (bindingType === 'booklet') {
                 bindingRow.style.display = 'flex';
                 document.getElementById('priceBindingLabel').textContent =
-                    quantity > 1 ? `Nieten (boekje) × ${quantity}` : 'Nieten (boekje)';
+                    quantity > 1 ? `Nieten (1× €7,50 + ${quantity - 1}× €2,50)` : 'Nieten (boekje)';
                 document.getElementById('priceBindingValue').textContent = formatPrice(prices.bindingCost);
             } else {
                 bindingRow.style.display = 'none';

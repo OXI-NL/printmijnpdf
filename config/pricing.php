@@ -16,7 +16,8 @@ return [
 
     // Vaste kosten
     'startup' => env('PRICE_STARTUP', 1000),        // €10.00
-    'binding' => env('PRICE_BINDING', 750),         // €7.50
+    'binding' => env('PRICE_BINDING', 750),         // €7.50 eerste boekje
+    'binding_extra' => env('PRICE_BINDING_EXTRA', 250), // €2.50 per extra boekje
     'shipping' => env('PRICE_SHIPPING', 675),       // €6.75
 
     // Actieve promotiecodes
