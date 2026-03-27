@@ -60,6 +60,10 @@ class PdfFormatValidator
                 return $this->reject('Kon het PDF-bestand niet lezen.');
             }
 
+            // Decomprimeer FlateDecode-streams zodat objecten in gecomprimeerde
+            // object streams (ObjStm) ook zichtbaar worden voor de regex-parser.
+            $content = $this->decompressStreams($content);
+
             $pages = $this->extractPages($content);
 
             if (empty($pages)) {
@@ -157,7 +161,7 @@ class PdfFormatValidator
 
         // Probeer boxes in prioriteitsvolgorde
         foreach (self::BOX_PRIORITY as $boxName) {
-            $dimensions = $this->extractBox($pageContent, $boxName);
+            $dimensions = $this->extractBox($pageContent, $boxName, $fullContent);
 
             // Als de box niet direct op de pagina staat, zoek in het parent Pages-object
             if ($dimensions === null) {
@@ -197,11 +201,13 @@ class PdfFormatValidator
 
     /**
      * Haal box-dimensies op uit page content.
+     * Ondersteunt zowel inline arrays als indirecte referenties.
      *
      * @return array|null [width, height]
      */
-    private function extractBox(string $content, string $boxName): ?array
+    private function extractBox(string $content, string $boxName, string $fullContent = ''): ?array
     {
+        // Inline array: /TrimBox [0 0 419.53 595.28]
         $pattern = '/\/' . $boxName . '\s*\[\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\]/';
 
         if (preg_match($pattern, $content, $matches)) {
@@ -211,6 +217,22 @@ class PdfFormatValidator
             $y2 = floatval($matches[4]);
 
             return [abs($x2 - $x1), abs($y2 - $y1)];
+        }
+
+        // Indirecte referentie: /TrimBox 15 0 R
+        if ($fullContent !== '') {
+            $refPattern = '/\/' . $boxName . '\s+(\d+)\s+0\s+R/';
+            if (preg_match($refPattern, $content, $refMatch)) {
+                $objId = $refMatch[1];
+                $objPattern = '/' . $objId . '\s+0\s+obj\s*(.*?)endobj/s';
+                if (preg_match($objPattern, $fullContent, $objMatch)) {
+                    $arrayPattern = '/\[\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\]/';
+                    if (preg_match($arrayPattern, $objMatch[1], $arrMatch)) {
+                        return [abs(floatval($arrMatch[3]) - floatval($arrMatch[1])),
+                                abs(floatval($arrMatch[4]) - floatval($arrMatch[2]))];
+                    }
+                }
+            }
         }
 
         return null;
@@ -227,7 +249,7 @@ class PdfFormatValidator
             // Zoek het parent object
             $pattern = '/' . $parentId . '\s+0\s+obj\s*(.*?)endobj/s';
             if (preg_match($pattern, $fullContent, $parentObj)) {
-                return $this->extractBox($parentObj[1], $boxName);
+                return $this->extractBox($parentObj[1], $boxName, $fullContent);
             }
         }
 
@@ -265,6 +287,55 @@ class PdfFormatValidator
         }
 
         return null;
+    }
+
+    /**
+     * Decomprimeer alle FlateDecode-streams in de PDF.
+     * Hierdoor worden objecten in gecomprimeerde object streams (ObjStm)
+     * zichtbaar voor de regex-parser.
+     */
+    private function decompressStreams(string $content): string
+    {
+        // Zoek FlateDecode-streams en vervang ze door gedecomprimeerde versies
+        $result = $content;
+
+        if (preg_match_all('/(\d+\s+0\s+obj\s*<<.*?>>)\s*stream\r?\n/s', $content, $matches, PREG_OFFSET_CAPTURE)) {
+            foreach ($matches[0] as $i => $match) {
+                $streamStart = $match[1] + strlen($match[0]);
+                $header = $matches[1][$i][0];
+
+                // Alleen FlateDecode-streams decomprimeren
+                if (strpos($header, '/FlateDecode') === false) {
+                    continue;
+                }
+
+                // Zoek het einde van de stream
+                $endPos = strpos($content, "\nendstream", $streamStart);
+                if ($endPos === false) {
+                    $endPos = strpos($content, "\r\nendstream", $streamStart);
+                }
+                if ($endPos === false) {
+                    continue;
+                }
+
+                $streamData = substr($content, $streamStart, $endPos - $streamStart);
+
+                // Probeer te decomprimeren
+                $decompressed = @gzuncompress($streamData);
+                if ($decompressed === false) {
+                    // Probeer met raw deflate (sommige PDF's gebruiken dit)
+                    $decompressed = @gzinflate($streamData);
+                }
+
+                if ($decompressed !== false) {
+                    // Voeg gedecomprimeerde inhoud toe aan het resultaat
+                    // zodat de regex-parser de objecten erin kan vinden
+                    $result .= "\n" . $decompressed;
+                }
+            }
+        }
+
+        return $result;
     }
 
     /**
