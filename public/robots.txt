@@ -3,5 +3,7 @@ Allow: /
 Disallow: /admin/
 Disallow: /api/
 Disallow: /webhook/
+Disallow: /bestelling/
+Disallow: /status/
 
 Sitemap: https://printmijnpdf.nl/sitemap.xml
