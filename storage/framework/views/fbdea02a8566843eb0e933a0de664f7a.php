@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+
+    <!-- Preconnect: zo vroeg mogelijk -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+    <link rel="dns-prefetch" href="https://www.google-analytics.com">
+    <link rel="dns-prefetch" href="https://js.mollie.com">
+
     <title>PDF Printen als Boekje | Binnen 3 Dagen | PrintMijnPDF</title>
     <meta name="description" content="Upload je PDF → professioneel geprint boekje binnen 3 werkdagen. Full colour drukwerkkwaliteit, vanaf €0,15/pagina. Gratis afhalen mogelijk.">
 
@@ -380,9 +388,9 @@
     }
     </script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap"></noscript>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -1439,9 +1447,14 @@
             color: var(--text);
             font-weight: 600;
         }
+        /* ===== CLS Prevention ===== */
+        .faq { content-visibility: auto; contain-intrinsic-size: 0 500px; }
+        .footer { content-visibility: auto; contain-intrinsic-size: 0 200px; }
+
         /* ===== Urgency Banner ===== */
         .urgency-banner {
             display: inline-flex;
+            min-height: 42px;
             align-items: center;
             gap: 0.5rem;
             padding: 0.625rem 1rem;
@@ -1467,6 +1480,7 @@
             padding: 1.25rem 1rem;
             margin: 1.5rem auto;
             max-width: 800px;
+            min-height: 60px;
             border-top: 1px solid var(--border);
             border-bottom: 1px solid var(--border);
         }
