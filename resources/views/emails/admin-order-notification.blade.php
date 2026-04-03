@@ -224,7 +224,7 @@
                                 @if($order->binding_type === 'booklet')
                                 <tr>
                                     <td style="padding: 10px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                                        <span style="color: #64748b; font-size: 13px;">Nieten (boekje)</span>
+                                        <span style="color: #64748b; font-size: 13px;">Vouwen/Nieten (Boekje)</span>
                                     </td>
                                     <td style="padding: 10px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; text-align: right;">
                                         <span style="color: #1e293b; font-size: 13px;">&euro; {{ number_format($order->price_binding / 100, 2, ',', '.') }}</span>

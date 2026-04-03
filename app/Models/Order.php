@@ -97,7 +97,7 @@ class Order extends Model
         // Pagina- en inbindkosten vermenigvuldigen met aantal exemplaren
         $pages = $pageCount * $pricePerPage * $quantity;
 
-        // Nieten: eerste boekje €7,50, elk extra boekje €2,50
+        // Nieten: eerste boekje €5,00, elk extra boekje €2,50
         if ($bindingType === 'booklet') {
             $bindingFirst = config('pricing.binding', 750);
             $bindingExtra = config('pricing.binding_extra', 250);

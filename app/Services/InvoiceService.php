@@ -254,7 +254,7 @@ class InvoiceService
         if ($invoice->binding_excl_btw > 0) {
             $bindingBtw = (int) round($invoice->binding_excl_btw * $invoice->btw_percentage / 100);
             $pdf->SetFillColor(250, 250, 250);
-            $pdf->Cell(80, $rh, 'Nieten / brocheren', 1, 0, 'L', $fill);
+            $pdf->Cell(80, $rh, 'Vouwen/Nieten (Boekje)', 1, 0, 'L', $fill);
             $pdf->Cell(20, $rh, (string) $quantity, 1, 0, 'C', $fill);
             $pdf->Cell(30, $rh, self::formatCents($invoice->binding_excl_btw), 1, 0, 'R', $fill);
             $pdf->Cell(20, $rh, number_format($invoice->btw_percentage, 0) . '%', 1, 0, 'C', $fill);

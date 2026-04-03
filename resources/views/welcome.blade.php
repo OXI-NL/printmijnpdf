@@ -1886,8 +1886,8 @@
                     <span id="pricePagesValue">€0,00</span>
                 </div>
                 <div class="price-row" id="priceBindingRow" style="display: none;">
-                    <span id="priceBindingLabel">Nieten (boekje)</span>
-                    <span id="priceBindingValue">€7,50</span>
+                    <span id="priceBindingLabel">Vouwen/Nieten (Boekje)</span>
+                    <span id="priceBindingValue">€5,00</span>
                 </div>
                 <div class="price-row" id="priceShippingRow">
                     <span id="priceShippingLabel">Verzending (PostNL)</span>
@@ -2419,7 +2419,7 @@
             if (bindingType === 'booklet') {
                 bindingRow.style.display = 'flex';
                 document.getElementById('priceBindingLabel').textContent =
-                    quantity > 1 ? `Nieten (1× €7,50 + ${quantity - 1}× €2,50)` : 'Nieten (boekje)';
+                    quantity > 1 ? `Vouwen/Nieten (1× €5,00 + ${quantity - 1}× €2,50)` : 'Vouwen/Nieten (Boekje)';
                 document.getElementById('priceBindingValue').textContent = formatPrice(prices.bindingCost);
             } else {
                 bindingRow.style.display = 'none';
