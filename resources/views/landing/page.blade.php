@@ -105,7 +105,7 @@
         .logo {
             font-size: 1.25rem;
             font-weight: 700;
-            color: #f05a28;
+            color: #e63946;
             text-decoration: none;
         }
 
@@ -137,7 +137,7 @@
         .hero-cta {
             display: inline-block;
             padding: 0.875rem 2rem;
-            background: #f05a28;
+            background: #e63946;
             color: #fff;
             font-size: 1rem;
             font-weight: 600;
@@ -147,7 +147,7 @@
         }
 
         .hero-cta:hover {
-            background: #d94f21;
+            background: #d62839;
         }
 
         /* Benefits */
