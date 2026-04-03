@@ -103,11 +103,26 @@
         }
 
         .logo {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #e63946;
+            display: flex;
+            align-items: center;
+            gap: 10px;
             text-decoration: none;
         }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #e63946 0%, #d62839 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(230, 57, 70, 0.25);
+        }
+
+        .logo-icon svg { width: 22px; height: 22px; color: white; }
+        .logo-text { font-size: 20px; font-weight: 700; color: #262626; }
+        .logo-text span { color: #e63946; }
 
         .header-cta {
             font-size: 0.875rem;
@@ -311,7 +326,15 @@
 <body>
     <header class="header">
         <div class="container header-inner">
-            <a href="{{ url('/') }}" class="logo">PrintMijnPDF</a>
+            <a href="{{ url('/') }}" class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                </div>
+                <span class="logo-text">Print<span>Mijn</span>PDF</span>
+            </a>
             <span class="header-cta">015-219 2525</span>
         </div>
     </header>
