@@ -127,6 +127,12 @@
                         "minValue": 1,
                         "maxValue": 3,
                         "unitCode": "DAY"
+                    },
+                    "transitTime": {
+                        "@type": "QuantitativeValue",
+                        "minValue": 1,
+                        "maxValue": 2,
+                        "unitCode": "DAY"
                     }
                 },
                 "shippingDestination": {
@@ -137,6 +143,13 @@
             "seller": {
                 "@type": "Organization",
                 "name": "PrintMijnPDF"
+            },
+            "hasMerchantReturnPolicy": {
+                "@type": "MerchantReturnPolicy",
+                "applicableCountry": "NL",
+                "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted",
+                "merchantReturnDays": 0,
+                "description": "Retourneren is niet mogelijk. Bij aantoonbare druk- of productiefouten wordt het product kosteloos opnieuw geproduceerd en verzonden."
             }
         }
     }
