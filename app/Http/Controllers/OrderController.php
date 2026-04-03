@@ -163,6 +163,17 @@ class OrderController extends Controller
                 'address_postcode' => strtoupper(str_replace(' ', '', $request->input('postcode'))),
                 'address_city' => $request->input('city'),
                 'delivery_type' => $request->input('delivery_type'),
+                // Attribution
+                'utm_source' => $request->input('attribution_utm_source'),
+                'utm_medium' => $request->input('attribution_utm_medium'),
+                'utm_campaign' => $request->input('attribution_utm_campaign'),
+                'utm_term' => $request->input('attribution_utm_term'),
+                'utm_content' => $request->input('attribution_utm_content'),
+                'gclid' => $request->input('attribution_gclid'),
+                'fbclid' => $request->input('attribution_fbclid'),
+                'msclkid' => $request->input('attribution_msclkid'),
+                'landing_page' => $request->input('attribution_landing_page'),
+                'referrer' => $this->sanitizeReferrer($request->input('attribution_referrer')),
             ]);
 
             // Maak Mollie betaling
@@ -317,6 +328,14 @@ class OrderController extends Controller
         $order = Order::where('order_number', $orderNumber)->firstOrFail();
 
         return view('order.status', compact('order'));
+    }
+
+    private function sanitizeReferrer(?string $referrer): ?string
+    {
+        if (!$referrer || !filter_var($referrer, FILTER_VALIDATE_URL)) {
+            return null;
+        }
+        return substr($referrer, 0, 500);
     }
 
     /**

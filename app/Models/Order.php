@@ -44,6 +44,17 @@ class Order extends Model
         'track_trace',
         'shipped_at',
         'paid_at',
+        // Attribution
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'utm_term',
+        'utm_content',
+        'gclid',
+        'fbclid',
+        'msclkid',
+        'landing_page',
+        'referrer',
     ];
 
     protected $casts = [
@@ -175,6 +186,41 @@ class Order extends Model
             'refunded' => 'Terugbetaald',
             default => $this->status,
         };
+    }
+
+    /**
+     * Attribution samenvatting
+     */
+    public function getAttributionSummaryAttribute(): string
+    {
+        if ($this->gclid) return 'Google Ads';
+        if ($this->fbclid) return 'Facebook Ads';
+        if ($this->msclkid) return 'Microsoft Ads';
+
+        if ($this->utm_source) {
+            $summary = ucfirst($this->utm_source);
+            if ($this->utm_medium) {
+                $summary .= ' / ' . $this->utm_medium;
+            }
+            return $summary;
+        }
+
+        if ($this->referrer) {
+            return 'Referral: ' . parse_url($this->referrer, PHP_URL_HOST);
+        }
+
+        return 'Direct';
+    }
+
+    /**
+     * Is de order via betaalde advertentie binnengekomen?
+     */
+    public function isFromPaidAds(): bool
+    {
+        return $this->gclid !== null
+            || $this->fbclid !== null
+            || $this->msclkid !== null
+            || in_array($this->utm_medium, ['cpc', 'ppc', 'paid']);
     }
 
     /**

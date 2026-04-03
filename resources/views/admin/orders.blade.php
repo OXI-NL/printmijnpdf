@@ -369,6 +369,9 @@
                                 <td>
                                     <div class="customer-name">{{ $order->customer_name }}</div>
                                     <div class="customer-email">{{ $order->customer_email }}</div>
+                                    @if($order->utm_source || $order->gclid || $order->fbclid)
+                                    <div class="customer-email" style="color: #6366f1;">{{ $order->attribution_summary }}</div>
+                                    @endif
                                 </td>
                                 <td class="file-info">
                                     <span class="file-name" title="{{ $order->pdf_original_name }}">{{ $order->pdf_original_name }}</span>

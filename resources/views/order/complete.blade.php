@@ -201,5 +201,37 @@
             Vragen? Neem contact op via info@printmijnpdf.nl
         </div>
     </div>
+
+    @if($order->isPaid())
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9F48GD4CX5"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-9F48GD4CX5');
+    </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var trackedOrders = JSON.parse(localStorage.getItem('pmp_tracked_orders') || '[]');
+        var orderId = '{{ $order->order_number }}';
+
+        if (trackedOrders.indexOf(orderId) === -1) {
+            gtag('event', 'purchase', {
+                transaction_id: orderId,
+                currency: 'EUR',
+                value: {{ $order->price_total / 100 }},
+                shipping: {{ $order->price_shipping / 100 }}
+            });
+
+            trackedOrders.push(orderId);
+            localStorage.setItem('pmp_tracked_orders', JSON.stringify(trackedOrders));
+
+            sessionStorage.removeItem('pmp_uploaded');
+            sessionStorage.removeItem('pmp_upload_time');
+        }
+    });
+    </script>
+    @endif
 </body>
 </html>
