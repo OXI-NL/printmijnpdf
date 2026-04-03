@@ -4,6 +4,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,16 @@ Route::post('/api/order', [OrderController::class, 'store'])->name('api.order');
 // Contactformulier
 Route::post('/api/contact', [ContactController::class, 'send'])->name('api.contact');
 Route::post('/api/contact/custom-format', [ContactController::class, 'sendCustomFormat'])->name('api.contact.custom-format');
+
+// SEO Landingspagina's
+Route::prefix('/')->group(function () {
+    Route::get('scriptie-printen', [LandingPageController::class, 'scriptie'])->name('landing.scriptie');
+    Route::get('reader-printen', [LandingPageController::class, 'reader'])->name('landing.reader');
+    Route::get('cursusmateriaal-printen', [LandingPageController::class, 'cursusmateriaal'])->name('landing.cursusmateriaal');
+    Route::get('boekje-maken', [LandingPageController::class, 'boekje'])->name('landing.boekje');
+    Route::get('handleiding-printen', [LandingPageController::class, 'handleiding'])->name('landing.handleiding');
+    Route::get('zakelijk', [LandingPageController::class, 'zakelijk'])->name('landing.zakelijk');
+});
 
 // Mollie webhook (CSRF uitgezonderd in bootstrap/app.php)
 Route::post('/webhook/mollie', [OrderController::class, 'webhook'])->name('webhook.mollie');
