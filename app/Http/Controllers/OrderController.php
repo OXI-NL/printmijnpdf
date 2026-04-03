@@ -209,14 +209,14 @@ class OrderController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Betaling kon niet worden gestart. Probeer het opnieuw of neem contact op.',
+                'message' => 'Mollie fout: ' . $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
             Log::error('Order creation failed: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => 'Er ging iets mis. Probeer het opnieuw.',
+                'message' => 'Fout: ' . $e->getMessage(),
             ], 500);
         }
     }
