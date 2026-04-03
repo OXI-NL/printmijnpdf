@@ -8,6 +8,8 @@
     <meta name="description" content="{{ $meta['description'] }}">
     <meta name="keywords" content="{{ $meta['keywords'] ?? '' }}">
     <link rel="canonical" href="{{ $meta['canonical'] }}">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
     <!-- Open Graph -->
     <meta property="og:title" content="{{ $meta['title'] }}">

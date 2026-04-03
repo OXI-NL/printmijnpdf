@@ -33,6 +33,7 @@
     <meta name="twitter:description" content="Upload je PDF → professioneel geprint boekje binnen 3 werkdagen. Full colour drukwerkkwaliteit.">
     <meta name="twitter:image" content="https://printmijnpdf.nl/og-image.jpg">
 
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="canonical" href="https://printmijnpdf.nl">
 
