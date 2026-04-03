@@ -1288,6 +1288,124 @@
             color: var(--text);
             font-weight: 600;
         }
+        /* ===== Urgency Banner ===== */
+        .urgency-banner {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            background: #fef3c7;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            color: #92400e;
+            margin-bottom: 1rem;
+        }
+        .urgency-banner svg { flex-shrink: 0; }
+        .urgency-banner strong { font-weight: 600; }
+        .urgency-banner.standard {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        /* ===== Trust Badges ===== */
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            padding: 1.25rem 1rem;
+            margin: 1.5rem auto;
+            max-width: 800px;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #525252;
+        }
+        .trust-badge svg {
+            flex-shrink: 0;
+            color: #16a34a;
+        }
+
+        /* ===== Social Proof Bar ===== */
+        .social-proof-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 0.75rem 0;
+            margin: 0.5rem 0 1rem;
+        }
+        .proof-item { text-align: center; }
+        .proof-number {
+            display: block;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .proof-label {
+            font-size: 0.75rem;
+            color: #737373;
+        }
+        .proof-divider {
+            width: 1px;
+            height: 2rem;
+            background: var(--border);
+        }
+
+        /* ===== NIVO Badge ===== */
+        .nivo-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 1rem;
+            margin: 1.5rem auto;
+            text-align: center;
+        }
+        .nivo-label {
+            font-size: 0.75rem;
+            color: #a3a3a3;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .nivo-link {
+            font-size: 1rem;
+            color: #1a2740;
+            text-decoration: none;
+        }
+        .nivo-link:hover { text-decoration: underline; }
+        .nivo-link strong { color: var(--primary); }
+        .nivo-tagline {
+            font-size: 0.8125rem;
+            color: #737373;
+        }
+
+        /* ===== Checkout Reassurance ===== */
+        .checkout-reassurance {
+            margin-top: 0.75rem;
+            text-align: center;
+        }
+        .checkout-reassurance p {
+            font-size: 0.8125rem;
+            color: #737373;
+            margin: 0;
+        }
+
+        @media (max-width: 640px) {
+            .trust-badges { gap: 1rem; }
+            .trust-badge {
+                flex: 1 1 45%;
+                font-size: 0.8125rem;
+            }
+            .social-proof-bar { gap: 1rem; }
+            .proof-number { font-size: 1.125rem; }
+            .proof-divider { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -1389,6 +1507,17 @@
             </div>
         </div>
 
+        <!-- Urgency Banner -->
+        <div class="urgency-banner" id="urgency-banner">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span id="urgency-text">
+                Bestel binnen <strong id="countdown"></strong> voor verzending vandaag
+            </span>
+        </div>
+
         <!-- Upload Dropzone -->
         <div class="dropzone" id="dropzone">
             <input type="file" accept=".pdf,application/pdf" class="file-input" id="fileInput">
@@ -1421,19 +1550,57 @@
             </div>
         </div>
         
-        <!-- Trust Line -->
-        <div class="trust-line">
-            <div class="trust-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="20 6 9 17 4 12"/>
+        <!-- Trust Badges -->
+        <div class="trust-badges">
+            <div class="trust-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
-                Binnen 3 werkdagen bezorgd of gratis af te halen
+                <span>Veilig betalen via iDEAL</span>
             </div>
-            <div class="trust-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="20 6 9 17 4 12"/>
+            <div class="trust-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path>
+                    <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path>
+                    <path d="M18 12h2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"></path>
                 </svg>
-                Veilig betalen
+                <span>Echte drukkerij, geen print-app</span>
+            </div>
+            <div class="trust-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 18H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.19M15 6h2.81A2 2 0 0 1 20 8v8a2 2 0 0 1-2 2h-2"></path>
+                    <path d="M12 2v20"></path>
+                    <path d="M5 12h14"></path>
+                    <circle cx="5" cy="18" r="2"></circle>
+                    <circle cx="19" cy="18" r="2"></circle>
+                </svg>
+                <span>Binnen 3 werkdagen bezorgd</span>
+            </div>
+            <div class="trust-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    <path d="m9 12 2 2 4-4"></path>
+                </svg>
+                <span>Niet tevreden? Geld terug</span>
+            </div>
+        </div>
+
+        <!-- Social Proof -->
+        <div class="social-proof-bar">
+            <div class="proof-item">
+                <span class="proof-number">500+</span>
+                <span class="proof-label">bestellingen</span>
+            </div>
+            <div class="proof-divider"></div>
+            <div class="proof-item">
+                <span class="proof-number">4.8</span>
+                <span class="proof-label">klantwaardering</span>
+            </div>
+            <div class="proof-divider"></div>
+            <div class="proof-item">
+                <span class="proof-number">3 dagen</span>
+                <span class="proof-label">gem. levertijd</span>
             </div>
         </div>
     </section>
@@ -1693,7 +1860,15 @@
                 </svg>
                 <span id="payButtonText">Afrekenen met iDEAL – €0,00</span>
             </button>
-            <p class="payment-trust">🔒 Veilig betalen via Mollie</p>
+            <div class="checkout-reassurance">
+                <p>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:4px;">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    Veilig betalen via Mollie
+                </p>
+            </div>
         </section>
     </main>
 
@@ -1774,6 +1949,15 @@
                 <p>Veilig via Mollie</p>
             </div>
         </div>
+        <!-- NIVO Badge -->
+        <div class="nivo-badge">
+            <span class="nivo-label">Geproduceerd door</span>
+            <a href="https://nivo.com" target="_blank" rel="noopener" class="nivo-link">
+                <strong>NIVO</strong> Druk & Multimedia
+            </a>
+            <span class="nivo-tagline">Professionele drukkerij sinds 1985</span>
+        </div>
+
         <div class="footer-bottom">
             © 2026 PrintMijnPDF.nl · Onderdeel van NIVO Druk & Multimedia B.V.
         </div>
@@ -2503,6 +2687,39 @@
                 alert('Er ging iets mis. Probeer het opnieuw of mail naar info@printmijnpdf.nl');
             }
         });
+    </script>
+    <script>
+    (function() {
+        function updateUrgencyBanner() {
+            const banner = document.getElementById('urgency-banner');
+            const textEl = document.getElementById('urgency-text');
+            if (!banner || !textEl) return;
+
+            const now = new Date();
+            const day = now.getDay();
+            const hour = now.getHours();
+
+            if (day === 0 || day === 6 || hour >= 11) {
+                banner.classList.add('standard');
+                textEl.innerHTML = '<strong>Binnen 3 werkdagen</strong> in huis na bestelling';
+                return;
+            }
+
+            const deadline = new Date();
+            deadline.setHours(11, 0, 0, 0);
+            const diff = deadline - now;
+            const hoursLeft = Math.floor(diff / (1000 * 60 * 60));
+            const minutesLeft = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            const countdownEl = document.getElementById('countdown');
+            if (countdownEl) {
+                countdownEl.textContent = hoursLeft + 'u ' + minutesLeft + 'm';
+            }
+        }
+
+        updateUrgencyBanner();
+        setInterval(updateUrgencyBanner, 60000);
+    })();
     </script>
 </body>
 </html>

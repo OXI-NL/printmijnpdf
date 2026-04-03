@@ -2,6 +2,12 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "laravel",
+      "runtimeExecutable": "/usr/local/bin/php",
+      "runtimeArgs": ["artisan", "serve", "--port=8000"],
+      "port": 8000
+    },
+    {
       "name": "og-image",
       "runtimeExecutable": "/usr/bin/ruby",
       "runtimeArgs": ["-run", "-e", "httpd", "public", "-p", "8099"],
