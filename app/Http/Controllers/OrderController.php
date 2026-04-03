@@ -201,9 +201,19 @@ class OrderController extends Controller
                 'redirect_url' => $payment->getCheckoutUrl(),
             ]);
 
+        } catch (\Mollie\Api\Exceptions\ApiException $e) {
+            Log::error('Mollie API error: ' . $e->getMessage(), [
+                'code' => $e->getCode(),
+                'field' => method_exists($e, 'getField') ? $e->getField() : null,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Betaling kon niet worden gestart. Probeer het opnieuw of neem contact op.',
+            ], 500);
         } catch (\Exception $e) {
             Log::error('Order creation failed: ' . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Er ging iets mis. Probeer het opnieuw.',
