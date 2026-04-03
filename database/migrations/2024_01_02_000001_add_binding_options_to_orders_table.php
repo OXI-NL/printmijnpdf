@@ -12,10 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            // Voeg binding_type toe (default 'booklet' voor bestaande orders)
-            $table->enum('binding_type', ['booklet', 'loose'])->default('booklet')->after('bleed_mm');
-            // Voeg print_side toe (default 'double' voor bestaande orders)
-            $table->enum('print_side', ['single', 'double'])->default('double')->after('binding_type');
+            if (!Schema::hasColumn('orders', 'binding_type')) {
+                $table->enum('binding_type', ['booklet', 'loose'])->default('booklet')->after('bleed_mm');
+            }
+            if (!Schema::hasColumn('orders', 'print_side')) {
+                $table->enum('print_side', ['single', 'double'])->default('double')->after('binding_type');
+            }
         });
     }
 
