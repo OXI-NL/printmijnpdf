@@ -4,16 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>PrintMijnPDF.nl - Full colour PDF printen | Boekje of losse pagina's thuisbezorgd</title>
-    <meta name="description" content="Full colour PDF printen in drukwerkkwaliteit. Upload je PDF en ontvang een professioneel geniet boekje of losse pagina's. Scherpe kleuren, hoogwaardig papier, binnen 3 werkdagen bezorgd of gratis afhalen.">
-    <meta name="keywords" content="PDF printen, full colour printen, boekje laten drukken, PDF in kleur printen, magazine printen, brochure afdrukken, PDF naar boek, drukwerkkwaliteit, full color print">
-    <meta property="og:title" content="PrintMijnPDF.nl - Full colour PDF printen in drukwerkkwaliteit">
-    <meta property="og:description" content="Upload je PDF en ontvang full colour printwerk in drukwerkkwaliteit. Professioneel boekje of losse pagina's, binnen 3 werkdagen thuisbezorgd.">
+    <title>PDF Printen als Boekje | Binnen 3 Dagen | PrintMijnPDF</title>
+    <meta name="description" content="Upload je PDF → professioneel geprint boekje binnen 3 werkdagen. Full colour drukwerkkwaliteit, vanaf €0,15/pagina. Gratis afhalen mogelijk.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="PDF Printen als Boekje | Binnen 3 Dagen | PrintMijnPDF">
+    <meta property="og:description" content="Upload je PDF en ontvang full colour printwerk binnen 3 werkdagen. Professioneel geniet boekje of losse pagina's. Echte drukwerkkwaliteit.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://printmijnpdf.nl">
     <meta property="og:image" content="https://printmijnpdf.nl/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="PrintMijnPDF - Upload je PDF en ontvang een professioneel geprint boekje">
     <meta property="og:locale" content="nl_NL">
-    <meta property="og:site_name" content="PrintMijnPDF.nl">
+    <meta property="og:site_name" content="PrintMijnPDF">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PDF Printen als Boekje | Binnen 3 Dagen">
+    <meta name="twitter:description" content="Upload je PDF → professioneel geprint boekje binnen 3 werkdagen. Full colour drukwerkkwaliteit.">
+    <meta name="twitter:image" content="https://printmijnpdf.nl/og-image.jpg">
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="canonical" href="https://printmijnpdf.nl">
 
@@ -26,46 +37,106 @@
         gtag('config', 'G-9F48GD4CX5');
     </script>
 
-    <!-- Structured Data -->
+    <!-- Structured Data: PrintingService -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
-        "@type": "LocalBusiness",
+        "@type": "PrintingService",
         "name": "PrintMijnPDF.nl",
         "url": "https://printmijnpdf.nl",
         "description": "Full colour PDF printen in drukwerkkwaliteit. Upload je PDF en ontvang een professioneel geniet boekje of losse pagina's.",
+        "image": "https://printmijnpdf.nl/og-image.jpg",
+        "telephone": "+31152192525",
+        "email": "info@printmijnpdf.nl",
         "priceRange": "€",
+        "currenciesAccepted": "EUR",
+        "paymentAccepted": "iDEAL",
         "address": {
             "@type": "PostalAddress",
+            "streetAddress": "Exportweg 11",
+            "addressLocality": "Delfgauw",
+            "postalCode": "2645ED",
             "addressCountry": "NL"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 52.0059,
+            "longitude": 4.3867
+        },
+        "openingHoursSpecification": {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+            "opens": "17:00",
+            "closes": "17:30",
+            "description": "Afhalen op afspraak"
         },
         "areaServed": {
             "@type": "Country",
-            "name": "Nederland"
+            "name": "Netherlands"
         },
-        "sameAs": [],
-        "offers": {
-            "@type": "AggregateOffer",
-            "priceCurrency": "EUR",
-            "availability": "https://schema.org/InStock",
-            "offerCount": "3",
-            "offers": [
+        "parentOrganization": {
+            "@type": "Organization",
+            "name": "NIVO Druk & Multimedia B.V."
+        },
+        "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Printservices",
+            "itemListElement": [
                 {
                     "@type": "Offer",
-                    "name": "Geniet boekje A4",
-                    "description": "Full colour geniet boekje op A4 formaat"
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "PDF naar Boekje",
+                        "description": "Full colour geniet boekje op A4 of A5 formaat"
+                    }
                 },
                 {
                     "@type": "Offer",
-                    "name": "Geniet boekje A5",
-                    "description": "Full colour geniet boekje op A5 formaat"
-                },
-                {
-                    "@type": "Offer",
-                    "name": "Losse pagina's",
-                    "description": "Full colour losse pagina's printen"
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "Losse pagina's printen",
+                        "description": "Full colour losse pagina's op A4 formaat"
+                    }
                 }
             ]
+        }
+    }
+    </script>
+
+    <!-- Structured Data: Product -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "PDF Printen als Boekje",
+        "description": "Laat je PDF printen als professioneel geniet boekje of losse pagina's in full colour drukwerkkwaliteit.",
+        "image": "https://printmijnpdf.nl/og-image.jpg",
+        "brand": {
+            "@type": "Brand",
+            "name": "PrintMijnPDF"
+        },
+        "offers": {
+            "@type": "Offer",
+            "url": "https://printmijnpdf.nl",
+            "priceCurrency": "EUR",
+            "price": "0.15",
+            "priceSpecification": {
+                "@type": "UnitPriceSpecification",
+                "price": "0.15",
+                "priceCurrency": "EUR",
+                "unitText": "per pagina"
+            },
+            "availability": "https://schema.org/InStock",
+            "deliveryLeadTime": {
+                "@type": "QuantitativeValue",
+                "minValue": 1,
+                "maxValue": 3,
+                "unitCode": "DAY"
+            },
+            "seller": {
+                "@type": "Organization",
+                "name": "PrintMijnPDF"
+            }
         }
     }
     </script>
@@ -105,7 +176,7 @@
                 "name": "Kan ik mijn bestelling afhalen?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Ja! Afhalen is gratis en kan vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO, Exportweg 11, 2645ED Delfgauw."
+                    "text": "Ja! Afhalen is gratis en kan vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO, Exportweg 11, 2645ED Delfgauw. Heb je je bestelling dezelfde dag nog nodig? Bel ons dan even op 015-219 2525, dan kijken we wat er mogelijk is."
                 }
             },
             {
@@ -113,7 +184,7 @@
                 "name": "Wat als mijn PDF meer dan 64 pagina's heeft?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Bij meer dan 64 pagina's worden uw pagina's standaard als losse pagina's geleverd. Heeft u andere wensen, zoals ringband of lijmbinding? Neem rechtstreeks contact op via info@printmijnpdf.nl."
+                    "text": "Bij meer dan 64 pagina's worden uw pagina's standaard als losse pagina's geleverd. Heeft u andere wensen, zoals ringband of lijmbinding? Dat is zeker mogelijk, maar gaat niet via deze website. Neem rechtstreeks contact op met onze drukkerij via info@printmijnpdf.nl. Vermeld uw naam en telefoonnummer, dan bellen wij u op om de mogelijkheden te bespreken."
                 }
             },
             {
@@ -121,7 +192,7 @@
                 "name": "Op welk papier wordt er geprint?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Wij printen op hoogwaardig wit papier van professionele kwaliteit. De printkwaliteit is echte drukwerkkwaliteit, vergelijkbaar met professionele magazines en brochures."
+                    "text": "Wij printen op hoogwaardig wit papier van professionele kwaliteit. De printkwaliteit is echte drukwerkkwaliteit, vergelijkbaar met wat u kent van professionele magazines en brochures. Kleuren komen helder en scherp van het papier, zowel bij foto's als bij tekst en afbeeldingen."
                 }
             },
             {
