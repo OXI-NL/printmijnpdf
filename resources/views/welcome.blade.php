@@ -42,15 +42,11 @@
     {
         "@context": "https://schema.org",
         "@type": "PrintingService",
-        "name": "PrintMijnPDF.nl",
+        "name": "PrintMijnPDF",
+        "description": "Professionele PDF printservice. Upload je PDF en ontvang een geprint boekje of losse pagina's binnen 3 werkdagen.",
         "url": "https://printmijnpdf.nl",
-        "description": "Full colour PDF printen in drukwerkkwaliteit. Upload je PDF en ontvang een professioneel geniet boekje of losse pagina's.",
-        "image": "https://printmijnpdf.nl/og-image.jpg",
         "telephone": "+31152192525",
         "email": "info@printmijnpdf.nl",
-        "priceRange": "€",
-        "currenciesAccepted": "EUR",
-        "paymentAccepted": "iDEAL",
         "address": {
             "@type": "PostalAddress",
             "streetAddress": "Exportweg 11",
@@ -60,45 +56,25 @@
         },
         "geo": {
             "@type": "GeoCoordinates",
-            "latitude": 52.0059,
-            "longitude": 4.3867
+            "latitude": 52.0116,
+            "longitude": 4.3931
         },
         "openingHoursSpecification": {
             "@type": "OpeningHoursSpecification",
             "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
             "opens": "17:00",
-            "closes": "17:30",
-            "description": "Afhalen op afspraak"
+            "closes": "17:30"
         },
+        "priceRange": "€",
+        "image": "https://printmijnpdf.nl/og-image.jpg",
         "areaServed": {
             "@type": "Country",
             "name": "Netherlands"
         },
         "parentOrganization": {
             "@type": "Organization",
-            "name": "NIVO Druk & Multimedia B.V."
-        },
-        "hasOfferCatalog": {
-            "@type": "OfferCatalog",
-            "name": "Printservices",
-            "itemListElement": [
-                {
-                    "@type": "Offer",
-                    "itemOffered": {
-                        "@type": "Service",
-                        "name": "PDF naar Boekje",
-                        "description": "Full colour geniet boekje op A4 of A5 formaat"
-                    }
-                },
-                {
-                    "@type": "Offer",
-                    "itemOffered": {
-                        "@type": "Service",
-                        "name": "Losse pagina's printen",
-                        "description": "Full colour losse pagina's op A4 formaat"
-                    }
-                }
-            ]
+            "name": "NIVO Druk & Multimedia B.V.",
+            "url": "https://nivo.com"
         }
     }
     </script>
@@ -109,7 +85,7 @@
         "@context": "https://schema.org",
         "@type": "Product",
         "name": "PDF Printen als Boekje",
-        "description": "Laat je PDF printen als professioneel geniet boekje of losse pagina's in full colour drukwerkkwaliteit.",
+        "description": "Laat je PDF printen als professioneel geniet boekje of losse pagina's. Full colour, drukwerkkwaliteit.",
         "image": "https://printmijnpdf.nl/og-image.jpg",
         "brand": {
             "@type": "Brand",
@@ -132,6 +108,31 @@
                 "minValue": 1,
                 "maxValue": 3,
                 "unitCode": "DAY"
+            },
+            "shippingDetails": {
+                "@type": "OfferShippingDetails",
+                "shippingRate": {
+                    "@type": "MonetaryAmount",
+                    "value": "6.75",
+                    "currency": "EUR"
+                },
+                "deliveryTime": {
+                    "@type": "ShippingDeliveryTime",
+                    "businessDays": {
+                        "@type": "OpeningHoursSpecification",
+                        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+                    },
+                    "handlingTime": {
+                        "@type": "QuantitativeValue",
+                        "minValue": 1,
+                        "maxValue": 3,
+                        "unitCode": "DAY"
+                    }
+                },
+                "shippingDestination": {
+                    "@type": "DefinedRegion",
+                    "addressCountry": "NL"
+                }
             },
             "seller": {
                 "@type": "Organization",
