@@ -37,6 +37,157 @@
         gtag('config', 'G-9F48GD4CX5');
     </script>
 
+    <!-- PrintMijnPDF Analytics Helper -->
+    <script>
+    window.PMP_Analytics = {
+        state: {
+            uploaded: false,
+            uploadTime: null,
+            checkoutStarted: false,
+            purchaseComplete: false,
+            currentStage: 'landing'
+        },
+
+        track: function(eventName, params) {
+            params = params || {};
+            if (typeof gtag === 'function') {
+                gtag('event', eventName, params);
+            }
+        },
+
+        trackUpload: function(pageCount, fileSizeMB) {
+            this.state.uploaded = true;
+            this.state.uploadTime = Date.now();
+            this.state.currentStage = 'uploaded';
+            sessionStorage.setItem('pmp_uploaded', 'true');
+            sessionStorage.setItem('pmp_upload_time', this.state.uploadTime);
+            this.track('pdf_upload', {
+                event_category: 'engagement',
+                page_count: pageCount,
+                file_size_mb: Math.round(fileSizeMB * 10) / 10
+            });
+        },
+
+        trackFinishing: function(type, quantity) {
+            this.state.currentStage = 'finishing_selected';
+            this.track('select_finishing', {
+                event_category: 'engagement',
+                finishing_type: type,
+                quantity: quantity
+            });
+            this.track('select_item', {
+                item_list_name: 'Afwerking opties',
+                items: [{
+                    item_id: type,
+                    item_name: type === 'booklet' ? 'Geniet boekje' : 'Losse pagina\'s',
+                    quantity: quantity
+                }]
+            });
+        },
+
+        trackBeginCheckout: function(value) {
+            if (this.state.checkoutStarted) return;
+            this.state.checkoutStarted = true;
+            this.state.currentStage = 'checkout';
+            this.track('begin_checkout', {
+                event_category: 'ecommerce',
+                currency: 'EUR',
+                value: Math.round(value * 100) / 100
+            });
+        },
+
+        trackShipping: function(method) {
+            this.state.currentStage = 'shipping_selected';
+            this.track('add_shipping_info', {
+                event_category: 'ecommerce',
+                shipping_tier: method
+            });
+        },
+
+        trackPurchase: function(orderId, value, shippingCost) {
+            this.state.purchaseComplete = true;
+            this.state.currentStage = 'complete';
+            sessionStorage.removeItem('pmp_uploaded');
+            sessionStorage.removeItem('pmp_upload_time');
+            this.track('purchase', {
+                transaction_id: orderId,
+                currency: 'EUR',
+                value: Math.round(value * 100) / 100,
+                shipping: Math.round(shippingCost * 100) / 100
+            });
+        },
+
+        checkAbandonment: function() {
+            if (this.state.uploaded && !this.state.purchaseComplete) {
+                var timeOnPage = this.state.uploadTime
+                    ? Math.round((Date.now() - this.state.uploadTime) / 1000)
+                    : 0;
+                this.track('cart_abandonment', {
+                    event_category: 'ecommerce',
+                    checkout_stage: this.state.currentStage,
+                    time_on_page: timeOnPage
+                });
+            }
+        }
+    };
+
+    window.addEventListener('beforeunload', function() {
+        PMP_Analytics.checkAbandonment();
+    });
+
+    (function() {
+        if (sessionStorage.getItem('pmp_uploaded') === 'true') {
+            PMP_Analytics.state.uploaded = true;
+            PMP_Analytics.state.uploadTime = parseInt(sessionStorage.getItem('pmp_upload_time')) || Date.now();
+        }
+    })();
+    </script>
+
+    <!-- UTM & Attribution Tracking -->
+    <script>
+    window.PMP_Attribution = {
+        init: function() {
+            var params = new URLSearchParams(window.location.search);
+            var keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid', 'fbclid', 'msclkid'];
+            keys.forEach(function(key) {
+                var val = params.get(key);
+                if (val) sessionStorage.setItem(key, val);
+            });
+            if (!sessionStorage.getItem('pmp_landing_page')) {
+                sessionStorage.setItem('pmp_landing_page', window.location.pathname);
+            }
+            if (!sessionStorage.getItem('pmp_referrer') && document.referrer) {
+                try {
+                    var host = new URL(document.referrer).hostname;
+                    if (host !== window.location.hostname) {
+                        sessionStorage.setItem('pmp_referrer', document.referrer);
+                    }
+                } catch(e) {}
+            }
+        },
+        getData: function() {
+            return {
+                utm_source: sessionStorage.getItem('utm_source') || 'direct',
+                utm_medium: sessionStorage.getItem('utm_medium') || 'none',
+                utm_campaign: sessionStorage.getItem('utm_campaign') || '',
+                utm_term: sessionStorage.getItem('utm_term') || '',
+                utm_content: sessionStorage.getItem('utm_content') || '',
+                gclid: sessionStorage.getItem('gclid') || '',
+                landing_page: sessionStorage.getItem('pmp_landing_page') || '/',
+                referrer: sessionStorage.getItem('pmp_referrer') || ''
+            };
+        },
+        appendToForm: function(formData) {
+            var data = this.getData();
+            Object.keys(data).forEach(function(key) {
+                if (data[key]) formData.append('attribution_' + key, data[key]);
+            });
+            return formData;
+        }
+    };
+    PMP_Attribution.init();
+    </script>
+
     <!-- Structured Data: PrintingService -->
     <script type="application/ld+json">
     {
@@ -2145,6 +2296,8 @@
             dropzone.style.display = 'none';
             pdfResult.classList.add('visible');
 
+            PMP_Analytics.trackUpload(pageCount, file.size / 1024 / 1024);
+
             document.getElementById('pdfName').textContent = file.name;
             document.getElementById('pdfMeta').textContent = 
                 `${pageCount} pagina's · ${detectedFormat} · ${(file.size / 1024 / 1024).toFixed(1)} MB`;
@@ -2372,6 +2525,8 @@
             formData.append('postcode', document.getElementById('postcode').value);
             formData.append('city', document.getElementById('city').value);
 
+            PMP_Attribution.appendToForm(formData);
+
             try {
                 const response = await fetch('/api/order', {
                     method: 'POST',
@@ -2415,6 +2570,7 @@
             subOptions.classList.remove('visible');
             hideInlineNotice();
             updatePriceDisplay();
+            PMP_Analytics.trackFinishing('booklet', quantity);
         });
 
         optLoose.addEventListener('click', () => {
@@ -2423,6 +2579,7 @@
             optBooklet.classList.remove('selected');
             subOptions.classList.add('visible');
             updatePriceDisplay();
+            PMP_Analytics.trackFinishing('loose', quantity);
         });
 
         optDouble.addEventListener('click', () => {
@@ -2443,6 +2600,7 @@
             deliveryPickup.classList.remove('selected');
             pickupInfo.classList.remove('visible');
             updatePriceDisplay();
+            PMP_Analytics.trackShipping('delivery');
         });
 
         document.getElementById('qtyPlus').addEventListener('click', () => {
@@ -2466,12 +2624,16 @@
             deliveryPickup.classList.add('selected');
             deliveryShipping.classList.remove('selected');
             pickupInfo.classList.add('visible');
+            PMP_Analytics.trackShipping('pickup');
             updatePriceDisplay();
         });
 
         document.querySelectorAll('#sectionAddress input').forEach(input => {
             input.addEventListener('blur', () => validateField(input));
-            input.addEventListener('input', () => validateForm());
+            input.addEventListener('input', () => {
+                validateForm();
+                PMP_Analytics.trackBeginCheckout(calculatePrices().total / 100);
+            });
         });
 
         // Promo code
