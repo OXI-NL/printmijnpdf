@@ -2147,7 +2147,7 @@
             startup: 1000,
             perPageA4: 15,
             perPageA5: 10,
-            binding: 750,
+            binding: 500,
             bindingExtra: 250,
             shipping: 675
         };
