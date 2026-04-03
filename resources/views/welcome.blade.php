@@ -396,8 +396,8 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
-            --primary: #e63946;
-            --primary-dark: #d62839;
+            --primary: #d63447;
+            --primary-dark: #b91c1c;
             --success: #40c057;
             --text: #1a1a2e;
             --text-muted: #6c757d;
@@ -1216,7 +1216,7 @@
             }
         }
         
-        .footer-col h4 {
+        .footer-col h3 {
             font-size: 14px;
             font-weight: 600;
             color: var(--text);
@@ -1578,7 +1578,7 @@
     <!-- Header -->
     <header class="header">
         <a href="/" class="logo">
-            <div class="logo-icon">
+            <div class="logo-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14 2 14 8 20 8"/>
@@ -1590,11 +1590,11 @@
     </header>
 
     <!-- Contact Modal -->
-    <div class="modal-overlay" id="contactModal">
+    <div class="modal-overlay" id="contactModal" role="dialog" aria-modal="true" aria-labelledby="contactModalTitle">
         <div class="modal-box">
-            <button class="modal-close" id="closeContactModal">&times;</button>
+            <button class="modal-close" id="closeContactModal" aria-label="Sluiten">&times;</button>
             <div id="contactForm">
-                <h2>Stel je vraag</h2>
+                <h2 id="contactModalTitle">Stel je vraag</h2>
                 <p class="modal-sub">We reageren binnen 24 uur. Je ontvangt een kopie per e-mail.</p>
                 <label for="contactName">Naam</label>
                 <input type="text" id="contactName" placeholder="Je naam" required>
@@ -1605,7 +1605,7 @@
                 <button type="button" class="btn btn-primary" id="contactSubmit" style="width:100%">Verstuur vraag</button>
             </div>
             <div id="contactSuccess" class="modal-success" style="display:none">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                     <polyline points="22 4 12 14.01 9 11.01"/>
                 </svg>
@@ -1616,33 +1616,33 @@
     </div>
 
     <!-- Custom Format Modal -->
-    <div class="modal-overlay" id="customFormatModal">
+    <div class="modal-overlay" id="customFormatModal" role="dialog" aria-modal="true" aria-labelledby="customFormatModalTitle">
         <div class="modal-box">
-            <button class="modal-close" id="closeCustomFormatModal">&times;</button>
+            <button class="modal-close" id="closeCustomFormatModal" aria-label="Sluiten">&times;</button>
             <div id="customFormatForm">
-                <div class="modal-warning-icon">
+                <div class="modal-warning-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
                         <line x1="12" y1="9" x2="12" y2="13"/>
                         <line x1="12" y1="17" x2="12.01" y2="17"/>
                     </svg>
                 </div>
-                <h2 style="text-align:center">Afwijkend formaat</h2>
+                <h2 id="customFormatModalTitle" style="text-align:center">Afwijkend formaat</h2>
                 <p class="modal-sub-warning" style="text-align:center">
                     Dit bestand heeft een formaat dat niet via onze standaard workflow verwerkt kan worden.<br>
                     Stuur je bestand via dit formulier. We kijken ernaar en nemen contact met je op.
                 </p>
                 <label for="cfName">Naam *</label>
-                <input type="text" id="cfName" placeholder="Je naam" required>
+                <input type="text" id="cfName" placeholder="Je naam" required aria-describedby="cfNameError">
                 <p class="field-error" id="cfNameError">Vul je naam in.</p>
                 <label for="cfEmail">E-mailadres *</label>
-                <input type="email" id="cfEmail" placeholder="je@email.nl" required>
+                <input type="email" id="cfEmail" placeholder="je@email.nl" required aria-describedby="cfEmailError">
                 <p class="field-error" id="cfEmailError">Vul een geldig e-mailadres in.</p>
                 <label for="cfPhone">Telefoonnummer *</label>
-                <input type="tel" id="cfPhone" placeholder="06-12345678" required>
+                <input type="tel" id="cfPhone" placeholder="06-12345678" required aria-describedby="cfPhoneError">
                 <p class="field-error" id="cfPhoneError">Vul je telefoonnummer in.</p>
-                <label>Bestand *</label>
-                <div class="custom-format-upload-area" id="cfUploadArea">
+                <label for="cfFileInput">Bestand *</label>
+                <div class="custom-format-upload-area" id="cfUploadArea" role="button" tabindex="0" aria-label="PDF bestand selecteren">
                     <input type="file" accept=".pdf,application/pdf" id="cfFileInput" style="display:none">
                     <p id="cfUploadText">Klik om je PDF te selecteren</p>
                 </div>
@@ -1650,7 +1650,7 @@
                 <button type="button" class="btn btn-primary" id="cfSubmit" style="width:100%">Verstuur aanvraag</button>
             </div>
             <div id="customFormatSuccess" class="modal-success" style="display:none">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                     <polyline points="22 4 12 14.01 9 11.01"/>
                 </svg>
@@ -1675,7 +1675,7 @@
 
         <!-- Urgency Banner -->
         <div class="urgency-banner" id="urgency-banner">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
@@ -1685,11 +1685,11 @@
         </div>
 
         <!-- Upload Dropzone -->
-        <div class="dropzone" id="dropzone">
-            <input type="file" accept=".pdf,application/pdf" class="file-input" id="fileInput">
+        <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Upload PDF bestand">
+            <input type="file" accept=".pdf,application/pdf" class="file-input" id="fileInput" aria-label="PDF bestand selecteren">
             
             <div class="upload-idle">
-                <div class="dropzone-icon">
+                <div class="dropzone-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                         <polyline points="17 8 12 3 7 8"/>
@@ -1719,14 +1719,14 @@
         <!-- Trust Badges -->
         <div class="trust-badges">
             <div class="trust-badge">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
                 <span>Veilig betalen via iDEAL</span>
             </div>
             <div class="trust-badge">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path>
                     <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path>
                     <path d="M18 12h2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"></path>
@@ -1734,7 +1734,7 @@
                 <span>Echte drukkerij, geen print-app</span>
             </div>
             <div class="trust-badge">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M5 18H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.19M15 6h2.81A2 2 0 0 1 20 8v8a2 2 0 0 1-2 2h-2"></path>
                     <path d="M12 2v20"></path>
                     <path d="M5 12h14"></path>
@@ -1744,7 +1744,7 @@
                 <span>Binnen 3 werkdagen bezorgd</span>
             </div>
             <div class="trust-badge">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                     <path d="m9 12 2 2 4-4"></path>
                 </svg>
@@ -1794,8 +1794,8 @@
         </div>
 
         <!-- Error Message -->
-        <div class="error-message" id="errorMessage">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <div class="error-message" id="errorMessage" role="alert">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"/>
                 <line x1="12" y1="8" x2="12" y2="12"/>
                 <line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -1806,7 +1806,7 @@
         <!-- PDF Result -->
         <div class="pdf-result" id="pdfResult">
             <div class="pdf-header">
-                <div class="pdf-icon">
+                <div class="pdf-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="20 6 9 17 4 12"/>
                     </svg>
@@ -1821,7 +1821,7 @@
 
         <!-- Inline Notice (for >64 pages etc) -->
         <div class="inline-notice" id="inlineNotice">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"/>
                 <line x1="12" y1="16" x2="12" y2="12"/>
                 <line x1="12" y1="8" x2="12.01" y2="8"/>
@@ -1831,32 +1831,32 @@
 
         <!-- Section: Afwerking -->
         <section class="section hidden" id="sectionBinding">
-            <h3 class="section-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <h2 class="section-title">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
                     <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
                 </svg>
                 Kies je afwerking
-            </h3>
+            </h2>
             
             <div class="binding-options">
-                <div class="binding-option selected" id="optBooklet" data-binding="booklet">
-                    <div class="icon">📖</div>
+                <div class="binding-option selected" id="optBooklet" data-binding="booklet" role="button" tabindex="0" aria-pressed="true">
+                    <div class="icon" aria-hidden="true">📖</div>
                     <div class="title">Geniet boekje</div>
                     <div class="note">Dubbelzijdig · Max 64 pag.</div>
                 </div>
-                <div class="binding-option" id="optLoose" data-binding="loose">
-                    <div class="icon">📄</div>
+                <div class="binding-option" id="optLoose" data-binding="loose" role="button" tabindex="0" aria-pressed="false">
+                    <div class="icon" aria-hidden="true">📄</div>
                     <div class="title">Losse pagina's</div>
                     <div class="note">Enkel- of dubbelzijdig</div>
                 </div>
             </div>
             
             <div class="sub-options" id="subOptions">
-                <div class="sub-option selected" id="optDouble" data-side="double">
+                <div class="sub-option selected" id="optDouble" data-side="double" role="button" tabindex="0" aria-pressed="true">
                     <div class="title">Dubbelzijdig</div>
                 </div>
-                <div class="sub-option" id="optSingle" data-side="single">
+                <div class="sub-option" id="optSingle" data-side="single" role="button" tabindex="0" aria-pressed="false">
                     <div class="title">Enkelzijdig</div>
                 </div>
             </div>
@@ -1864,22 +1864,22 @@
             <div class="quantity-section">
                 <label class="quantity-label">Aantal exemplaren</label>
                 <div class="quantity-control">
-                    <button type="button" class="qty-btn" id="qtyMinus" disabled>−</button>
-                    <input type="number" id="qtyInput" class="qty-input" value="1" min="1" readonly>
-                    <button type="button" class="qty-btn" id="qtyPlus">+</button>
+                    <button type="button" class="qty-btn" id="qtyMinus" aria-label="Aantal verminderen" disabled>−</button>
+                    <input type="number" id="qtyInput" class="qty-input" value="1" min="1" readonly aria-label="Aantal exemplaren">
+                    <button type="button" class="qty-btn" id="qtyPlus" aria-label="Aantal verhogen">+</button>
                 </div>
             </div>
         </section>
 
         <!-- Section: Prijsoverzicht -->
         <section class="section hidden" id="sectionPrice">
-            <h3 class="section-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <h2 class="section-title">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10"/>
                     <text x="12" y="16.5" text-anchor="middle" font-size="14" font-weight="bold" fill="currentColor" stroke="none">€</text>
                 </svg>
                 Prijsoverzicht
-            </h3>
+            </h2>
             
             <div class="price-summary">
                 <div class="price-row">
@@ -1927,27 +1927,27 @@
 
         <!-- Section: Adresgegevens -->
         <section class="section hidden" id="sectionAddress">
-            <h3 class="section-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <h2 class="section-title">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                     <circle cx="12" cy="10" r="3"/>
                 </svg>
                 Je gegevens
-            </h3>
+            </h2>
             
             <div class="form-row single">
                 <div class="form-group">
                     <label for="name">Naam</label>
-                    <input type="text" id="name" name="name" placeholder="Je volledige naam" required>
-                    <span class="error-msg">Vul je naam in</span>
+                    <input type="text" id="name" name="name" placeholder="Je volledige naam" required aria-describedby="nameError">
+                    <span class="error-msg" id="nameError">Vul je naam in</span>
                 </div>
             </div>
             
             <div class="form-row">
                 <div class="form-group">
                     <label for="email">E-mailadres</label>
-                    <input type="email" id="email" name="email" placeholder="jouw@email.nl" required>
-                    <span class="error-msg">Voer een geldig e-mailadres in</span>
+                    <input type="email" id="email" name="email" placeholder="jouw@email.nl" required aria-describedby="emailError">
+                    <span class="error-msg" id="emailError">Voer een geldig e-mailadres in</span>
                     <span class="field-hint">Hier sturen we je bevestiging en track & trace.</span>
                 </div>
                 <div class="form-group">
@@ -1960,13 +1960,13 @@
             <div class="form-row triple">
                 <div class="form-group">
                     <label for="street">Straat</label>
-                    <input type="text" id="street" name="street" placeholder="Straatnaam" required>
-                    <span class="error-msg">Vul je straatnaam in</span>
+                    <input type="text" id="street" name="street" placeholder="Straatnaam" required aria-describedby="streetError">
+                    <span class="error-msg" id="streetError">Vul je straatnaam in</span>
                 </div>
                 <div class="form-group">
                     <label for="number">Nr.</label>
-                    <input type="text" id="number" name="number" placeholder="12" required>
-                    <span class="error-msg">Vul in</span>
+                    <input type="text" id="number" name="number" placeholder="12" required aria-describedby="numberError">
+                    <span class="error-msg" id="numberError">Vul in</span>
                 </div>
                 <div class="form-group">
                     <label for="addition">Toev.</label>
@@ -1977,13 +1977,13 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="postcode">Postcode</label>
-                    <input type="text" id="postcode" name="postcode" placeholder="1234 AB" required>
-                    <span class="error-msg">Voer een geldige postcode in</span>
+                    <input type="text" id="postcode" name="postcode" placeholder="1234 AB" required aria-describedby="postcodeError">
+                    <span class="error-msg" id="postcodeError">Voer een geldige postcode in</span>
                 </div>
                 <div class="form-group">
                     <label for="city">Plaats</label>
-                    <input type="text" id="city" name="city" placeholder="Amsterdam" required>
-                    <span class="error-msg">Vul je woonplaats in</span>
+                    <input type="text" id="city" name="city" placeholder="Amsterdam" required aria-describedby="cityError">
+                    <span class="error-msg" id="cityError">Vul je woonplaats in</span>
                 </div>
             </div>
             
@@ -2021,14 +2021,14 @@
         <!-- Section: Betalen -->
         <section class="section hidden" id="sectionPay">
             <button type="button" class="btn btn-primary" id="payButton" disabled>
-                <svg viewBox="0 0 24 24" fill="currentColor">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-4-4 1.41-1.41L11 14.17l5.59-5.59L18 10l-7 7z"/>
                 </svg>
                 <span id="payButtonText">Afrekenen met iDEAL – €0,00</span>
             </button>
             <div class="checkout-reassurance">
                 <p>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:4px;">
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:4px;">
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                         <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                     </svg>
@@ -2093,24 +2093,24 @@
     <footer class="footer">
         <div class="footer-grid">
             <div class="footer-col">
-                <h4>PrintMijnPDF</h4>
+                <h3>PrintMijnPDF</h3>
                 <p>Snel, simpel en betaalbaar printen.</p>
             </div>
             <div class="footer-col">
-                <h4>Contact</h4>
+                <h3>Contact</h3>
                 <p>info@printmijnpdf.nl</p>
                 <p><a href="tel:0152192525" style="color: inherit; text-decoration: none;">015-219 2525</a></p>
                 <p>Reactie binnen 24 uur</p>
             </div>
             <div class="footer-col">
-                <h4>Afhalen</h4>
+                <h3>Afhalen</h3>
                 <p>NIVO</p>
                 <p>Exportweg 11</p>
                 <p>2645ED Delfgauw</p>
                 <p>Ma–vr 17:00–17:30</p>
             </div>
             <div class="footer-col">
-                <h4>Betalen</h4>
+                <h3>Betalen</h3>
                 <p>iDEAL</p>
                 <p>Veilig via Mollie</p>
             </div>
