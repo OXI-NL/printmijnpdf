@@ -7,6 +7,7 @@ use App\Mail\OrderConfirmation;
 use App\Mail\OrderShipped;
 use App\Mail\PaymentFailed;
 use App\Models\Order;
+use App\Rules\SafeEmail;
 use App\Services\BookletImpositionService;
 use App\Services\PdfFormatValidator;
 use Illuminate\Http\Request;
@@ -96,7 +97,7 @@ class OrderController extends Controller
             'quantity' => 'required|integer|min:1',
             'delivery_type' => 'required|in:shipping,pickup',
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
+            'email' => ['required', 'email', 'max:255', new SafeEmail],
             'phone' => 'nullable|string|max:20',
             'street' => 'required|string|max:255',
             'number' => 'required|string|max:20',

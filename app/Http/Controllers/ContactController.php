@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\ContactQuestion;
 use App\Mail\CustomFormatRequest;
+use App\Rules\SafeEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -14,7 +15,7 @@ class ContactController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'email' => 'required|email|max:255',
+            'email' => ['required', 'email', 'max:255', new SafeEmail],
             'question' => 'required|string|max:2000',
         ]);
 
@@ -43,7 +44,7 @@ class ContactController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'email' => 'required|email|max:255',
+            'email' => ['required', 'email', 'max:255', new SafeEmail],
             'phone' => 'required|string|max:20',
             'pdf' => 'required|file|mimes:pdf|max:102400',
         ], [
