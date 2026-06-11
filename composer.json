@@ -57,6 +57,11 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "audit": {
+            "ignore": {
+                "PKSA-mdq4-51ck-6kdq": "CVE-2026-48019 workaround in app/Rules/SafeEmail.php — geen patch voor Laravel 11.x"
+            }
         }
     },
     "minimum-stability": "stable",
