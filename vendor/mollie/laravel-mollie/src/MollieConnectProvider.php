@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\Laravel;
 
+use Laravel\Socialite\AbstractUser;
 use Laravel\Socialite\Two\AbstractProvider;
 use Laravel\Socialite\Two\ProviderInterface;
 use Laravel\Socialite\Two\User;
@@ -47,7 +50,7 @@ class MollieConnectProvider extends AbstractProvider implements ProviderInterfac
      */
     protected function getAuthUrl($state)
     {
-        return $this->buildAuthUrlFromBase(static::MOLLIE_WEB_URL.'/oauth2/authorize', $state);
+        return $this->buildAuthUrlFromBase(static::MOLLIE_WEB_URL . '/oauth2/authorize', $state);
     }
 
     /**
@@ -57,7 +60,7 @@ class MollieConnectProvider extends AbstractProvider implements ProviderInterfac
      */
     protected function getTokenUrl()
     {
-        return static::MOLLIE_API_URL.'/oauth2/tokens';
+        return static::MOLLIE_API_URL . '/oauth2/tokens';
     }
 
     /**
@@ -68,17 +71,17 @@ class MollieConnectProvider extends AbstractProvider implements ProviderInterfac
      */
     protected function getUserByToken($token)
     {
-        $response = $this->getHttpClient()->get(static::MOLLIE_API_URL.'/v2/organizations/me', [
-            'headers' => ['Authorization' => 'Bearer '.$token],
+        $response = $this->getHttpClient()->get(static::MOLLIE_API_URL . '/v2/organizations/me', [
+            'headers' => ['Authorization' => 'Bearer ' . $token],
         ]);
 
-        return json_decode($response->getBody(), true);
+        return json_decode((string) $response->getBody(), true);
     }
 
     /**
      * Map the raw user array to a Socialite User instance.
      *
-     * @return \Laravel\Socialite\AbstractUser
+     * @return AbstractUser
      */
     protected function mapUserToObject(array $user)
     {

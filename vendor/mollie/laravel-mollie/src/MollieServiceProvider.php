@@ -1,14 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mollie\Laravel;
 
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\ServiceProvider;
 use Mollie\Api\MollieApiClient;
+use Mollie\Api\Webhooks\SignatureValidator;
+use Mollie\Laravel\Commands\SetupWebhookCommand;
+use Mollie\Laravel\Contracts\WebhookDispatcher;
+use RuntimeException;
 
 class MollieServiceProvider extends ServiceProvider
 {
-    const PACKAGE_VERSION = '3.1.0';
+    const PACKAGE_VERSION = '4.1.0';
 
     /**
      * Boot the service provider.
@@ -17,28 +23,14 @@ class MollieServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $this->loadRoutesFrom(__DIR__ . '/../routes/webhook.php');
+
         if ($this->app->runningInConsole()) {
-            $this->publishes([__DIR__.'/../config/mollie.php' => config_path('mollie.php')]);
-        }
+            $this->publishes([__DIR__ . '/../config/mollie.php' => config_path('mollie.php')]);
 
-        $this->extendSocialite();
-    }
-
-    /**
-     * Extend the Laravel Socialite factory class, if available.
-     *
-     * @return void
-     */
-    protected function extendSocialite()
-    {
-        if (interface_exists($socialiteFactoryClass = \Laravel\Socialite\Contracts\Factory::class)) {
-            $socialite = $this->app->make($socialiteFactoryClass);
-
-            $socialite->extend('mollie', function (Container $app) use ($socialite) {
-                $config = $app['config']['services.mollie'];
-
-                return $socialite->buildProvider(MollieConnectProvider::class, $config);
-            });
+            $this->commands([
+                SetupWebhookCommand::class,
+            ]);
         }
     }
 
@@ -49,22 +41,35 @@ class MollieServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/mollie.php', 'mollie');
+        $this->mergeConfigFrom(
+            __DIR__ . '/../config/mollie.php', 'mollie'
+        );
 
-        $this->app->singleton(
+        $this->app->bind(
             MollieApiClient::class,
             function (Container $app) {
                 $client = (new MollieApiClient(new MollieLaravelHttpClientAdapter))
-                    ->addVersionString('MollieLaravel/'.self::PACKAGE_VERSION);
+                    ->addVersionString('MollieLaravel/' . self::PACKAGE_VERSION);
 
-                if (! empty($apiKey = $app['config']['mollie.key'])) {
-                    $client->setApiKey($apiKey);
+                if (! empty($token = $app['config']['mollie.key'])) {
+                    $client->setToken($token);
                 }
 
                 return $client;
             }
         );
 
-        $this->app->singleton(MollieManager::class);
+        $this->app->singleton(SignatureValidator::class, function () {
+            throw_if(
+                ! config('mollie.webhooks.signing_secrets'),
+                new RuntimeException('No signing secrets for Mollie webhooks are set')
+            );
+
+            return new SignatureValidator(config('mollie.webhooks.signing_secrets'));
+        });
+
+        $this->app->bind(WebhookDispatcher::class, function (Container $app) {
+            return $app->make(config('mollie.webhooks.dispatcher') ?? EventWebhookDispatcher::class);
+        });
     }
 }

@@ -15,6 +15,7 @@
     'providers' => 
     array (
       0 => 'Mollie\\Laravel\\MollieServiceProvider',
+      1 => 'Mollie\\Laravel\\MollieSocialiteServiceProvider',
     ),
   ),
   'nesbot/carbon' => 

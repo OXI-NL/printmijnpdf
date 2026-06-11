@@ -60,6 +60,7 @@ class SalesInvoice extends BaseResource
      * @var object
      */
     public $paymentDetails;
+
     /**
      * @var object
      */
@@ -89,6 +90,11 @@ class SalesInvoice extends BaseResource
      * @var object|null
      */
     public $discount;
+
+    /**
+     * @var bool
+     */
+    public $isEInvoice;
 
     /**
      * @var object

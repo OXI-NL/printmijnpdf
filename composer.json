@@ -4,8 +4,8 @@
     "description": "PrintMijnPDF.nl - Simple PDF printing service",
     "require": {
         "php": "^8.2",
-        "laravel/framework": "^11.0",
-        "mollie/laravel-mollie": "^3.0",
+        "laravel/framework": "^13.0",
+        "mollie/laravel-mollie": "^4.0",
         "setasign/fpdi": "^2.6",
         "setasign/fpdf": "^1.8"
     },
@@ -59,9 +59,7 @@
             "php-http/discovery": true
         },
         "audit": {
-            "ignore": {
-                "PKSA-mdq4-51ck-6kdq": "CVE-2026-48019 workaround in app/Rules/SafeEmail.php — geen patch voor Laravel 11.x"
-            }
+            "ignore": {}
         }
     },
     "minimum-stability": "stable",
