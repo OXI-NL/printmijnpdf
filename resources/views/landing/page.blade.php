@@ -38,7 +38,7 @@
     <!-- Structured Data -->
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
+        "@@context": "https://schema.org",
         "@type": "Service",
         "name": "{{ $hero['title'] }}",
         "description": "{{ $meta['description'] }}",
@@ -57,7 +57,7 @@
     @if(isset($faq) && count($faq) > 0)
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
+        "@@context": "https://schema.org",
         "@type": "FAQPage",
         "mainEntity": [
             @foreach($faq as $index => $item)

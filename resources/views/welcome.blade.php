@@ -200,7 +200,7 @@
     <!-- Structured Data: PrintingService -->
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
+        "@@context": "https://schema.org",
         "@type": "PrintingService",
         "name": "PrintMijnPDF",
         "description": "Professionele PDF printservice. Upload je PDF en ontvang een geprint boekje of losse pagina's binnen 3 werkdagen.",
@@ -242,7 +242,7 @@
     <!-- Structured Data: Product -->
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
+        "@@context": "https://schema.org",
         "@type": "Product",
         "name": "PDF Printen als Boekje",
         "description": "Laat je PDF printen als professioneel geniet boekje of losse pagina's. Full colour, drukwerkkwaliteit.",
@@ -318,7 +318,7 @@
     <!-- FAQ Structured Data -->
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
+        "@@context": "https://schema.org",
         "@type": "FAQPage",
         "mainEntity": [
             {
