@@ -18,6 +18,10 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- Negeer een eventueel achtergebleven config- of route-cache: die bevat
+             de productiewaarden uit .env en zet o.a. CSRF aan tijdens tests. -->
+        <env name="APP_CONFIG_CACHE" value="bootstrap/cache/config.testing-unused.php"/>
+        <env name="APP_ROUTES_CACHE" value="bootstrap/cache/routes.testing-unused.php"/>
         <env name="APP_KEY" value="base64:2oEBnC3BK996CnOiU9CKXQZPkCoDWR2/GCC9Qz4Uxxo="/>
         <env name="APP_DEBUG" value="false"/>
         <env name="APP_URL" value="http://localhost"/>

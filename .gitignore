@@ -7,3 +7,4 @@
 /storage/app/pdfs/
 /bootstrap/cache/
 .phpunit.result.cache
+/database/*.sqlite
