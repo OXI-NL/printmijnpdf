@@ -32,6 +32,6 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
-        <env name="MOLLIE_KEY" value="test_dummykeyfortestsonly000000000"/>
+        <env name="MOLLIE_KEY" value="test_dummykeyvoortestsalleen0000000"/>
     </php>
 </phpunit>

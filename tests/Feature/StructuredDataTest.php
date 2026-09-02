@@ -26,6 +26,15 @@ class StructuredDataTest extends TestCase
         ];
     }
 
+    /** Alleen de URI's, voor tests die het verwachte aantal niet nodig hebben. */
+    public static function paginaUris(): array
+    {
+        return array_map(
+            fn (array $case) => [$case[0]],
+            self::paginasMetStructuredData(),
+        );
+    }
+
     /** @return string[] de ruwe inhoud van elk ld+json blok */
     private function blokken(string $html): array
     {
@@ -46,7 +55,7 @@ class StructuredDataTest extends TestCase
         $this->assertCount($verwacht, $blokken, "onverwacht aantal JSON-LD blokken op {$uri}");
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('paginasMetStructuredData')]
+    #[\PHPUnit\Framework\Attributes\DataProvider('paginaUris')]
     public function test_elk_blok_is_geldige_json_met_schema_org_context(string $uri): void
     {
         foreach ($this->blokken($this->get($uri)->getContent()) as $i => $blok) {
