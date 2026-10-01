@@ -6,6 +6,7 @@ use App\Models\Order;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Mockery;
+use Mollie\Api\MollieApiClient;
 use Mollie\Laravel\Facades\Mollie;
 use Tests\TestCase;
 
@@ -67,7 +68,9 @@ class MollieWebhookTest extends TestCase
 
         // Mollie::api() is de facade-root zelf; swap() vervangt die zonder de
         // echte client te construeren, dus er is geen API-sleutel nodig.
-        $api = Mockery::mock();
+        // Sinds laravel-mollie 4.1.2 heeft api() het return type MollieApiClient,
+        // dus de mock moet van die class zijn.
+        $api = Mockery::mock(MollieApiClient::class);
         $api->payments = $endpoint;
 
         Mollie::swap($api);
