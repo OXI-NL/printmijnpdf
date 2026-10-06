@@ -8,3 +8,4 @@
 /bootstrap/cache/
 .phpunit.result.cache
 /database/*.sqlite
+/.venv/
