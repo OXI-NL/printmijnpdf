@@ -25,7 +25,7 @@ Geef per kwetsbaarheid:
 
 **Extra aandacht voor:**
 - `mollie/mollie-api-php` — payment integratie
-- PDF-libraries (`pikepdf` als je die via shell aanroept, of PHP-equivalenten)
+- PDF-libraries: `setasign/fpdi` en `setasign/fpdf` (boekje-impositie, facturen, pakbonnen)
 - `resend/resend-php` of `resend/resend-laravel`
 - File upload / validation packages
 - `phpseclib/phpseclib` (recent High CVE gehad)
