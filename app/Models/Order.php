@@ -44,6 +44,8 @@ class Order extends Model
         'track_trace',
         'shipped_at',
         'paid_at',
+        'paid_processed_at',
+        'payment_failed_mailed_at',
         // Attribution
         'utm_source',
         'utm_medium',
@@ -60,6 +62,8 @@ class Order extends Model
     protected $casts = [
         'has_bleed' => 'boolean',
         'paid_at' => 'datetime',
+        'paid_processed_at' => 'datetime',
+        'payment_failed_mailed_at' => 'datetime',
         'shipped_at' => 'datetime',
     ];
 

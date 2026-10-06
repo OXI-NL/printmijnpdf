@@ -256,17 +256,22 @@ class OrderController extends Controller
                         'status' => 'paid',
                         'paid_at' => now(),
                     ]);
-                    
+
+                    Log::info("Order {$order->order_number} marked as paid");
+                }
+
+                // Los van de status: complete() kan de order al op 'paid' hebben
+                // gezet voordat deze webhook binnenkwam. De atomaire claim op
+                // paid_processed_at zorgt dat dit precies één keer gebeurt.
+                if ($order->status !== 'cancelled' && $this->claimPaidProcessing($order)) {
                     // Maak impositie voor boekjes
                     $this->createBookletImposition($order);
-                    
+
                     // Stuur bevestigingsmail
                     $this->sendConfirmationEmail($order);
-                    
-                    // Notificeer admin (optioneel)
+
+                    // Notificeer admin
                     $this->notifyAdmin($order);
-                    
-                    Log::info("Order {$order->order_number} marked as paid");
                 }
             } elseif ($payment->isCanceled() || $payment->isExpired() || $payment->isFailed()) {
                 // Gebruik alleen 'cancelled' (database ENUM ondersteunt geen 'expired'/'failed')
@@ -315,7 +320,7 @@ class OrderController extends Controller
                         $order->refresh();
                     }
                     
-                    // Stuur de mislukte betaling email (cache voorkomt dubbele)
+                    // Stuur de mislukte betaling email (claim voorkomt dubbele)
                     $this->sendPaymentFailedEmail($order);
                 }
             } catch (\Exception $e) {
@@ -323,7 +328,7 @@ class OrderController extends Controller
             }
         }
         
-        // Als status al cancelled is, stuur alsnog email (cache voorkomt dubbele)
+        // Als status al cancelled is, stuur alsnog email (claim voorkomt dubbele)
         if ($order->status === 'cancelled') {
             $this->sendPaymentFailedEmail($order);
         }
@@ -383,6 +388,20 @@ class OrderController extends Controller
             'success' => true,
             'message' => 'Order gemarkeerd als verzonden. Klant heeft een email ontvangen.',
         ]);
+    }
+
+    /**
+     * Claim de verwerking na betaling; true voor precies één aanroep per order
+     */
+    protected function claimPaidProcessing(Order $order): bool
+    {
+        $claimed = Order::whereKey($order->id)
+            ->whereNull('paid_processed_at')
+            ->update(['paid_processed_at' => now()]) === 1;
+
+        $order->refresh();
+
+        return $claimed;
     }
 
     /**
@@ -459,21 +478,21 @@ class OrderController extends Controller
      */
     protected function sendPaymentFailedEmail(Order $order)
     {
-        // Voorkom dubbele emails met cache
-        $cacheKey = "payment_failed_email_sent_{$order->id}";
-        
-        if (Cache::has($cacheKey)) {
+        // Voorkom dubbele emails: een atomaire claim in de database overleeft,
+        // anders dan de cache, een cache:clear en de 24-uursgrens
+        $claimed = Order::whereKey($order->id)
+            ->whereNull('payment_failed_mailed_at')
+            ->update(['payment_failed_mailed_at' => now()]) === 1;
+
+        if (!$claimed) {
             Log::info("Payment failed email already sent for order {$order->order_number}, skipping");
             return;
         }
-        
+
         try {
             Mail::to($order->customer_email, $order->customer_name)
                 ->send(new PaymentFailed($order));
-            
-            // Markeer als verzonden voor 24 uur
-            Cache::put($cacheKey, true, now()->addHours(24));
-                
+
             Log::info("Payment failed email sent for order {$order->order_number}");
         } catch (\Exception $e) {
             Log::error("Failed to send payment failed email for order {$order->order_number}: " . $e->getMessage());

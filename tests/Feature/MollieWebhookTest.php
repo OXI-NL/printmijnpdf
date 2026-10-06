@@ -2,8 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Mail\AdminOrderNotification;
+use App\Mail\OrderConfirmation;
+use App\Mail\PaymentFailed;
 use App\Models\Order;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Mockery;
 use Mollie\Api\MollieApiClient;
@@ -145,5 +149,78 @@ class MollieWebhookTest extends TestCase
         $this->mockMollie(null, 'paid');
 
         $this->post('/webhook/mollie', ['id' => 'tr_test123'])->assertOk();
+    }
+
+    public function test_betaling_stuurt_bevestiging_en_adminmelding(): void
+    {
+        $order = $this->order();
+        $this->mockMollie($order->id, 'paid');
+
+        $this->post('/webhook/mollie', ['id' => 'tr_test123'])->assertOk();
+
+        Mail::assertSent(OrderConfirmation::class, 1);
+        Mail::assertSent(AdminOrderNotification::class, 1);
+        $this->assertNotNull($order->refresh()->paid_processed_at);
+    }
+
+    public function test_mails_ook_als_bedankpagina_de_webhook_voor_was(): void
+    {
+        // complete() zette de order al op 'paid' voordat de webhook binnenkwam
+        $order = $this->order(['status' => 'paid', 'paid_at' => now()]);
+        $this->mockMollie($order->id, 'paid');
+
+        $this->post('/webhook/mollie', ['id' => 'tr_test123'])->assertOk();
+
+        Mail::assertSent(OrderConfirmation::class, 1);
+        Mail::assertSent(AdminOrderNotification::class, 1);
+    }
+
+    public function test_herhaalde_webhook_mailt_maar_een_keer(): void
+    {
+        $order = $this->order();
+        $this->mockMollie($order->id, 'paid');
+
+        $this->post('/webhook/mollie', ['id' => 'tr_test123'])->assertOk();
+        Cache::flush(); // de cache-dedupe mag niet de enige bescherming zijn
+        $this->post('/webhook/mollie', ['id' => 'tr_test123'])->assertOk();
+
+        Mail::assertSent(OrderConfirmation::class, 1);
+        Mail::assertSent(AdminOrderNotification::class, 1);
+    }
+
+    public function test_reeds_afgehandelde_order_wordt_niet_opnieuw_gemaild(): void
+    {
+        // Oude orders krijgen paid_processed_at via de migratie; een latere
+        // webhook (bv. bij terugbetaling) mag de klant niet lastigvallen
+        $order = $this->order(['status' => 'shipped', 'paid_processed_at' => now()->subWeeks(2)]);
+        $this->mockMollie($order->id, 'paid');
+
+        $this->post('/webhook/mollie', ['id' => 'tr_test123'])->assertOk();
+
+        Mail::assertNothingSent();
+    }
+
+    public function test_mislukte_betaling_mailt_de_klant_een_keer(): void
+    {
+        $order = $this->order();
+        $this->mockMollie($order->id, 'expired');
+
+        $this->post('/webhook/mollie', ['id' => 'tr_test123'])->assertOk();
+        Cache::flush(); // bv. een cache:clear bij een deploy
+        $this->get('/bestelling/'.$order->order_number);
+        $this->get('/bestelling/'.$order->order_number);
+
+        Mail::assertSent(PaymentFailed::class, 1);
+        $this->assertNotNull($order->refresh()->payment_failed_mailed_at);
+    }
+
+    public function test_oude_geannuleerde_order_krijgt_geen_mislukt_mail(): void
+    {
+        $order = $this->order(['status' => 'cancelled', 'payment_failed_mailed_at' => now()->subWeeks(2)]);
+        $this->mockMollie($order->id, 'expired');
+
+        $this->get('/bestelling/'.$order->order_number);
+
+        Mail::assertNothingSent();
     }
 }
