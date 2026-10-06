@@ -278,6 +278,10 @@ class LandingPageController extends Controller
                     'answer' => 'Een boekje heeft minimaal 4 pagina\'s nodig. Het maximum is 64 pagina\'s.',
                 ],
                 [
+                    'question' => 'Waarom gaat een boekje per 4 pagina\'s?',
+                    'answer' => 'Elk dubbelgevouwen vel levert 4 pagina\'s op, dus een boekje heeft altijd 4, 8, 12, 16 enzovoort pagina\'s. Heeft je PDF bijvoorbeeld 10 pagina\'s? Dan voegen wij 2 blanco pagina\'s toe aan het eind en telt je boekje 12 pagina\'s. Je betaalt voor het afgeronde aantal.',
+                ],
+                [
                     'question' => 'Kan ik ook 1 exemplaar bestellen?',
                     'answer' => 'Ja! We hebben geen minimale oplage. Bestel gerust 1 exemplaar.',
                 ],

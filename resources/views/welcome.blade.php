@@ -363,6 +363,14 @@
             },
             {
                 "@type": "Question",
+                "name": "Waarom bestaat een boekje altijd uit een veelvoud van 4 pagina's?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Een geniet boekje wordt gemaakt van vellen die dubbelgevouwen worden. Elk gevouwen vel levert 4 pagina's op: twee aan de voorkant en twee aan de achterkant. Een boekje heeft daarom altijd 4, 8, 12, 16 enzovoort pagina's. Heeft je PDF een ander aantal, bijvoorbeeld 10 pagina's? Dan voegen wij aan het eind van je document blanco pagina's toe, in dit voorbeeld 2, zodat je boekje 12 pagina's telt. Je betaalt voor het afgeronde aantal pagina's. Wil je zelf bepalen waar de lege pagina's komen? Voeg ze dan toe aan je PDF voordat je hem uploadt."
+                }
+            },
+            {
+                "@type": "Question",
                 "name": "Op welk papier wordt er geprint?",
                 "acceptedAnswer": {
                     "@type": "Answer",
@@ -1400,6 +1408,27 @@
             font-size: 14px;
             color: var(--text-muted);
         }
+        .modal-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .btn-secondary {
+            background: white;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { border-color: #94a3b8; }
+        .modal-link {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 0.5rem;
+            text-decoration: underline;
+        }
         .modal-warning-icon {
             width: 48px;
             height: 48px;
@@ -1611,6 +1640,26 @@
                 </svg>
                 <h3>Verstuurd!</h3>
                 <p>Bedankt voor je bericht. We reageren zo snel mogelijk. Je ontvangt een kopie per e-mail.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blanco pagina's Modal -->
+    <div class="modal-overlay" id="blankPagesModal" role="alertdialog" aria-modal="true" aria-labelledby="blankPagesModalTitle" aria-describedby="blankPagesModalText">
+        <div class="modal-box">
+            <div class="modal-warning-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+            <h2 id="blankPagesModalTitle" style="text-align:center">Een boekje gaat per 4 pagina's</h2>
+            <p class="modal-sub-warning" id="blankPagesModalText" style="text-align:center"></p>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-primary" id="blankPagesContinue" style="width:100%"></button>
+                <button type="button" class="btn btn-secondary" id="blankPagesOtherFile" style="width:100%">Ander bestand uploaden</button>
+                <button type="button" class="modal-link" id="blankPagesLoose">Of kies losse pagina's</button>
             </div>
         </div>
     </div>
@@ -1843,7 +1892,7 @@
                 <div class="binding-option selected" id="optBooklet" data-binding="booklet" role="button" tabindex="0" aria-pressed="true">
                     <div class="icon" aria-hidden="true">📖</div>
                     <div class="title">Geniet boekje</div>
-                    <div class="note">Dubbelzijdig · Max 64 pag.</div>
+                    <div class="note">Dubbelzijdig · Per 4 pag. · Max 64</div>
                 </div>
                 <div class="binding-option" id="optLoose" data-binding="loose" role="button" tabindex="0" aria-pressed="false">
                     <div class="icon" aria-hidden="true">📄</div>
@@ -2074,6 +2123,12 @@
         </details>
 
         <details>
+            <summary>Waarom bestaat een boekje altijd uit een veelvoud van 4 pagina's?</summary>
+            <p>Een geniet boekje wordt gemaakt van vellen die dubbelgevouwen worden. Elk gevouwen vel levert 4 pagina's op: twee aan de voorkant en twee aan de achterkant. Een boekje heeft daarom altijd 4, 8, 12, 16 enzovoort pagina's.</p>
+            <p>Heeft je PDF een ander aantal, bijvoorbeeld 10 pagina's? Dan voegen wij aan het eind van je document blanco pagina's toe, in dit voorbeeld 2, zodat je boekje 12 pagina's telt. Je betaalt voor het afgeronde aantal pagina's. Wil je zelf bepalen waar de lege pagina's komen? Voeg ze dan toe aan je PDF voordat je hem uploadt.</p>
+        </details>
+
+        <details>
             <summary>Op welk papier wordt er geprint?</summary>
             <p>Wij printen op hoogwaardig wit papier van professionele kwaliteit. De printkwaliteit is echte drukwerkkwaliteit — vergelijkbaar met wat u kent van professionele magazines en brochures. Kleuren komen helder en scherp van het papier, zowel bij foto's als bij tekst en afbeeldingen.</p>
         </details>
@@ -2168,6 +2223,7 @@
         let deliveryType = 'shipping';
         let quantity = 1;
         let activePromo = null;
+        let blankPagesAccepted = false;
 
         // DOM elements
         const dropzone = document.getElementById('dropzone');
@@ -2199,6 +2255,54 @@
         // Utility functions
         function formatPrice(cents) {
             return '€' + (cents / 100).toFixed(2).replace('.', ',');
+        }
+
+        // Een geniet boekje bestaat altijd uit een veelvoud van 4 pagina's
+        function billablePages() {
+            return bindingType === 'booklet' ? Math.ceil(pageCount / 4) * 4 : pageCount;
+        }
+
+        function blankPagesNeeded() {
+            return billablePages() - pageCount;
+        }
+
+        function blankPagesText(n) {
+            return n === 1 ? '1 blanco pagina' : `${n} blanco pagina's`;
+        }
+
+        const blankPagesModal = document.getElementById('blankPagesModal');
+
+        function openBlankPagesModal() {
+            const blanks = blankPagesNeeded();
+            document.getElementById('blankPagesModalText').textContent =
+                `Je document heeft ${pageCount} pagina's. Een geniet boekje bestaat altijd uit een veelvoud van 4 pagina's. ` +
+                `Gaan we door, dan voegen wij ${blankPagesText(blanks)} toe aan het eind van je document. ` +
+                `Je boekje telt dan ${billablePages()} pagina's en die rekenen we ook af.`;
+            document.getElementById('blankPagesContinue').textContent = `Doorgaan met ${billablePages()} pagina's`;
+            blankPagesModal.classList.add('visible');
+            document.getElementById('blankPagesContinue').focus();
+        }
+
+        function closeBlankPagesModal() {
+            blankPagesModal.classList.remove('visible');
+        }
+
+        function showBlankPagesNotice() {
+            showInlineNotice(
+                `We voegen ${blankPagesText(blankPagesNeeded())} toe aan het eind van je boekje (${billablePages()} pagina's in totaal).`,
+                'info'
+            );
+        }
+
+        // Vraag om bevestiging zodra een boekje blanco pagina's nodig heeft
+        function checkBlankPages() {
+            if (bindingType !== 'booklet' || blankPagesNeeded() === 0) return true;
+            if (blankPagesAccepted) {
+                showBlankPagesNotice();
+                return true;
+            }
+            openBlankPagesModal();
+            return false;
         }
 
         function showError(message) {
@@ -2330,6 +2434,8 @@
                 );
             }
 
+            setTimeout(checkBlankPages, 400);
+
             sectionBinding.classList.remove('hidden');
             sectionPrice.classList.remove('hidden');
             sectionAddress.classList.remove('hidden');
@@ -2356,6 +2462,8 @@
             fileInput.value = '';
             currentFile = null;
             pageCount = 0;
+            blankPagesAccepted = false;
+            closeBlankPagesModal();
 
             sectionBinding.classList.add('hidden');
             sectionPrice.classList.add('hidden');
@@ -2383,7 +2491,7 @@
 
         function calculatePrices() {
             const pricePerPage = detectedFormat === 'A4' ? PRICES.perPageA4 : PRICES.perPageA5;
-            let pagesCost = pageCount * pricePerPage * quantity;
+            let pagesCost = billablePages() * pricePerPage * quantity;
             let bindingCost = bindingType === 'booklet'
                 ? PRICES.binding + ((quantity - 1) * PRICES.bindingExtra)
                 : 0;
@@ -2407,12 +2515,14 @@
             const prices = calculatePrices();
             const pricePerPage = detectedFormat === 'A4' ? PRICES.perPageA4 : PRICES.perPageA5;
 
+            const blanks = blankPagesNeeded();
+            const blanksNote = blanks > 0 ? ` (incl. ${blanks} blanco)` : '';
             if (quantity > 1) {
                 document.getElementById('pricePageLabel').textContent =
-                    `${pageCount} pag. × ${formatPrice(pricePerPage)} × ${quantity} ex.`;
+                    `${billablePages()} pag.${blanksNote} × ${formatPrice(pricePerPage)} × ${quantity} ex.`;
             } else {
                 document.getElementById('pricePageLabel').textContent =
-                    `${pageCount} pagina's × ${formatPrice(pricePerPage)}`;
+                    `${billablePages()} pagina's${blanksNote} × ${formatPrice(pricePerPage)}`;
             }
             document.getElementById('pricePagesValue').textContent = formatPrice(prices.pagesCost);
 
@@ -2513,6 +2623,7 @@
 
         async function submitOrder() {
             if (!validateForm()) return;
+            if (!checkBlankPages()) return;
 
             updateProgressStep(4);
 
@@ -2527,6 +2638,7 @@
             formData.append('has_bleed', hasBleed ? '1' : '0');
             formData.append('bleed_mm', bleedMM);
             formData.append('binding_type', bindingType);
+            formData.append('blank_pages_accepted', blankPagesAccepted ? '1' : '0');
             formData.append('print_side', printSide);
             formData.append('quantity', quantity);
             formData.append('delivery_type', deliveryType);
@@ -2570,6 +2682,23 @@
             }
         }
 
+        document.getElementById('blankPagesContinue').addEventListener('click', () => {
+            blankPagesAccepted = true;
+            closeBlankPagesModal();
+            showBlankPagesNotice();
+            updatePriceDisplay();
+        });
+
+        document.getElementById('blankPagesOtherFile').addEventListener('click', () => {
+            resetUpload();
+            fileInput.click();
+        });
+
+        document.getElementById('blankPagesLoose').addEventListener('click', () => {
+            closeBlankPagesModal();
+            optLoose.click();
+        });
+
         // Event listeners
         dropzone.addEventListener('click', () => fileInput.click());
         dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
@@ -2591,6 +2720,7 @@
             subOptions.classList.remove('visible');
             hideInlineNotice();
             updatePriceDisplay();
+            checkBlankPages();
             PMP_Analytics.trackFinishing('booklet', quantity);
         });
 
@@ -2599,6 +2729,7 @@
             optLoose.classList.add('selected');
             optBooklet.classList.remove('selected');
             subOptions.classList.add('visible');
+            if (pageCount <= MAX_BOOKLET_PAGES) hideInlineNotice();
             updatePriceDisplay();
             PMP_Analytics.trackFinishing('loose', quantity);
         });

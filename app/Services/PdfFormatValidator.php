@@ -224,7 +224,7 @@ class PdfFormatValidator
             $refPattern = '/\/' . $boxName . '\s+(\d+)\s+0\s+R/';
             if (preg_match($refPattern, $content, $refMatch)) {
                 $objId = $refMatch[1];
-                $objPattern = '/' . $objId . '\s+0\s+obj\s*(.*?)endobj/s';
+                $objPattern = '/(?<!\d)' . $objId . '\s+0\s+obj\s*(.*?)endobj/s';
                 if (preg_match($objPattern, $fullContent, $objMatch)) {
                     $arrayPattern = '/\[\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\]/';
                     if (preg_match($arrayPattern, $objMatch[1], $arrMatch)) {
@@ -247,7 +247,7 @@ class PdfFormatValidator
         if (preg_match('/\/Parent\s+(\d+)\s+0\s+R/', $pageContent, $parentMatch)) {
             $parentId = $parentMatch[1];
             // Zoek het parent object
-            $pattern = '/' . $parentId . '\s+0\s+obj\s*(.*?)endobj/s';
+            $pattern = '/(?<!\d)' . $parentId . '\s+0\s+obj\s*(.*?)endobj/s';
             if (preg_match($pattern, $fullContent, $parentObj)) {
                 return $this->extractBox($parentObj[1], $boxName, $fullContent);
             }

@@ -68,7 +68,7 @@
                                         <span style="color: #92400e; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Je bestelling</span>
                                         <p style="color: #78350f; font-size: 15px; margin: 8px 0 0; font-weight: 500;">
                                             {{ $order->pdf_original_name }}<br>
-                                            <span style="font-size: 13px; color: #a16207;">{{ $order->format }} · {{ $order->page_count }} pagina's · {{ $order->formatted_total }}</span>
+                                            <span style="font-size: 13px; color: #a16207;">{{ $order->format }} · {{ $order->pages_label }} pagina's · {{ $order->formatted_total }}</span>
                                         </p>
                                     </td>
                                 </tr>

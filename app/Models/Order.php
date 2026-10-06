@@ -18,6 +18,7 @@ class Order extends Model
         'pdf_path',
         'pdf_imposed_path',
         'page_count',
+        'blank_pages',
         'format',
         'has_bleed',
         'bleed_mm',
@@ -90,8 +91,43 @@ class Order extends Model
     /**
      * Bereken de totaalprijs
      */
+    /**
+     * Een geniet boekje bestaat altijd uit een veelvoud van 4 pagina's
+     * (elk gevouwen vel = 4 pagina's). Ontbrekende pagina's worden blanco
+     * aan het eind toegevoegd en meegerekend.
+     */
+    public static function billablePages(int $pageCount, string $bindingType): int
+    {
+        return $bindingType === 'booklet' ? (int) ceil($pageCount / 4) * 4 : $pageCount;
+    }
+
+    public static function blankPagesNeeded(int $pageCount, string $bindingType): int
+    {
+        return self::billablePages($pageCount, $bindingType) - $pageCount;
+    }
+
+    /**
+     * Aantal pagina's waarvoor betaald is, inclusief blanco pagina's
+     */
+    public function getBilledPageCountAttribute(): int
+    {
+        return $this->page_count + (int) $this->blank_pages;
+    }
+
+    /**
+     * Bv. "10" of "10 + 2 blanco"
+     */
+    public function getPagesLabelAttribute(): string
+    {
+        return $this->blank_pages > 0
+            ? "{$this->page_count} + {$this->blank_pages} blanco"
+            : (string) $this->page_count;
+    }
+
     public static function calculatePrice(int $pageCount, string $format, string $bindingType = 'booklet', string $deliveryType = 'shipping', int $quantity = 1, ?string $promoCode = null): array
     {
+        $pageCount = self::billablePages($pageCount, $bindingType);
+
         $pricePerPage = $format === 'A5'
             ? config('pricing.per_page_a5', 7)
             : config('pricing.per_page_a4', 10);

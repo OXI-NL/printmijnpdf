@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Rules\SafeEmail;
 use App\Services\BookletImpositionService;
 use App\Services\PdfFormatValidator;
+use App\Services\PdfPageCounter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -19,6 +20,11 @@ use Mollie\Laravel\Facades\Mollie;
 
 class OrderController extends Controller
 {
+    /**
+     * Maximaal aantal pagina's voor een geniet boekje (gelijk aan het formulier)
+     */
+    public const MAX_BOOKLET_PAGES = 64;
+
     /**
      * Toon de homepage / bestelformulier
      */
@@ -38,15 +44,9 @@ class OrderController extends Controller
 
         try {
             $pdf = $request->file('pdf');
-            $content = file_get_contents($pdf->getRealPath());
 
             // Tel paginas
-            $pageCount = preg_match_all("/\/Page\W/", $content, $matches);
-            if ($pageCount === 0) {
-                preg_match_all("/\/Type\s*\/Page[^s]/", $content, $matches);
-                $pageCount = count($matches[0]);
-            }
-            if ($pageCount === 0) $pageCount = 1;
+            $pageCount = (new PdfPageCounter())->count($pdf->getRealPath());
 
             // Valideer formaat via PdfFormatValidator (TrimBox > CropBox > BleedBox > MediaBox)
             $validator = new PdfFormatValidator();
@@ -88,7 +88,9 @@ class OrderController extends Controller
     {
         $request->validate([
             'pdf' => 'required|file|mimes:pdf|max:51200', // Max 50MB
-            'page_count' => 'required|integer|min:1',
+            // page_count en format van de browser zijn alleen informatief: de
+            // prijs wordt berekend op wat de server zelf in de PDF telt
+            'page_count' => 'nullable|integer|min:1',
             'format' => 'required|in:A4,A5',
             'has_bleed' => 'boolean',
             'bleed_mm' => 'nullable|integer',
@@ -105,7 +107,39 @@ class OrderController extends Controller
             'postcode' => 'required|string|regex:/^\d{4}\s?[A-Za-z]{2}$/',
             'city' => 'required|string|max:255',
             'promo_code' => 'nullable|string|max:50',
+            'blank_pages_accepted' => 'boolean',
         ]);
+
+        // Analyseer de PDF zelf, zodat de prijs niet van invoer uit de browser afhangt
+        $pdfPath = $request->file('pdf')->getRealPath();
+        $formatResult = (new PdfFormatValidator())->validate($pdfPath);
+        if (!$formatResult['valid']) {
+            return response()->json([
+                'success' => false,
+                'message' => $formatResult['reason'] ?? 'Dit bestand heeft een afwijkend formaat.',
+                'errors' => ['pdf' => [$formatResult['reason'] ?? 'Afwijkend formaat.']],
+            ], 422);
+        }
+        $format = $formatResult['format'];
+        $pageCount = (new PdfPageCounter())->count($pdfPath);
+        $bindingType = $request->input('binding_type');
+
+        if ($bindingType === 'booklet' && $pageCount > self::MAX_BOOKLET_PAGES) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Een geniet boekje kan maximaal ' . self::MAX_BOOKLET_PAGES . ' pagina\'s hebben. Kies losse pagina\'s.',
+                'errors' => ['binding_type' => ['Te veel pagina\'s voor een boekje.']],
+            ], 422);
+        }
+
+        $blankPages = Order::blankPagesNeeded($pageCount, $bindingType);
+        if ($blankPages > 0 && !$request->boolean('blank_pages_accepted')) {
+            return response()->json([
+                'success' => false,
+                'message' => "Een boekje bestaat uit een veelvoud van 4 pagina's. Bevestig dat we {$blankPages} blanco pagina's aan het eind toevoegen.",
+                'errors' => ['blank_pages_accepted' => ['Bevestiging voor blanco pagina\'s ontbreekt.']],
+            ], 422);
+        }
 
         try {
             // Upload PDF
@@ -126,9 +160,9 @@ class OrderController extends Controller
 
             // Bereken prijzen (binding_type en delivery_type bepalen kosten)
             $prices = Order::calculatePrice(
-                $request->input('page_count'),
-                $request->input('format'),
-                $request->input('binding_type'),
+                $pageCount,
+                $format,
+                $bindingType,
                 $request->input('delivery_type'),
                 $request->input('quantity'),
                 $promoCode
@@ -141,11 +175,12 @@ class OrderController extends Controller
                 'pdf_original_name' => $originalName,
                 'pdf_stored_name' => $storedName,
                 'pdf_path' => $path,
-                'page_count' => $request->input('page_count'),
-                'format' => $request->input('format'),
+                'page_count' => $pageCount,
+                'blank_pages' => $blankPages,
+                'format' => $format,
                 'has_bleed' => $request->boolean('has_bleed'),
                 'bleed_mm' => $request->input('bleed_mm'),
-                'binding_type' => $request->input('binding_type'),
+                'binding_type' => $bindingType,
                 'print_side' => $request->input('print_side'),
                 'quantity' => $request->input('quantity'),
                 'promo_code' => $promoCode,

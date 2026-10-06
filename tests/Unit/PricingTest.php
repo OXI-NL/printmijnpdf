@@ -150,4 +150,37 @@ class PricingTest extends TestCase
             $this->assertIsInt($value, "{$key} moet een geheel aantal centen zijn");
         }
     }
+
+    public function test_boekje_wordt_afgerekend_per_veelvoud_van_vier(): void
+    {
+        $tien = Order::calculatePrice(10, 'A4', 'booklet', 'shipping', 1);
+        $twaalf = Order::calculatePrice(12, 'A4', 'booklet', 'shipping', 1);
+
+        $this->assertSame($twaalf['pages'], $tien['pages'], '10 pagina\'s als boekje kost hetzelfde als 12');
+        $this->assertSame($twaalf['total'], $tien['total']);
+    }
+
+    public function test_losse_paginas_worden_niet_afgerond(): void
+    {
+        $this->assertSame(10, Order::billablePages(10, 'loose'));
+        $this->assertNotSame(
+            Order::calculatePrice(12, 'A4', 'loose')['pages'],
+            Order::calculatePrice(10, 'A4', 'loose')['pages']
+        );
+    }
+
+    public function test_blanco_paginas_per_aantal(): void
+    {
+        foreach ([1 => 3, 4 => 0, 9 => 3, 10 => 2, 11 => 1, 12 => 0, 64 => 0] as $pages => $blanks) {
+            $this->assertSame($blanks, Order::blankPagesNeeded($pages, 'booklet'), "bij {$pages} pagina's");
+        }
+        $this->assertSame(0, Order::blankPagesNeeded(10, 'loose'));
+    }
+
+    public function test_afronding_geldt_per_exemplaar(): void
+    {
+        $p = Order::calculatePrice(10, 'A4', 'booklet', 'shipping', 3);
+
+        $this->assertSame(12 * 3 * config('pricing.per_page_a4'), $p['pages']);
+    }
 }

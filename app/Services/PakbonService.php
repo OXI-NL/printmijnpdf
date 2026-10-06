@@ -120,7 +120,7 @@ class PakbonService
 
         $pdf->Cell(105, 8, $filename, 1, 0, 'L');
         $pdf->Cell(25, 8, $order->format, 1, 0, 'C');
-        $pdf->Cell(20, 8, $order->page_count, 1, 0, 'C');
+        $pdf->Cell(20, 8, $order->blank_pages > 0 ? "{$order->page_count}+{$order->blank_pages}" : $order->page_count, 1, 0, 'C');
         $pdf->Cell(20, 8, $quantity, 1, 1, 'C');
 
         if ($order->binding_type === 'booklet') {

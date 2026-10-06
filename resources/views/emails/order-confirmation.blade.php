@@ -95,7 +95,7 @@
                                         <span style="color: #64748b; font-size: 13px;">Aantal pagina's</span>
                                     </td>
                                     <td style="padding: 14px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; text-align: right;">
-                                        <span style="color: #1e293b; font-size: 13px; font-weight: 500;">{{ $order->page_count }}</span>
+                                        <span style="color: #1e293b; font-size: 13px; font-weight: 500;">{{ $order->pages_label }}</span>
                                     </td>
                                 </tr>
                                 <tr>

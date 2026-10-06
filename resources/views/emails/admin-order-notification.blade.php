@@ -163,7 +163,7 @@
                                         <span style="color: #64748b; font-size: 13px;">Aantal pagina's</span>
                                     </td>
                                     <td style="padding: 12px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; text-align: right;">
-                                        <span style="color: #1e293b; font-size: 13px; font-weight: 500;">{{ $order->page_count }}</span>
+                                        <span style="color: #1e293b; font-size: 13px; font-weight: 500;">{{ $order->pages_label }}</span>
                                     </td>
                                 </tr>
                                 <tr>
@@ -215,7 +215,7 @@
                                 </tr>
                                 <tr>
                                     <td style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0;">
-                                        <span style="color: #64748b; font-size: 13px;">{{ $order->page_count }} pag.{{ ($order->quantity ?? 1) > 1 ? ' × '.$order->quantity.' ex.' : '' }} &times; &euro; {{ number_format($order->price_pages / $order->page_count / ($order->quantity ?? 1) / 100, 2, ',', '.') }}</span>
+                                        <span style="color: #64748b; font-size: 13px;">{{ $order->billed_page_count }} pag.{{ ($order->quantity ?? 1) > 1 ? ' × '.$order->quantity.' ex.' : '' }} &times; &euro; {{ number_format($order->price_pages / $order->billed_page_count / ($order->quantity ?? 1) / 100, 2, ',', '.') }}</span>
                                     </td>
                                     <td style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; text-align: right;">
                                         <span style="color: #1e293b; font-size: 13px;">&euro; {{ number_format($order->price_pages / 100, 2, ',', '.') }}</span>

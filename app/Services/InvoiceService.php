@@ -239,7 +239,7 @@ class InvoiceService
         // Pagina's printen
         if ($invoice->pages_excl_btw > 0) {
             $pagesBtw = (int) round($invoice->pages_excl_btw * $invoice->btw_percentage / 100);
-            $desc = "Printen {$order->format} - {$order->page_count} pag.";
+            $desc = "Printen {$order->format} - {$order->pages_label} pag.";
             if ($order->print_side === 'double') $desc .= ' (dubbelzijdig)';
             $pdf->SetFillColor(250, 250, 250);
             $pdf->Cell(80, $rh, $desc, 1, 0, 'L', $fill);
