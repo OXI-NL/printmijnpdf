@@ -19,7 +19,7 @@
     <meta property="og:title" content="PDF Printen als Boekje | Binnen 3 Dagen | PrintMijnPDF">
     <meta property="og:description" content="Upload je PDF en ontvang full colour printwerk binnen 3 werkdagen. Professioneel geniet boekje of losse pagina's. Echte drukwerkkwaliteit.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://printmijnpdf.nl">
+    <meta property="og:url" content="https://printmijnpdf.nl/">
     <meta property="og:image" content="https://printmijnpdf.nl/og-image.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -35,7 +35,7 @@
 
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="canonical" href="https://printmijnpdf.nl">
+    <link rel="canonical" href="https://printmijnpdf.nl/">
 
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-9F48GD4CX5"></script>
@@ -466,6 +466,47 @@
             margin: 0 auto;
         }
         
+        .hero-eyebrow {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .use-cases {
+            max-width: 540px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+        .use-cases h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .use-cases-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+        .use-cases-grid a {
+            display: block;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            background: white;
+        }
+        .use-cases-grid a:hover { border-color: var(--primary); color: var(--primary); }
+        .footer-col a { color: inherit; text-decoration: none; }
+        .footer-col a:hover { text-decoration: underline; }
+
         .hero h1 {
             font-size: 32px;
             font-weight: 700;
@@ -1214,7 +1255,7 @@
             max-width: 800px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 2rem;
         }
         
@@ -1711,7 +1752,7 @@
 
     <!-- Hero Section -->
     <section class="hero">
-        <h1>Van PDF op je scherm<br>naar print in je hand.</h1>
+        <h1><span class="hero-eyebrow">PDF printen als boekje of losse pagina's</span>Van PDF op je scherm<br>naar print in je hand.</h1>
         <p class="subtext">Blader door je bestand zoals het bedoeld is,<br>haarscherp geprint in full colour.</p>
 
         <div class="promo-banner">
@@ -2087,6 +2128,16 @@
         </section>
     </main>
 
+    <!-- Interne links naar landingspagina's -->
+    <section class="use-cases" aria-labelledby="useCasesTitle">
+        <h2 id="useCasesTitle">Wat wil je printen?</h2>
+        <nav class="use-cases-grid">
+            @foreach(\App\Http\Controllers\LandingPageController::links() as $link)
+            <a href="{{ $link['url'] }}">{{ $link['label'] }}</a>
+            @endforeach
+        </nav>
+    </section>
+
     <!-- FAQ -->
     <section class="faq">
         <h2>Veelgestelde vragen</h2>
@@ -2163,6 +2214,12 @@
                 <p>Exportweg 11</p>
                 <p>2645ED Delfgauw</p>
                 <p>Ma–vr 17:00–17:30</p>
+            </div>
+            <div class="footer-col">
+                <h3>Printen</h3>
+                @foreach(array_slice(\App\Http\Controllers\LandingPageController::links(), 0, 5) as $link)
+                <p><a href="{{ $link['url'] }}">{{ $link['label'] }}</a></p>
+                @endforeach
             </div>
             <div class="footer-col">
                 <h3>Betalen</h3>

@@ -36,44 +36,57 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Structured Data -->
-    <script type="application/ld+json">
-    {
-        "@@context": "https://schema.org",
-        "@type": "Service",
-        "name": "{{ $hero['title'] }}",
-        "description": "{{ $meta['description'] }}",
-        "provider": {
-            "@type": "PrintingService",
-            "name": "PrintMijnPDF",
-            "url": "https://printmijnpdf.nl"
-        },
-        "areaServed": {
-            "@type": "Country",
-            "name": "Netherlands"
-        }
-    }
-    </script>
+    @php
+        $structuredData = [
+            [
+                '@context' => 'https://schema.org',
+                '@type' => 'Service',
+                'name' => $hero['title'],
+                'serviceType' => $meta['service_type'] ?? 'PDF printen',
+                'description' => $meta['description'],
+                'url' => $meta['canonical'],
+                'provider' => ['@type' => 'PrintingService', 'name' => 'PrintMijnPDF', 'url' => url('/')],
+                'areaServed' => ['@type' => 'Country', 'name' => 'Netherlands'],
+            ],
+            [
+                '@context' => 'https://schema.org',
+                '@type' => 'BreadcrumbList',
+                'itemListElement' => [
+                    ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => url('/')],
+                    ['@type' => 'ListItem', 'position' => 2, 'name' => $breadcrumb ?? $hero['title'], 'item' => $meta['canonical']],
+                ],
+            ],
+        ];
 
-    @if(isset($faq) && count($faq) > 0)
-    <script type="application/ld+json">
-    {
-        "@@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": [
-            @foreach($faq as $index => $item)
-            {
-                "@type": "Question",
-                "name": "{{ $item['question'] }}",
-                "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "{{ $item['answer'] }}"
-                }
-            }@if(!$loop->last),@endif
-            @endforeach
-        ]
-    }
-    </script>
-    @endif
+        if (!empty($faq)) {
+            $structuredData[] = [
+                '@context' => 'https://schema.org',
+                '@type' => 'FAQPage',
+                'mainEntity' => array_map(fn ($item) => [
+                    '@type' => 'Question',
+                    'name' => $item['question'],
+                    'acceptedAnswer' => ['@type' => 'Answer', 'text' => $item['answer']],
+                ], $faq),
+            ];
+        }
+
+        if (!empty($howto)) {
+            $structuredData[] = [
+                '@context' => 'https://schema.org',
+                '@type' => 'HowTo',
+                'name' => $howto['name'],
+                'step' => array_map(fn ($step, $i) => [
+                    '@type' => 'HowToStep',
+                    'position' => $i + 1,
+                    'name' => $step['name'],
+                    'text' => $step['text'],
+                ], $howto['steps'], array_keys($howto['steps'])),
+            ];
+        }
+    @endphp
+    @foreach($structuredData as $block)
+    <script type="application/ld+json">{!! json_encode($block, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_PRETTY_PRINT) !!}</script>
+    @endforeach
 
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -228,6 +241,79 @@
         }
 
         /* FAQ */
+        .breadcrumb {
+            font-size: 0.8125rem;
+            color: #737373;
+            padding-top: 1rem;
+        }
+        .breadcrumb a { color: #737373; text-decoration: none; }
+        .breadcrumb a:hover { color: #e63946; }
+        .content-section ul,
+        .content-section ol {
+            margin: 0.75rem 0 0 1.25rem;
+            color: #525252;
+        }
+        .content-section li { margin-bottom: 0.375rem; }
+        .content-section p + p { margin-top: 0.75rem; }
+        .steps {
+            padding: 3rem 0;
+            background: #fafafa;
+        }
+        .steps h2, .prices h2, .related h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            counter-reset: step;
+        }
+        .step {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+        .step h3 { font-size: 1rem; margin-bottom: 0.375rem; }
+        .step h3::before {
+            counter-increment: step;
+            content: counter(step) ". ";
+            color: #e63946;
+        }
+        .step p { font-size: 0.9375rem; color: #525252; }
+        .prices { padding: 3rem 0; }
+        .price-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9375rem;
+        }
+        .price-table th, .price-table td {
+            text-align: left;
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        .price-table th { font-size: 0.8125rem; color: #737373; font-weight: 600; }
+        .price-table td:last-child, .price-table th:last-child { text-align: right; white-space: nowrap; }
+        .price-note { font-size: 0.8125rem; color: #737373; margin-top: 0.75rem; }
+        .related { padding: 3rem 0; background: #fafafa; }
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+        .related-grid a {
+            display: block;
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 10px;
+            padding: 0.875rem 1rem;
+            color: #262626;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .related-grid a:hover { border-color: #e63946; color: #e63946; }
         .faq {
             padding: 2.5rem 0;
             background: #fafafa;
@@ -310,6 +396,7 @@
                 font-size: 1.5rem;
             }
 
+            .steps-grid, .related-grid { grid-template-columns: 1fr; }
             .benefits-grid {
                 grid-template-columns: 1fr;
             }
@@ -340,6 +427,10 @@
             <span class="header-cta">015-219 2525</span>
         </div>
     </header>
+
+    <nav class="breadcrumb container" aria-label="Kruimelpad">
+        <a href="{{ url('/') }}">Home</a> &rsaquo; <span>{{ $breadcrumb ?? $hero['title'] }}</span>
+    </nav>
 
     <section class="hero">
         <div class="container">
@@ -446,11 +537,67 @@
             @foreach($content['sections'] as $section)
             <div class="content-section">
                 <h2>{{ $section['title'] }}</h2>
-                <p>{{ $section['text'] }}</p>
+                @foreach((array) ($section['text'] ?? []) as $paragraph)
+                <p>{{ $paragraph }}</p>
+                @endforeach
+                @if(!empty($section['list']))
+                @php($listTag = !empty($section['ordered']) ? 'ol' : 'ul')
+                <{{ $listTag }}>
+                    @foreach($section['list'] as $item)
+                    <li>{{ $item }}</li>
+                    @endforeach
+                </{{ $listTag }}>
+                @endif
+                @if(!empty($section['after']))
+                <p>{{ $section['after'] }}</p>
+                @endif
             </div>
             @endforeach
         </div>
     </section>
+
+    <section class="steps">
+        <div class="container">
+            <h2>Zo werkt het</h2>
+            <div class="steps-grid">
+                <div class="step">
+                    <h3>Upload je PDF</h3>
+                    <p>We herkennen automatisch het formaat (A4 of A5) en het aantal pagina's.</p>
+                </div>
+                <div class="step">
+                    <h3>Kies je afwerking</h3>
+                    <p>Geniet boekje of losse pagina's, het aantal exemplaren en verzenden of afhalen. Je ziet direct de prijs.</p>
+                </div>
+                <div class="step">
+                    <h3>Betaal met iDEAL</h3>
+                    <p>Wij printen in full colour. Bestel je vóór 11:00 op een werkdag, dan heb je het binnen 3 werkdagen in huis.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @if(!empty($priceExamples))
+    <section class="prices">
+        <div class="container">
+            <h2>Wat kost het?</h2>
+            <table class="price-table">
+                <thead>
+                    <tr><th>Voorbeeld</th><th>Afwerking</th><th>Totaal</th></tr>
+                </thead>
+                <tbody>
+                    @foreach($priceExamples as $example)
+                    <tr>
+                        <td>{{ $example['label'] }}</td>
+                        <td>{{ $example['binding'] }}</td>
+                        <td>{{ $example['total'] }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            <p class="price-note">Prijzen per exemplaar, inclusief btw, startkosten en verzending ({{ $shippingPrice }}). Afhalen in Delfgauw is gratis. Upload je PDF voor de exacte prijs.</p>
+        </div>
+    </section>
+    @endif
 
     @if(isset($faq) && count($faq) > 0)
     <section class="faq">
@@ -463,6 +610,19 @@
                 <div class="faq-answer">{{ $item['answer'] }}</div>
             </details>
             @endforeach
+        </div>
+    </section>
+    @endif
+
+    @if(!empty($related))
+    <section class="related">
+        <div class="container">
+            <h2>Meer printen</h2>
+            <nav class="related-grid" aria-label="Meer printen">
+                @foreach($related as $link)
+                <a href="{{ $link['url'] }}">{{ $link['label'] }}</a>
+                @endforeach
+            </nav>
         </div>
     </section>
     @endif

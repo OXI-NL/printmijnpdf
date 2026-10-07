@@ -87,7 +87,7 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'pdf' => 'required|file|mimes:pdf|max:51200', // Max 50MB
+            'pdf' => 'required|file|mimes:pdf|max:102400', // Max 100MB, gelijk aan de prijsberekening en het formulier
             // page_count en format van de browser zijn alleen informatief: de
             // prijs wordt berekend op wat de server zelf in de PDF telt
             'page_count' => 'nullable|integer|min:1',

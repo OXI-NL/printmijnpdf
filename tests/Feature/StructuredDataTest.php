@@ -17,12 +17,17 @@ class StructuredDataTest extends TestCase
     {
         return [
             'homepage' => ['/', 3],
-            'zakelijk' => ['/zakelijk', 2],
-            'scriptie' => ['/scriptie-printen', 2],
-            'boekje' => ['/boekje-maken', 2],
-            'reader' => ['/reader-printen', 2],
-            'handleiding' => ['/handleiding-printen', 2],
-            'cursusmateriaal' => ['/cursusmateriaal-printen', 2],
+            // Service + BreadcrumbList + FAQPage
+            'zakelijk' => ['/zakelijk', 3],
+            'scriptie' => ['/scriptie-printen', 3],
+            'boekje' => ['/boekje-maken', 3],
+            'reader' => ['/reader-printen', 3],
+            'handleiding' => ['/handleiding-printen', 3],
+            'cursusmateriaal' => ['/cursusmateriaal-printen', 3],
+            'pdf laten printen' => ['/pdf-laten-printen', 3],
+            'boekje printen' => ['/boekje-printen', 3],
+            // + HowTo
+            'pdf naar boekje' => ['/pdf-naar-boekje', 4],
         ];
     }
 
@@ -78,5 +83,22 @@ class StructuredDataTest extends TestCase
         );
 
         $this->assertEqualsCanonicalizing(['PrintingService', 'Product', 'FAQPage'], $types);
+    }
+
+    public function test_landingspagina_heeft_breadcrumb_naar_home(): void
+    {
+        $blokken = array_map(fn ($b) => json_decode($b, true), $this->blokken($this->get('/pdf-naar-boekje')->getContent()));
+        $breadcrumb = collect($blokken)->firstWhere('@type', 'BreadcrumbList');
+
+        $this->assertSame(url('/'), $breadcrumb['itemListElement'][0]['item']);
+        $this->assertSame(route('landing.pdf-naar-boekje'), $breadcrumb['itemListElement'][1]['item']);
+    }
+
+    public function test_apostrof_in_faq_staat_niet_als_html_entity_in_json(): void
+    {
+        $html = $this->get('/boekje-printen')->getContent();
+
+        $this->assertStringNotContainsString('&#039;', implode('', $this->blokken($html)));
+        $this->assertStringContainsString("pagina's", implode('', $this->blokken($html)));
     }
 }

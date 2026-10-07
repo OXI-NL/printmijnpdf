@@ -2,16 +2,76 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use Illuminate\View\View;
 
 class LandingPageController extends Controller
 {
     /**
+     * Alle landingspagina's: slug => [routenaam, linktekst]. Bron voor de
+     * sitemap, de interne links op de homepage en het blok "Meer printen".
+     */
+    public const PAGES = [
+        'pdf-laten-printen' => ['landing.pdf', 'PDF laten printen'],
+        'pdf-naar-boekje' => ['landing.pdf-naar-boekje', 'PDF naar boekje'],
+        'boekje-printen' => ['landing.boekje-printen', 'Boekje printen (A4 en A5)'],
+        'scriptie-printen' => ['landing.scriptie', 'Scriptie printen'],
+        'reader-printen' => ['landing.reader', 'Reader printen'],
+        'cursusmateriaal-printen' => ['landing.cursusmateriaal', 'Cursusmateriaal printen'],
+        'handleiding-printen' => ['landing.handleiding', 'Handleiding printen'],
+        'boekje-maken' => ['landing.boekje', 'Eigen boekje maken'],
+        'zakelijk' => ['landing.zakelijk', 'Zakelijk printen'],
+    ];
+
+    /**
+     * @return array<int, array{url: string, label: string}>
+     */
+    public static function links(?string $except = null): array
+    {
+        $links = [];
+        foreach (self::PAGES as $slug => [$route, $label]) {
+            if ($slug !== $except) {
+                $links[] = ['url' => route($route), 'label' => $label];
+            }
+        }
+
+        return $links;
+    }
+
+    /**
+     * Render een landingspagina met de gedeelde blokken (prijzen, links)
+     */
+    protected function page(array $data): View
+    {
+        $examples = [
+            ['label' => "A5-boekje, 16 pagina's", 'pages' => 16, 'format' => 'A5', 'binding' => 'booklet'],
+            ['label' => "A4-boekje, 24 pagina's", 'pages' => 24, 'format' => 'A4', 'binding' => 'booklet'],
+            ['label' => "A4-boekje, 48 pagina's", 'pages' => 48, 'format' => 'A4', 'binding' => 'booklet'],
+            ['label' => "A4, 100 losse pagina's", 'pages' => 100, 'format' => 'A4', 'binding' => 'loose'],
+        ];
+
+        $data['priceExamples'] = array_map(fn ($e) => [
+            'label' => $e['label'],
+            'binding' => $e['binding'] === 'booklet' ? 'Geniet boekje' : 'Losse pagina\'s',
+            'total' => self::euro(Order::calculatePrice($e['pages'], $e['format'], $e['binding'], 'shipping', 1)['total']),
+        ], $examples);
+        $data['shippingPrice'] = self::euro((int) config('pricing.shipping', 675));
+        $data['related'] = self::links($data['slug'] ?? null);
+
+        return view('landing.page', $data);
+    }
+
+    private static function euro(int $cents): string
+    {
+        return '€ ' . number_format($cents / 100, 2, ',', '.');
+    }
+
+    /**
      * Scriptie printen - voor studenten HBO/WO
      */
     public function scriptie(): View
     {
-        return view('landing.page', [
+        return $this->page([
             'meta' => [
                 'title' => 'Scriptie Printen en Inbinden | Binnen 3 Dagen | PrintMijnPDF',
                 'description' => 'Laat je scriptie professioneel printen als geniet boekje. Full colour drukwerkkwaliteit, binnen 3 werkdagen klaar. Ideaal voor HBO en WO afstudeerders.',
@@ -90,7 +150,7 @@ class LandingPageController extends Controller
      */
     public function reader(): View
     {
-        return view('landing.page', [
+        return $this->page([
             'meta' => [
                 'title' => 'Reader Printen | Studiehandleiding Drukken | PrintMijnPDF',
                 'description' => 'Laat je reader of studiehandleiding printen in full colour. Binnen 3 werkdagen klaar, vanaf €0,15 per pagina. Echte drukwerkkwaliteit.',
@@ -157,7 +217,7 @@ class LandingPageController extends Controller
      */
     public function cursusmateriaal(): View
     {
-        return view('landing.page', [
+        return $this->page([
             'meta' => [
                 'title' => 'Cursusmateriaal Printen | Trainingsmateriaal Drukken | PrintMijnPDF',
                 'description' => 'Print je cursusmateriaal of trainingshandleiding professioneel. Full colour, binnen 3 werkdagen. Ideaal voor trainers, coaches en docenten.',
@@ -224,9 +284,9 @@ class LandingPageController extends Controller
      */
     public function boekje(): View
     {
-        return view('landing.page', [
+        return $this->page([
             'meta' => [
-                'title' => 'Eigen Boekje Maken en Printen | PDF naar Boekje | PrintMijnPDF',
+                'title' => 'Eigen Boekje Maken | Receptenboek, Fotoboekje en Meer | PrintMijnPDF',
                 'description' => 'Maak je eigen boekje van een PDF. Receptenboekje, fotoboekje, verhalen bundelen. Full colour geprint, binnen 3 dagen in huis.',
                 'canonical' => route('landing.boekje'),
                 'keywords' => 'boekje maken, eigen boekje printen, pdf naar boekje, boekje laten drukken',
@@ -295,7 +355,7 @@ class LandingPageController extends Controller
      */
     public function handleiding(): View
     {
-        return view('landing.page', [
+        return $this->page([
             'meta' => [
                 'title' => 'Handleiding Printen | Instructieboekje Drukken | PrintMijnPDF',
                 'description' => 'Print je handleiding of instructieboekje professioneel. Technische documentatie in drukwerkkwaliteit. Binnen 3 werkdagen.',
@@ -362,7 +422,7 @@ class LandingPageController extends Controller
      */
     public function zakelijk(): View
     {
-        return view('landing.page', [
+        return $this->page([
             'meta' => [
                 'title' => 'Zakelijk Printen | B2B Printservice | PrintMijnPDF',
                 'description' => 'PrintMijnPDF voor bedrijven. Cursusmateriaal, handleidingen, presentaties. Factuur op bedrijfsnaam, snelle levering, professionele kwaliteit.',
@@ -429,6 +489,226 @@ class LandingPageController extends Controller
                 ],
             ],
             'slug' => 'zakelijk',
+        ]);
+    }
+
+    /**
+     * PDF naar boekje - informatieve zoekintentie ("hoe maak ik een boekje van mijn PDF")
+     */
+    public function pdfNaarBoekje(): View
+    {
+        return $this->page([
+            'meta' => [
+                'title' => 'PDF naar Boekje | Zelf Afdrukken of Laten Printen | PrintMijnPDF',
+                'description' => 'Zo maak je van een PDF een boekje: stap voor stap zelf afdrukken met Acrobat Reader of Word, of laat het printen als geniet boekje. Full colour, binnen 3 werkdagen.',
+                'canonical' => route('landing.pdf-naar-boekje'),
+                'keywords' => 'pdf naar boekje, pdf als boekje printen, pdf boekje afdrukken, boekje printen van pdf',
+                'service_type' => 'PDF als boekje printen',
+            ],
+            'breadcrumb' => 'PDF naar boekje',
+            'hero' => [
+                'title' => 'PDF naar boekje',
+                'subtitle' => 'Zelf afdrukken of in één keer professioneel laten printen',
+                'cta' => 'Upload je PDF',
+            ],
+            'benefits' => [
+                ['icon' => 'file-text', 'title' => 'Gewone PDF uploaden', 'text' => 'Je hoeft niets om te zetten. Wij zetten de pagina\'s zelf in de juiste boekjesvolgorde.'],
+                ['icon' => 'palette', 'title' => 'Full colour', 'text' => 'Geprint in echte drukwerkkwaliteit, met heldere kleuren en scherpe tekst.'],
+                ['icon' => 'package', 'title' => 'Gevouwen en geniet', 'text' => 'Je ontvangt een kant-en-klaar boekje, geen losse vellen om zelf te vouwen.'],
+                ['icon' => 'clock', 'title' => 'Binnen 3 werkdagen', 'text' => 'Bestel vóór 11:00 en je boekje is binnen 3 werkdagen in huis.'],
+            ],
+            'content' => [
+                'intro' => 'Een boekje maken van een PDF kan op twee manieren: je drukt het thuis zelf af met de boekjesfunctie van je printprogramma, of je laat het printen. Hieronder lees je hoe allebei werkt en waar je op moet letten.',
+                'sections' => [
+                    [
+                        'title' => 'Hoe werkt een boekje van een PDF?',
+                        'text' => [
+                            'Een boekje bestaat uit vellen die dubbelgevouwen en in de rug geniet worden. Op elk vel staan vier pagina\'s: twee aan de voorkant en twee aan de achterkant. Daarom komen de pagina\'s niet in de gewone volgorde op het papier. Bij een boekje van 8 pagina\'s staan bijvoorbeeld pagina 8 en 1 naast elkaar op de buitenkant van het eerste vel.',
+                            'Het aantal pagina\'s van een boekje is daarom altijd een veelvoud van 4: 4, 8, 12, 16 enzovoort. Heeft je PDF een ander aantal, dan komen er lege pagina\'s bij.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Zelf een PDF als boekje afdrukken met Adobe Acrobat Reader',
+                        'text' => 'De gratis Adobe Acrobat Reader heeft een ingebouwde boekjesfunctie die de pagina\'s automatisch in de juiste volgorde zet.',
+                        'ordered' => true,
+                        'list' => [
+                            'Open je PDF in Adobe Acrobat Reader.',
+                            'Kies Afdrukken (Ctrl+P, of Cmd+P op een Mac).',
+                            'Kies bij de instellingen voor paginagrootte en -verwerking de optie Boekje.',
+                            'Laat beide zijden afdrukken en kies dubbelzijdig printen met omslaan langs de korte zijde.',
+                            'Druk af, vouw de stapel vellen dubbel en niet het boekje in de vouw.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Een boekje maken in Word',
+                        'text' => 'Begin je in Word? Open dan Pagina-instelling en kies bij Meerdere pagina\'s de optie Boek vouwen. Word zet je document dan om naar een boekjesindeling. Sla het daarna op als PDF of druk het direct dubbelzijdig af.',
+                    ],
+                    [
+                        'title' => 'Waar het thuis vaak misgaat',
+                        'list' => [
+                            'Je printer moet dubbelzijdig kunnen printen, anders moet je elk vel met de hand omdraaien.',
+                            'Kies je de verkeerde omslagkant, dan staat de achterkant van elk vel op z\'n kop.',
+                            'Thuis print je op A4-papier. Een A4-document wordt daardoor verkleind tot een A5-boekje.',
+                            'Een gewone nietmachine komt niet bij het midden van de vouw. Daarvoor heb je een nietmachine met een lange arm nodig.',
+                            'Bij veel kleur of foto\'s is je inktpatroon snel leeg en is de kwaliteit vaak minder dan je hoopt.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Liever je PDF als boekje laten printen?',
+                        'text' => [
+                            'Bij PrintMijnPDF upload je gewoon je PDF in de normale leesvolgorde. Wij zetten de pagina\'s in de juiste volgorde, printen in full colour, vouwen en nieten. Een A4-document blijft een A4-boekje: we printen het op liggend A3 en vouwen het dubbel. Een A5-document printen we op liggend A4.',
+                            'Je ziet direct na het uploaden wat je boekje kost, en je kunt al vanaf 1 exemplaar bestellen.',
+                        ],
+                    ],
+                ],
+            ],
+            'howto' => [
+                'name' => 'Een PDF als boekje afdrukken met Adobe Acrobat Reader',
+                'steps' => [
+                    ['name' => 'PDF openen', 'text' => 'Open je PDF in Adobe Acrobat Reader.'],
+                    ['name' => 'Afdrukken kiezen', 'text' => 'Kies Afdrukken (Ctrl+P of Cmd+P).'],
+                    ['name' => 'Boekje kiezen', 'text' => 'Kies bij paginagrootte en -verwerking de optie Boekje.'],
+                    ['name' => 'Dubbelzijdig instellen', 'text' => 'Druk beide zijden af, omslaan langs de korte zijde.'],
+                    ['name' => 'Vouwen en nieten', 'text' => 'Vouw de vellen dubbel en niet het boekje in de vouw.'],
+                ],
+            ],
+            'faq' => [
+                ['question' => 'Moet ik mijn PDF zelf in boekjesvolgorde zetten?', 'answer' => 'Nee. Upload je PDF in de gewone leesvolgorde, met pagina 1 als voorkant. Wij zetten de pagina\'s zelf in de juiste volgorde voor het boekje. Upload dus geen PDF die al als boekje is opgemaakt.'],
+                ['question' => 'Kan ik een A4-PDF als A4-boekje laten printen?', 'answer' => 'Ja. Een A4-boekje printen we op liggend A3 en vouwen we dubbel, zodat elke pagina A4 blijft. Een A5-boekje printen we op liggend A4.'],
+                ['question' => 'Hoeveel pagina\'s mag mijn boekje hebben?', 'answer' => 'Een geniet boekje heeft 4 tot 64 pagina\'s en altijd een veelvoud van 4. Heeft je PDF bijvoorbeeld 10 pagina\'s, dan voegen wij 2 blanco pagina\'s toe aan het eind.'],
+                ['question' => 'Hoe snel heb ik mijn boekje?', 'answer' => 'Bestel je vóór 11:00 op een werkdag, dan is je boekje binnen 3 werkdagen in huis. Afhalen in Delfgauw kan vanaf de volgende werkdag.'],
+            ],
+            'slug' => 'pdf-naar-boekje',
+        ]);
+    }
+
+    /**
+     * PDF laten printen - algemene transactionele zoekintentie
+     */
+    public function pdfLatenPrinten(): View
+    {
+        return $this->page([
+            'meta' => [
+                'title' => 'PDF Laten Printen | Online Uploaden, Binnen 3 Dagen Thuis | PrintMijnPDF',
+                'description' => 'PDF laten printen zonder gedoe: upload je bestand, kies boekje of losse pagina\'s en betaal met iDEAL. Full colour drukwerkkwaliteit vanaf €0,15 per pagina.',
+                'canonical' => route('landing.pdf'),
+                'keywords' => 'pdf laten printen, pdf printen, pdf online printen, pdf afdrukken laten, document laten printen',
+                'service_type' => 'PDF printen',
+            ],
+            'breadcrumb' => 'PDF laten printen',
+            'hero' => [
+                'title' => 'PDF laten printen',
+                'subtitle' => 'Upload je bestand, wij printen en bezorgen het',
+                'cta' => 'Upload je PDF',
+            ],
+            'benefits' => [
+                ['icon' => 'zap', 'title' => 'Direct de prijs', 'text' => 'Na het uploaden zie je meteen het aantal pagina\'s, het formaat en de prijs.'],
+                ['icon' => 'palette', 'title' => 'Drukwerkkwaliteit', 'text' => 'Geprint in full colour door een professionele drukkerij, niet op een kantoorprinter.'],
+                ['icon' => 'euro', 'title' => 'Vanaf €0,15 per pagina', 'text' => 'Geen abonnement en geen minimale oplage. Je betaalt alleen wat je print.'],
+                ['icon' => 'clock', 'title' => 'Binnen 3 werkdagen', 'text' => 'Bezorgd met PostNL of gratis af te halen in Delfgauw.'],
+            ],
+            'content' => [
+                'intro' => 'Geen printer thuis, of wil je dat je document er echt goed uitziet? Laat je PDF dan printen. Je uploadt het bestand, kiest hoe je het wilt hebben en betaalt met iDEAL. Wij printen, werken af en versturen.',
+                'sections' => [
+                    [
+                        'title' => 'Welke PDF\'s kun je laten printen?',
+                        'text' => 'Alles wat als staand A4 of staand A5 is opgemaakt: scripties, readers, cursusmateriaal, handleidingen, rapporten, verslagen, receptenboekjes, portfolio\'s en programmaboekjes. Heeft je bestand een ander formaat, neem dan contact met ons op.',
+                    ],
+                    [
+                        'title' => 'Boekje of losse pagina\'s?',
+                        'list' => [
+                            'Geniet boekje: dubbelzijdig geprint, gevouwen en in de rug geniet. Geschikt voor 4 tot 64 pagina\'s.',
+                            'Losse pagina\'s: enkel- of dubbelzijdig, ongebonden. Handig voor grotere documenten of als je zelf in een map of ringband wilt opbergen.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Zo lever je je PDF goed aan',
+                        'list' => [
+                            'Gebruik staand A4 (210 × 297 mm) of staand A5 (148 × 210 mm).',
+                            'Sla je document op als PDF met ingesloten lettertypen. Word, Google Docs, Pages en Canva doen dat standaard.',
+                            'Gebruik afbeeldingen van goede kwaliteit; foto\'s van internet zien er geprint vaak korrelig uit.',
+                            'Wil je dat kleur of een foto tot aan de rand van het papier doorloopt? Laat dan 3 mm afloop rondom staan.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Geprint door een echte drukkerij',
+                        'text' => 'PrintMijnPDF is onderdeel van NIVO Druk & Multimedia, een professionele drukkerij sinds 1985. Je document wordt dus niet op een kantoorprinter geprint, maar op drukwerkmachines met de kleurkwaliteit die je kent van tijdschriften en brochures.',
+                    ],
+                ],
+            ],
+            'faq' => [
+                ['question' => 'Kan ik mijn PDF enkelzijdig laten printen?', 'answer' => 'Ja, bij losse pagina\'s kies je zelf enkel- of dubbelzijdig. Een geniet boekje is altijd dubbelzijdig.'],
+                ['question' => 'Kan ik mijn bestelling ophalen?', 'answer' => 'Ja, afhalen is gratis en kan vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO, Exportweg 11 in Delfgauw.'],
+                ['question' => 'Hoe betaal ik?', 'answer' => 'Je betaalt veilig met iDEAL via Mollie. Pas na de betaling gaat je bestelling in productie.'],
+                ['question' => 'Kan ik meerdere exemplaren bestellen?', 'answer' => 'Ja. Je kiest het aantal exemplaren bij het bestellen en ziet direct de totaalprijs.'],
+            ],
+            'slug' => 'pdf-laten-printen',
+        ]);
+    }
+
+    /**
+     * Boekje printen - A4/A5 geniet boekje, prijsgerichte zoekintentie
+     */
+    public function boekjePrinten(): View
+    {
+        return $this->page([
+            'meta' => [
+                'title' => 'Boekje Printen | A4 en A5 Boekje Laten Drukken | PrintMijnPDF',
+                'description' => 'Boekje printen vanaf 1 exemplaar: A4 of A5, full colour en geniet. Upload je PDF en zie direct de prijs. Binnen 3 werkdagen in huis of gratis afhalen.',
+                'canonical' => route('landing.boekje-printen'),
+                'keywords' => 'boekje printen, boekje laten drukken, a5 boekje printen, a4 boekje printen, geniet boekje, brochure printen',
+                'service_type' => 'Boekje printen',
+            ],
+            'breadcrumb' => 'Boekje printen',
+            'hero' => [
+                'title' => 'Boekje printen in A4 of A5',
+                'subtitle' => 'Full colour, gevouwen en geniet, vanaf 1 exemplaar',
+                'cta' => 'Upload je PDF',
+            ],
+            'benefits' => [
+                ['icon' => 'book', 'title' => 'A4 of A5', 'text' => 'We herkennen het formaat van je PDF automatisch.'],
+                ['icon' => 'palette', 'title' => 'Full colour', 'text' => 'Elke pagina in kleur, zonder meerprijs voor kleur.'],
+                ['icon' => 'users', 'title' => 'Vanaf 1 exemplaar', 'text' => 'Geen minimale oplage. Elk extra exemplaar wordt voordeliger.'],
+                ['icon' => 'clock', 'title' => 'Snel geleverd', 'text' => 'Binnen 3 werkdagen in huis, of gratis afhalen in Delfgauw.'],
+            ],
+            'content' => [
+                'intro' => 'Een geniet boekje is de snelste manier om van een PDF iets tastbaars te maken: een programmaboekje, brochure, reader, receptenboek of verslag. Je uploadt je PDF en bestelt in een paar minuten.',
+                'sections' => [
+                    [
+                        'title' => 'A4-boekje of A5-boekje',
+                        'list' => [
+                            'A4-boekje: we printen op liggend A3 en vouwen dubbel, zodat elke pagina A4 is. Goed voor rapporten, readers en scripties.',
+                            'A5-boekje: we printen op liggend A4 en vouwen dubbel. Handzaam formaat voor programmaboekjes, receptenboekjes en flyers met meer tekst.',
+                        ],
+                        'after' => 'Je hoeft niets in te stellen: het formaat halen we uit je PDF.',
+                    ],
+                    [
+                        'title' => 'Hoeveel pagina\'s?',
+                        'text' => 'Een geniet boekje heeft 4 tot 64 pagina\'s. Omdat elk gevouwen vel 4 pagina\'s oplevert, is het aantal altijd een veelvoud van 4. Heeft je PDF bijvoorbeeld 10 pagina\'s? Dan voegen we 2 blanco pagina\'s toe aan het eind en betaal je voor 12. Bij meer dan 64 pagina\'s printen we je document als losse pagina\'s.',
+                    ],
+                    [
+                        'title' => 'Zo wordt je boekje gemaakt',
+                        'ordered' => true,
+                        'list' => [
+                            'We zetten de pagina\'s van je PDF in de juiste volgorde op de vellen.',
+                            'De vellen worden dubbelzijdig in full colour geprint.',
+                            'We vouwen de vellen en nieten ze in de rug tot één boekje.',
+                            'Je boekje wordt verstuurd met PostNL of ligt klaar om af te halen.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Waarvoor kies je een geniet boekje?',
+                        'text' => 'Voor alles wat je wilt doorbladeren: programmaboekjes voor een evenement of uitvaart, brochures, nieuwsbrieven, readers, verslagen, kinderboekjes, receptenboekjes en portfolio\'s.',
+                    ],
+                ],
+            ],
+            'faq' => [
+                ['question' => 'Wat kost een boekje printen?', 'answer' => 'De prijs bestaat uit eenmalige startkosten, een prijs per pagina (A4 € 0,15, A5 € 0,10), nieten per boekje en verzending. In de tabel op deze pagina zie je voorbeelden; na het uploaden van je PDF zie je de exacte prijs.'],
+                ['question' => 'Kan ik meerdere exemplaren van mijn boekje bestellen?', 'answer' => 'Ja. Het nieten kost € 5,00 voor het eerste boekje en € 2,50 voor elk volgend exemplaar.'],
+                ['question' => 'Wat als mijn PDF meer dan 64 pagina\'s heeft?', 'answer' => 'Dan printen we je document als losse pagina\'s. Wil je een andere afwerking, zoals een ringband of lijmbinding? Neem dan contact op via info@printmijnpdf.nl.'],
+                ['question' => 'Kan ik een boekje enkelzijdig laten printen?', 'answer' => 'Nee, een geniet boekje is altijd dubbelzijdig. Wil je een pagina leeg laten, voeg dan een lege pagina toe aan je PDF.'],
+            ],
+            'slug' => 'boekje-printen',
         ]);
     }
 }

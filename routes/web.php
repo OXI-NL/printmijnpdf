@@ -30,6 +30,9 @@ Route::post('/api/contact/custom-format', [ContactController::class, 'sendCustom
 
 // SEO Landingspagina's
 Route::prefix('/')->group(function () {
+    Route::get('pdf-laten-printen', [LandingPageController::class, 'pdfLatenPrinten'])->name('landing.pdf');
+    Route::get('pdf-naar-boekje', [LandingPageController::class, 'pdfNaarBoekje'])->name('landing.pdf-naar-boekje');
+    Route::get('boekje-printen', [LandingPageController::class, 'boekjePrinten'])->name('landing.boekje-printen');
     Route::get('scriptie-printen', [LandingPageController::class, 'scriptie'])->name('landing.scriptie');
     Route::get('reader-printen', [LandingPageController::class, 'reader'])->name('landing.reader');
     Route::get('cursusmateriaal-printen', [LandingPageController::class, 'cursusmateriaal'])->name('landing.cursusmateriaal');
