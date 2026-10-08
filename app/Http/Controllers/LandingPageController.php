@@ -578,7 +578,7 @@ class LandingPageController extends Controller
                 ['question' => 'Moet ik mijn PDF zelf in boekjesvolgorde zetten?', 'answer' => 'Nee. Upload je PDF in de gewone leesvolgorde, met pagina 1 als voorkant. Wij zetten de pagina\'s zelf in de juiste volgorde voor het boekje. Upload dus geen PDF die al als boekje is opgemaakt.'],
                 ['question' => 'Kan ik een A4-PDF als A4-boekje laten printen?', 'answer' => 'Ja. Een A4-boekje printen we op liggend A3 en vouwen we dubbel, zodat elke pagina A4 blijft. Een A5-boekje printen we op liggend A4.'],
                 ['question' => 'Hoeveel pagina\'s mag mijn boekje hebben?', 'answer' => 'Een geniet boekje heeft 4 tot 64 pagina\'s en altijd een veelvoud van 4. Heeft je PDF bijvoorbeeld 10 pagina\'s, dan voegen wij 2 blanco pagina\'s toe aan het eind.'],
-                ['question' => 'Hoe snel heb ik mijn boekje?', 'answer' => 'Bestel je vóór 11:00 op een werkdag, dan versturen we je boekje dezelfde dag en bezorgt PostNL het binnen 2 werkdagen. Afhalen in Delfgauw kan vanaf de volgende werkdag.'],
+                ['question' => 'Hoe snel heb ik mijn boekje?', 'answer' => 'Bestel je vóór 11:00 op een werkdag, dan versturen we je boekje dezelfde dag (bij meer dan 50 exemplaren de volgende werkdag) en bezorgt PostNL het binnen 2 werkdagen. Afhalen in Delfgauw kan vanaf de volgende werkdag.'],
             ],
             'slug' => 'pdf-naar-boekje',
         ]);
@@ -736,7 +736,7 @@ class LandingPageController extends Controller
             'benefits' => [
                 ['icon' => 'clock', 'title' => 'Morgen afhalen', 'text' => 'Gratis afhalen vanaf de volgende werkdag, 17:00–17:30 in Delfgauw.'],
                 ['icon' => 'zap', 'title' => 'Zelfde dag in overleg', 'text' => 'Bel 015-219 2525, dan kijken we wat er nog kan.'],
-                ['icon' => 'package', 'title' => 'Of laten bezorgen', 'text' => 'Vóór 11:00 besteld: vandaag verzonden, binnen 2 werkdagen bezorgd.'],
+                ['icon' => 'package', 'title' => 'Of laten bezorgen', 'text' => 'Vóór 11:00 besteld: tot 50 exemplaren vandaag verzonden, binnen 2 werkdagen bezorgd.'],
                 ['icon' => 'euro', 'title' => 'Geen spoedtoeslag', 'text' => 'Afhalen is gratis; je betaalt alleen het printwerk.'],
             ],
             'content' => [
@@ -747,7 +747,7 @@ class LandingPageController extends Controller
                         'list' => [
                             'Afhalen: gratis, vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO, Exportweg 11, 2645 ED Delfgauw.',
                             'Zelfde dag: niet standaard. Bel 015-219 2525 voordat je bestelt, dan kijken we samen wat er mogelijk is.',
-                            'Bezorgen: bestel je vóór 11:00 op een werkdag, dan versturen we het dezelfde dag en bezorgt PostNL het binnen 2 werkdagen.',
+                            'Bezorgen: bestel je vóór 11:00 op een werkdag, dan versturen we tot 50 exemplaren dezelfde dag en bezorgt PostNL het binnen 2 werkdagen. Grotere oplagen gaan de volgende werkdag de deur uit.',
                         ],
                     ],
                     [
@@ -774,7 +774,7 @@ class LandingPageController extends Controller
                 ['question' => 'Kan ik mijn PDF vandaag nog laten printen?', 'answer' => 'Standaard haal je je bestelling de volgende werkdag op. Heb je het dezelfde dag nodig? Bel dan 015-219 2525, dan kijken we wat er mogelijk is.'],
                 ['question' => 'Waar kan ik mijn drukwerk afhalen?', 'answer' => 'Bij NIVO Druk & Multimedia, Exportweg 11, 2645 ED Delfgauw (gemeente Pijnacker-Nootdorp, naast Delft). Op werkdagen tussen 17:00 en 17:30.'],
                 ['question' => 'Kost spoed extra?', 'answer' => 'Nee. Afhalen is gratis en er is geen spoedtoeslag; je betaalt startkosten, de pagina\'s en eventueel het nieten.'],
-                ['question' => 'Ik woon niet in de buurt van Delft, hoe snel kan het dan?', 'answer' => 'Dan versturen we met PostNL. Bestel je vóór 11:00 op een werkdag, dan gaat je pakket dezelfde dag de deur uit en heb je het binnen 2 werkdagen in huis.'],
+                ['question' => 'Ik woon niet in de buurt van Delft, hoe snel kan het dan?', 'answer' => 'Dan versturen we met PostNL. Bestel je vóór 11:00 op een werkdag, dan gaat je pakket (tot 50 exemplaren) dezelfde dag de deur uit en heb je het binnen 2 werkdagen in huis.'],
             ],
             'slug' => 'pdf-printen-met-spoed',
         ]);
