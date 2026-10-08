@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Http\Controllers\LandingPageController;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\URL;
 
 /**
  * Meldt alle publieke pagina's bij IndexNow (Bing, Yandex, Seznam e.a.),
@@ -20,6 +21,8 @@ class IndexNowSubmit extends Command
     public function handle(): int
     {
         $key = (string) config('seo.indexnow_key');
+        URL::forceRootUrl(rtrim((string) config('seo.site_url'), '/'));
+        URL::forceScheme('https');
         $urls = array_merge([url('/')], array_map(fn ($page) => route($page[0]), LandingPageController::PAGES));
 
         if ($this->option('dry-run')) {
@@ -49,6 +52,7 @@ class IndexNowSubmit extends Command
         }
 
         $this->error("IndexNow gaf HTTP {$response->status()}: {$response->body()}");
+        $this->line('Verstuurd voor host ' . parse_url(url('/'), PHP_URL_HOST) . ', bijvoorbeeld ' . $urls[0]);
 
         return self::FAILURE;
     }

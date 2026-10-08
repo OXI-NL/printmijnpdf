@@ -84,4 +84,14 @@ class SeoTest extends TestCase
         $this->assertFileExists(public_path("{$key}.txt"));
         $this->assertSame($key, file_get_contents(public_path("{$key}.txt")));
     }
+
+    public function test_indexnow_meldt_het_live_domein_ongeacht_app_url(): void
+    {
+        config(['app.url' => 'http://localhost']);
+
+        $this->artisan('seo:indexnow', ['--dry-run' => true])
+            ->expectsOutputToContain('https://printmijnpdf.nl/prijzen')
+            ->doesntExpectOutputToContain('localhost')
+            ->assertSuccessful();
+    }
 }
