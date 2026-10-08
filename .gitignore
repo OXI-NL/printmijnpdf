@@ -5,7 +5,6 @@
 /storage/framework/views/*.php
 /storage/logs/*.log
 /storage/app/pdfs/
-/storage/framework/sessions/*
-!/storage/framework/sessions/.gitkeep
+/bootstrap/cache/
 .phpunit.result.cache
 /database/*.sqlite

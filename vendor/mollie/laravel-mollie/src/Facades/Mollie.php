@@ -1,0 +1,42 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Mollie\Laravel\Facades;
+
+use Illuminate\Support\Facades\Facade;
+use Mollie\Api\Fake\MockMollieClient;
+use Mollie\Api\MollieApiClient;
+
+/**
+ * (Facade) Class Mollie.
+ *
+ * @method static void assertSent(callable|string $callback)
+ * @method static void assertSentCount(int $count)
+ *
+ * @see MockMollieClient
+ */
+class Mollie extends Facade
+{
+    /**
+     * Get the registered name of the component.
+     *
+     * @return string
+     */
+    protected static function getFacadeAccessor()
+    {
+        return MollieApiClient::class;
+    }
+
+    public static function fake(array $expectedResponses = []): MockMollieClient
+    {
+        return tap(new MockMollieClient($expectedResponses), function ($fake) {
+            static::swap($fake);
+        });
+    }
+
+    public static function api()
+    {
+        return static::getFacadeRoot();
+    }
+}

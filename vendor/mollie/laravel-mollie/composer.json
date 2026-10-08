@@ -1,0 +1,89 @@
+{
+    "name": "mollie/laravel-mollie",
+    "description": "Mollie API client wrapper for Laravel & Mollie Connect provider for Laravel Socialite",
+    "homepage": "https://github.com/mollie/laravel-mollie",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mollie B.V.",
+            "email": "info@mollie.com"
+        }
+    ],
+    "keywords": [
+        "mollie",
+        "payment",
+        "service",
+        "ideal",
+        "creditcard",
+        "apple pay",
+        "mistercash",
+        "bancontact",
+        "sofort",
+        "sofortbanking",
+        "sepa",
+        "paypal",
+        "paysafecard",
+        "podiumcadeaukaart",
+        "banktransfer",
+        "direct debit",
+        "belfius",
+        "belfius direct net",
+        "przelewy24",
+        "refunds",
+        "api",
+        "payments",
+        "gateway",
+        "subscriptions",
+        "recurring",
+        "charges",
+        "laravel",
+        "lumen",
+        "socialite"
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^11.0|^12.0|^13.0",
+        "ext-json": "*",
+        "mollie/mollie-api-php": "^3.9",
+        "laravel/prompts": "^0.3.7"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0|^10.0|^11.0",
+        "laravel/pint": "^1.25",
+        "laravel/socialite": "^5.23",
+        "phpunit/phpunit": "^11.0|^12.0",
+        "phpstan/phpstan": "^2.1",
+        "larastan/larastan": "^3.8"
+    },
+    "suggest": {
+        "laravel/socialite": "Use Mollie Connect (OAuth) to authenticate via Laravel Socialite with the Mollie API. This is needed for some endpoints."
+    },
+    "autoload": {
+        "psr-4": {
+            "Mollie\\Laravel\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Mollie\\Laravel\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Mollie\\Laravel\\MollieServiceProvider",
+                "Mollie\\Laravel\\MollieSocialiteServiceProvider"
+            ],
+            "aliases": {
+                "Mollie": "Mollie\\Laravel\\Facades\\Mollie"
+            }
+        }
+    },
+    "scripts": {
+        "test": "./vendor/bin/phpunit tests",
+        "format": "./vendor/bin/pint",
+        "format:check": "./vendor/bin/pint --test"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
