@@ -359,7 +359,7 @@
                 "name": "Wat als mijn PDF meer dan 64 pagina's heeft?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Bij meer dan 64 pagina's worden uw pagina's standaard als losse pagina's geleverd. Heeft u andere wensen, zoals ringband of lijmbinding? Dat is zeker mogelijk, maar gaat niet via deze website. Neem rechtstreeks contact op met onze drukkerij via info@printmijnpdf.nl. Vermeld uw naam en telefoonnummer, dan bellen wij u op om de mogelijkheden te bespreken."
+                    "text": "Bij meer dan 64 pagina's worden je pagina's standaard als losse pagina's geleverd. Heb je andere wensen, zoals ringband of lijmbinding? Dat is zeker mogelijk, maar gaat niet via deze website. Neem rechtstreeks contact op met onze drukkerij via info@printmijnpdf.nl. Vermeld je naam en telefoonnummer, dan bellen we je op om de mogelijkheden te bespreken."
                 }
             },
             {
@@ -375,7 +375,7 @@
                 "name": "Op welk papier wordt er geprint?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Wij printen op hoogwaardig wit papier van professionele kwaliteit. De printkwaliteit is echte drukwerkkwaliteit, vergelijkbaar met wat u kent van professionele magazines en brochures. Kleuren komen helder en scherp van het papier, zowel bij foto's als bij tekst en afbeeldingen."
+                    "text": "Wij printen op hoogwaardig wit papier van professionele kwaliteit. De printkwaliteit is echte drukwerkkwaliteit, vergelijkbaar met wat je kent van professionele magazines en brochures. Kleuren komen helder en scherp van het papier, zowel bij foto's als bij tekst en afbeeldingen."
                 }
             },
             {
@@ -383,7 +383,7 @@
                 "name": "Is de print in kleur of zwart-wit?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Al ons printwerk is standaard in full colour. Uw PDF wordt geprint in CMYK, met alle kleuren, foto's en afbeeldingen in volle kwaliteit."
+                    "text": "Al ons printwerk is standaard in full colour. Je PDF wordt geprint in CMYK, met alle kleuren, foto's en afbeeldingen in volle kwaliteit."
                 }
             },
             {
@@ -1765,13 +1765,13 @@
         </div>
 
         <!-- Urgency Banner -->
-        <div class="urgency-banner" id="urgency-banner">
+        <div class="urgency-banner standard" id="urgency-banner">
             <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
             <span id="urgency-text">
-                Bestel binnen <strong id="countdown"></strong> voor verzending vandaag
+                <strong>Binnen 3 werkdagen</strong> in huis na bestelling
             </span>
         </div>
 
@@ -2171,7 +2171,7 @@
         
         <details>
             <summary>Wat als mijn PDF meer dan 64 pagina's heeft?</summary>
-            <p>Bij meer dan 64 pagina's worden uw pagina's standaard als losse pagina's geleverd. Heeft u andere wensen, zoals ringband of lijmbinding? Dat is zeker mogelijk, maar gaat niet via deze website. Neem rechtstreeks contact op met onze drukkerij via <a href="mailto:info@printmijnpdf.nl" style="color: var(--primary); text-decoration: none; font-weight: 500;">info@printmijnpdf.nl</a>. Vermeld uw naam en telefoonnummer, dan bellen wij u op om de mogelijkheden te bespreken.</p>
+            <p>Bij meer dan 64 pagina's worden je pagina's standaard als losse pagina's geleverd. Heb je andere wensen, zoals ringband of lijmbinding? Dat is zeker mogelijk, maar gaat niet via deze website. Neem rechtstreeks contact op met onze drukkerij via <a href="mailto:info@printmijnpdf.nl" style="color: var(--primary); text-decoration: none; font-weight: 500;">info@printmijnpdf.nl</a>. Vermeld je naam en telefoonnummer, dan bellen we je op om de mogelijkheden te bespreken.</p>
         </details>
 
         <details>
@@ -2182,12 +2182,12 @@
 
         <details>
             <summary>Op welk papier wordt er geprint?</summary>
-            <p>Wij printen op hoogwaardig wit papier van professionele kwaliteit. De printkwaliteit is echte drukwerkkwaliteit — vergelijkbaar met wat u kent van professionele magazines en brochures. Kleuren komen helder en scherp van het papier, zowel bij foto's als bij tekst en afbeeldingen.</p>
+            <p>Wij printen op hoogwaardig wit papier van professionele kwaliteit. De printkwaliteit is echte drukwerkkwaliteit — vergelijkbaar met wat je kent van professionele magazines en brochures. Kleuren komen helder en scherp van het papier, zowel bij foto's als bij tekst en afbeeldingen.</p>
         </details>
         
         <details>
             <summary>Is de print in kleur of zwart-wit?</summary>
-            <p>Al ons printwerk is standaard in full colour. Uw PDF wordt geprint in CMYK, met alle kleuren, foto's en afbeeldingen in volle kwaliteit.</p>
+            <p>Al ons printwerk is standaard in full colour. Je PDF wordt geprint in CMYK, met alle kleuren, foto's en afbeeldingen in volle kwaliteit.</p>
         </details>
 
         <details>
@@ -3083,10 +3083,10 @@
             const hoursLeft = Math.floor(diff / (1000 * 60 * 60));
             const minutesLeft = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-            const countdownEl = document.getElementById('countdown');
-            if (countdownEl) {
-                countdownEl.textContent = hoursLeft + 'u ' + minutesLeft + 'm';
-            }
+            // De afteltekst komt pas in de browser: zonder JavaScript (crawlers,
+            // AI-assistenten) staat er geen lege timer met "verzending vandaag"
+            banner.classList.remove('standard');
+            textEl.innerHTML = 'Bestel binnen <strong>' + hoursLeft + 'u ' + minutesLeft + 'm</strong> voor verzending vandaag';
         }
 
         updateUrgencyBanner();
