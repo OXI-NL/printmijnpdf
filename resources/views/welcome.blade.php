@@ -14,6 +14,7 @@
 
     <title>PDF Printen als Boekje | Binnen 3 Dagen | PrintMijnPDF</title>
     <meta name="description" content="Upload je PDF → professioneel geprint boekje binnen 3 werkdagen. Full colour drukwerkkwaliteit, vanaf €0,15/pagina. Gratis afhalen mogelijk.">
+    <meta name="msvalidate.01" content="1A1260063F50FF0586F052944BAF1CF1">
 
     <!-- Open Graph -->
     <meta property="og:title" content="PDF Printen als Boekje | Binnen 3 Dagen | PrintMijnPDF">

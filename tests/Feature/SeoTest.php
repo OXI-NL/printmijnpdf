@@ -108,4 +108,9 @@ class SeoTest extends TestCase
                 && array_is_list($body['urlList']);
         });
     }
+
+    public function test_homepage_heeft_bing_verificatie(): void
+    {
+        $this->get('/')->assertSee('<meta name="msvalidate.01" content="1A1260063F50FF0586F052944BAF1CF1">', false);
+    }
 }
