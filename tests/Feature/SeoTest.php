@@ -94,4 +94,18 @@ class SeoTest extends TestCase
             ->doesntExpectOutputToContain('localhost')
             ->assertSuccessful();
     }
+
+    public function test_indexnow_verstuurt_urllist_als_lijst(): void
+    {
+        \Illuminate\Support\Facades\Http::fake(['api.indexnow.org/*' => \Illuminate\Support\Facades\Http::response('', 200)]);
+
+        $this->artisan('seo:indexnow')->assertSuccessful();
+
+        \Illuminate\Support\Facades\Http::assertSent(function ($request) {
+            $body = json_decode($request->body(), true);
+
+            return $body['host'] === 'printmijnpdf.nl'
+                && array_is_list($body['urlList']);
+        });
+    }
 }
