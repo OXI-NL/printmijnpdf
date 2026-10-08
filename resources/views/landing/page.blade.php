@@ -570,7 +570,7 @@
                 </div>
                 <div class="step">
                     <h3>Betaal met iDEAL</h3>
-                    <p>Wij printen in full colour. Bestel je vóór 11:00 op een werkdag, dan heb je het binnen 3 werkdagen in huis.</p>
+                    <p>Wij printen in full colour. Bestel je vóór 11:00 op een werkdag, dan versturen we het dezelfde dag en bezorgt PostNL het binnen 2 werkdagen.</p>
                 </div>
             </div>
         </div>

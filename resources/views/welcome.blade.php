@@ -285,8 +285,8 @@
                     },
                     "handlingTime": {
                         "@type": "QuantitativeValue",
-                        "minValue": 1,
-                        "maxValue": 3,
+                        "minValue": 0,
+                        "maxValue": 1,
                         "unitCode": "DAY"
                     },
                     "transitTime": {
@@ -327,7 +327,7 @@
                 "name": "Hoe snel wordt mijn bestelling geleverd?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Bestel je vóór 11:00 op een werkdag? Dan is je pakket binnen 3 werkdagen in huis. Je ontvangt een track & trace code zodra we verzenden. Heb je je bestelling dezelfde dag nog nodig? Bel ons dan even op 015-219 2525, dan kijken we wat er mogelijk is."
+                    "text": "Bestel je vóór 11:00 op een werkdag? Dan versturen we je pakket dezelfde dag en bezorgt PostNL het binnen 2 werkdagen. Je ontvangt een track & trace code zodra we verzenden. Heb je je bestelling dezelfde dag nog nodig? Bel ons dan even op 015-219 2525, dan kijken we wat er mogelijk is."
                 }
             },
             {
@@ -2145,7 +2145,7 @@
         
         <details>
             <summary>Hoe snel wordt mijn bestelling geleverd?</summary>
-            <p>Bestel je vóór 11:00 op een werkdag? Dan is je pakket binnen 3 werkdagen in huis. Je ontvangt een track & trace code zodra we verzenden. Heb je je bestelling dezelfde dag nog nodig? Bel ons dan even op <a href="tel:0152192525">015-219 2525</a>, dan kijken we wat er mogelijk is.</p>
+            <p>Bestel je vóór 11:00 op een werkdag? Dan versturen we je pakket dezelfde dag en bezorgt PostNL het binnen 2 werkdagen. Je ontvangt een track & trace code zodra we verzenden. Heb je je bestelling dezelfde dag nog nodig? Bel ons dan even op <a href="tel:0152192525">015-219 2525</a>, dan kijken we wat er mogelijk is.</p>
         </details>
         
         <details>

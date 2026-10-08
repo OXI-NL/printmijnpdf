@@ -33,7 +33,7 @@ Voorbeelden:
 
 ## Levertijd
 
-- Bezorgen (PostNL, track & trace): bestelling vóór 11:00 op een werkdag is binnen 3 werkdagen in huis.
+- Bezorgen (PostNL, track & trace): bestelling vóór 11:00 op een werkdag wordt dezelfde dag verzonden; PostNL bezorgt binnen 2 werkdagen. Na 11:00 besteld: de volgende werkdag verzonden.
 - Afhalen: gratis, vanaf de volgende werkdag tussen 17:00 en 17:30, Exportweg 11, 2645 ED Delfgauw.
 - Zelfde dag: niet standaard; bel 015-219 2525 om te overleggen.
 
