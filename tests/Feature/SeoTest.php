@@ -63,4 +63,25 @@ class SeoTest extends TestCase
     {
         $this->get('/sitemap.xml')->assertDontSee('<lastmod>2026-04-03</lastmod>', false);
     }
+
+    public function test_llms_txt_volgt_prijzen_en_paginas(): void
+    {
+        config(['pricing.per_page_a4' => 17]);
+
+        $response = $this->get('/llms.txt')->assertOk();
+
+        $this->assertStringStartsWith('text/plain', $response->headers->get('Content-Type'));
+        $response->assertSee('Per pagina A4: € 0,17', false);
+        foreach (LandingPageController::PAGES as [$route]) {
+            $response->assertSee('(' . route($route) . ')', false);
+        }
+    }
+
+    public function test_indexnow_sleutelbestand_bestaat(): void
+    {
+        $key = config('seo.indexnow_key');
+
+        $this->assertFileExists(public_path("{$key}.txt"));
+        $this->assertSame($key, file_get_contents(public_path("{$key}.txt")));
+    }
 }

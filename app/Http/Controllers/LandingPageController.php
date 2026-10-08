@@ -15,6 +15,8 @@ class LandingPageController extends Controller
         'pdf-laten-printen' => ['landing.pdf', 'PDF laten printen'],
         'pdf-naar-boekje' => ['landing.pdf-naar-boekje', 'PDF naar boekje'],
         'boekje-printen' => ['landing.boekje-printen', 'Boekje printen (A4 en A5)'],
+        'pdf-printen-met-spoed' => ['landing.spoed', 'PDF printen met spoed'],
+        'prijzen' => ['landing.prijzen', 'Prijzen en rekenvoorbeelden'],
         'scriptie-printen' => ['landing.scriptie', 'Scriptie printen'],
         'reader-printen' => ['landing.reader', 'Reader printen'],
         'cursusmateriaal-printen' => ['landing.cursusmateriaal', 'Cursusmateriaal printen'],
@@ -709,6 +711,145 @@ class LandingPageController extends Controller
                 ['question' => 'Kan ik een boekje enkelzijdig laten printen?', 'answer' => 'Nee, een geniet boekje is altijd dubbelzijdig. Wil je een pagina leeg laten, voeg dan een lege pagina toe aan je PDF.'],
             ],
             'slug' => 'boekje-printen',
+        ]);
+    }
+
+    /**
+     * Spoed - "vandaag/morgen nodig", met afhalen in Delfgauw
+     */
+    public function spoed(): View
+    {
+        return $this->page([
+            'meta' => [
+                'title' => 'PDF Printen met Spoed | Morgen Afhalen bij Delft | PrintMijnPDF',
+                'description' => 'PDF of boekje met spoed nodig? Bestel online en haal het de volgende werkdag gratis af in Delfgauw (bij Delft). Zelfde dag in overleg. Full colour drukwerk.',
+                'canonical' => route('landing.spoed'),
+                'keywords' => 'pdf printen spoed, boekje printen spoed, snel printen delft, printen afhalen delft, drukwerk morgen klaar',
+                'service_type' => 'Spoed PDF printen',
+            ],
+            'breadcrumb' => 'PDF printen met spoed',
+            'hero' => [
+                'title' => 'PDF printen met spoed',
+                'subtitle' => 'Vandaag bestellen, morgen afhalen bij Delft',
+                'cta' => 'Upload je PDF',
+            ],
+            'benefits' => [
+                ['icon' => 'clock', 'title' => 'Morgen afhalen', 'text' => 'Gratis afhalen vanaf de volgende werkdag, 17:00–17:30 in Delfgauw.'],
+                ['icon' => 'zap', 'title' => 'Zelfde dag in overleg', 'text' => 'Bel 015-219 2525, dan kijken we wat er nog kan.'],
+                ['icon' => 'package', 'title' => 'Of laten bezorgen', 'text' => 'Vóór 11:00 besteld: binnen 3 werkdagen in huis met track & trace.'],
+                ['icon' => 'euro', 'title' => 'Geen spoedtoeslag', 'text' => 'Afhalen is gratis; je betaalt alleen het printwerk.'],
+            ],
+            'content' => [
+                'intro' => 'Moet je scriptie, programmaboekje of reader er morgen al liggen? Bestel online en haal je drukwerk de volgende werkdag op bij onze drukkerij in Delfgauw, tussen Delft, Den Haag, Zoetermeer en Rotterdam. Afhalen kost niets en er is geen spoedtoeslag.',
+                'sections' => [
+                    [
+                        'title' => 'Hoe snel is het klaar?',
+                        'list' => [
+                            'Afhalen: gratis, vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO, Exportweg 11, 2645 ED Delfgauw.',
+                            'Zelfde dag: niet standaard. Bel 015-219 2525 voordat je bestelt, dan kijken we samen wat er mogelijk is.',
+                            'Bezorgen: bestel je vóór 11:00 op een werkdag, dan heb je het binnen 3 werkdagen in huis via PostNL.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Zo bestel je met spoed',
+                        'ordered' => true,
+                        'list' => [
+                            'Upload je PDF op printmijnpdf.nl; je ziet direct het aantal pagina\'s en de prijs.',
+                            'Kies geniet boekje of losse pagina\'s, A4 of A5.',
+                            'Kies "Afhalen" als bezorgmethode en betaal met iDEAL.',
+                            'Haal je drukwerk de volgende werkdag tussen 17:00 en 17:30 op.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Wat kun je met spoed laten printen?',
+                        'text' => 'Alles wat we normaal ook printen: geniet boekjes van 4 tot 64 pagina\'s en losse pagina\'s, staand A4 of A5, full colour. Denk aan scripties, programmaboekjes voor een uitvaart of evenement, readers, handleidingen en presentaties. Ander formaat of ander drukwerk nodig? Neem contact op, dan kijken we of de drukkerij het kan maken.',
+                    ],
+                    [
+                        'title' => 'Spoed zonder fouten',
+                        'text' => 'Bij haast gaat het vaak mis in het bestand, niet in het printen. Controleer daarom vóór het uploaden of je PDF staand A4 of A5 is en of de pagina\'s in de goede volgorde staan. Voor een boekje zetten wij de pagina\'s zelf in de juiste volgorde op de vellen; jij levert gewoon een PDF met pagina 1, 2, 3 enzovoort aan.',
+                    ],
+                ],
+            ],
+            'faq' => [
+                ['question' => 'Kan ik mijn PDF vandaag nog laten printen?', 'answer' => 'Standaard haal je je bestelling de volgende werkdag op. Heb je het dezelfde dag nodig? Bel dan 015-219 2525, dan kijken we wat er mogelijk is.'],
+                ['question' => 'Waar kan ik mijn drukwerk afhalen?', 'answer' => 'Bij NIVO Druk & Multimedia, Exportweg 11, 2645 ED Delfgauw (gemeente Pijnacker-Nootdorp, naast Delft). Op werkdagen tussen 17:00 en 17:30.'],
+                ['question' => 'Kost spoed extra?', 'answer' => 'Nee. Afhalen is gratis en er is geen spoedtoeslag; je betaalt startkosten, de pagina\'s en eventueel het nieten.'],
+                ['question' => 'Ik woon niet in de buurt van Delft, hoe snel kan het dan?', 'answer' => 'Dan versturen we met PostNL. Bestel je vóór 11:00 op een werkdag, dan heb je het binnen 3 werkdagen in huis.'],
+            ],
+            'slug' => 'pdf-printen-met-spoed',
+        ]);
+    }
+
+    /**
+     * Prijzen - "wat kost een pdf printen", alle bedragen uit config/pricing
+     */
+    public function prijzen(): View
+    {
+        $p = fn (string $key) => self::euro((int) config("pricing.{$key}"));
+        $total = fn (int $pages, string $format, string $binding, string $delivery = 'shipping', int $qty = 1) => self::euro(Order::calculatePrice($pages, $format, $binding, $delivery, $qty)['total']);
+
+        return $this->page([
+            'meta' => [
+                'title' => 'Wat Kost een PDF Printen? Prijzen en Rekenvoorbeelden | PrintMijnPDF',
+                'description' => 'PDF printen kost bij PrintMijnPDF ' . $p('per_page_a4') . ' per A4-pagina en ' . $p('per_page_a5') . ' per A5-pagina, plus ' . $p('startup') . ' startkosten. Bekijk rekenvoorbeelden voor boekjes en losse pagina\'s.',
+                'canonical' => route('landing.prijzen'),
+                'keywords' => 'pdf printen prijs, wat kost pdf printen, boekje printen kosten, printen per pagina prijs, kosten scriptie printen',
+                'service_type' => 'PDF printen',
+            ],
+            'breadcrumb' => 'Prijzen',
+            'hero' => [
+                'title' => 'Wat kost een PDF printen?',
+                'subtitle' => 'Alle prijzen op een rij, zonder verborgen kosten',
+                'cta' => 'Bereken je prijs',
+            ],
+            'benefits' => [
+                ['icon' => 'euro', 'title' => $p('per_page_a4') . ' per A4-pagina', 'text' => 'Full colour, enkel- of dubbelzijdig. A5: ' . $p('per_page_a5') . ' per pagina.'],
+                ['icon' => 'book', 'title' => 'Nieten ' . $p('binding'), 'text' => 'Voor het eerste boekje; elk extra exemplaar ' . $p('binding_extra') . '.'],
+                ['icon' => 'package', 'title' => 'Verzenden ' . $p('shipping'), 'text' => 'Per bestelling, ongeacht het aantal. Afhalen is gratis.'],
+                ['icon' => 'zap', 'title' => 'Direct de exacte prijs', 'text' => 'Upload je PDF en je ziet meteen wat het kost.'],
+            ],
+            'content' => [
+                'intro' => 'Bij PrintMijnPDF bestaat de prijs uit vier onderdelen: eenmalige startkosten, een prijs per pagina, nieten als je een boekje kiest, en verzending. Alle prijzen zijn inclusief btw. Hieronder staan de bedragen en een paar rekenvoorbeelden.',
+                'sections' => [
+                    [
+                        'title' => 'Zo is de prijs opgebouwd',
+                        'list' => [
+                            'Startkosten: ' . $p('startup') . ' per bestelling.',
+                            'Per pagina: ' . $p('per_page_a4') . ' (A4) of ' . $p('per_page_a5') . ' (A5), full colour.',
+                            'Nieten (geniet boekje): ' . $p('binding') . ' voor het eerste exemplaar, ' . $p('binding_extra') . ' voor elk volgend exemplaar.',
+                            'Verzending: ' . $p('shipping') . ' per bestelling, of gratis afhalen in Delfgauw.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Rekenvoorbeelden',
+                        'list' => [
+                            "Scriptie, A4-boekje van 48 pagina's, 1 exemplaar, verzonden: " . $total(48, 'A4', 'booklet'),
+                            "Scriptie, A4-boekje van 48 pagina's, 3 exemplaren, verzonden: " . $total(48, 'A4', 'booklet', 'shipping', 3),
+                            "Programmaboekje, A5 van 16 pagina's, 1 exemplaar, afhalen: " . $total(16, 'A5', 'booklet', 'pickup'),
+                            "Reader, 100 losse A4-pagina's, verzonden: " . $total(100, 'A4', 'loose'),
+                        ],
+                    ],
+                    [
+                        'title' => 'Waarom een boekje per 4 pagina\'s wordt gerekend',
+                        'text' => 'Een boekje bestaat uit dubbelgevouwen vellen en elk vel levert 4 pagina\'s op. Heeft je PDF 10 pagina\'s, dan voegen we 2 blanco pagina\'s toe en betaal je voor 12. Bij losse pagina\'s betaal je precies het aantal pagina\'s in je PDF.',
+                    ],
+                    [
+                        'title' => 'Zo houd je het goedkoop',
+                        'list' => [
+                            'Kies A5 als je document dat toelaat: een A5-pagina kost ' . $p('per_page_a5') . ' in plaats van ' . $p('per_page_a4') . '.',
+                            'Bestel meerdere exemplaren in één keer: de startkosten en verzending betaal je maar één keer en elk extra boekje nieten kost ' . $p('binding_extra') . '.',
+                            'Haal je bestelling af in Delfgauw, dan betaal je geen verzendkosten.',
+                        ],
+                    ],
+                ],
+            ],
+            'faq' => [
+                ['question' => 'Wat kost het om één PDF-pagina te printen?', 'answer' => 'Een A4-pagina kost ' . $p('per_page_a4') . ' en een A5-pagina ' . $p('per_page_a5') . ', in full colour. Daarbij komen eenmalig ' . $p('startup') . ' startkosten per bestelling en eventueel verzending.'],
+                ['question' => 'Is dubbelzijdig printen duurder?', 'answer' => 'Je betaalt per pagina van je PDF. Dubbelzijdig printen kost dus hetzelfde per pagina, je krijgt alleen minder vellen papier.'],
+                ['question' => 'Zijn de prijzen inclusief btw?', 'answer' => 'Ja, alle prijzen op PrintMijnPDF zijn inclusief btw.'],
+                ['question' => 'Kan ik een zakelijke factuur krijgen?', 'answer' => 'Ja. Mail je bestelnummer en bedrijfsgegevens naar info@printmijnpdf.nl, dan sturen we je een factuur met btw-specificatie.'],
+            ],
+            'slug' => 'prijzen',
         ]);
     }
 }

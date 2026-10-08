@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\LlmsController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Route;
 
 // Sitemap
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/llms.txt', [LlmsController::class, 'index'])->name('llms');
 
 // Homepage / bestelformulier
 Route::get('/', [OrderController::class, 'index'])->name('home');
@@ -33,6 +35,8 @@ Route::prefix('/')->group(function () {
     Route::get('pdf-laten-printen', [LandingPageController::class, 'pdfLatenPrinten'])->name('landing.pdf');
     Route::get('pdf-naar-boekje', [LandingPageController::class, 'pdfNaarBoekje'])->name('landing.pdf-naar-boekje');
     Route::get('boekje-printen', [LandingPageController::class, 'boekjePrinten'])->name('landing.boekje-printen');
+    Route::get('pdf-printen-met-spoed', [LandingPageController::class, 'spoed'])->name('landing.spoed');
+    Route::get('prijzen', [LandingPageController::class, 'prijzen'])->name('landing.prijzen');
     Route::get('scriptie-printen', [LandingPageController::class, 'scriptie'])->name('landing.scriptie');
     Route::get('reader-printen', [LandingPageController::class, 'reader'])->name('landing.reader');
     Route::get('cursusmateriaal-printen', [LandingPageController::class, 'cursusmateriaal'])->name('landing.cursusmateriaal');
