@@ -49,4 +49,4 @@ jobs:
           coverage: none
 
       - name: Kwetsbaarheden controleren
-        run: composer audit
+        run: composer audit --locked
