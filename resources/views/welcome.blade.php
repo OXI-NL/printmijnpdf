@@ -2234,7 +2234,7 @@
             <a href="https://nivo.com" target="_blank" rel="noopener" class="nivo-link">
                 <strong>NIVO</strong> Druk & Multimedia
             </a>
-            <span class="nivo-tagline">Professionele drukkerij sinds 1985</span>
+            <span class="nivo-tagline">Professionele drukkerij sinds 1980</span>
         </div>
 
         <div class="footer-bottom">

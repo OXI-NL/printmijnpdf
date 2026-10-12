@@ -113,7 +113,7 @@ class LandingPageController extends Controller
                 'sections' => [
                     [
                         'title' => 'Waarom je scriptie bij ons printen?',
-                        'text' => 'Wij zijn geen online print-app, maar een echte drukkerij. NIVO Druk & Multimedia bestaat al sinds 1985 en print dagelijks voor bedrijven, overheden en onderwijsinstellingen. Die kwaliteit krijg jij nu ook voor je scriptie — tegen een studentvriendelijke prijs.',
+                        'text' => 'Wij zijn geen online print-app, maar een echte drukkerij. NIVO Druk & Multimedia bestaat al sinds 1980 en print dagelijks voor bedrijven, overheden en onderwijsinstellingen. Die kwaliteit krijg jij nu ook voor je scriptie — tegen een studentvriendelijke prijs.',
                     ],
                     [
                         'title' => 'Hoe werkt het?',
@@ -634,7 +634,7 @@ class LandingPageController extends Controller
                     ],
                     [
                         'title' => 'Geprint door een echte drukkerij',
-                        'text' => 'PrintMijnPDF is onderdeel van NIVO Druk & Multimedia, een professionele drukkerij sinds 1985. Je document wordt dus niet op een kantoorprinter geprint, maar op drukwerkmachines met de kleurkwaliteit die je kent van tijdschriften en brochures.',
+                        'text' => 'PrintMijnPDF is onderdeel van NIVO Druk & Multimedia, een professionele drukkerij sinds 1980. Je document wordt dus niet op een kantoorprinter geprint, maar op drukwerkmachines met de kleurkwaliteit die je kent van tijdschriften en brochures.',
                     ],
                 ],
             ],
