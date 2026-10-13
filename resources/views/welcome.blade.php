@@ -1364,7 +1364,8 @@
         .bleed-notice.visible { display: block; }
         .inline-notice, .bleed-notice { scroll-margin-top: 16px; }
         .bleed-notice p { margin: 0 0 10px; line-height: 1.5; }
-        .bleed-notice a { color: #92400e; font-weight: 600; }
+        .bleed-notice a, .bleed-reupload { color: #92400e; font-weight: 600; text-decoration: underline; }
+        .bleed-reupload { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
         .bleed-confirm { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; font-weight: 500; color: #78350f; }
         .bleed-confirm input { width: 18px; height: 18px; margin-top: 1px; flex-shrink: 0; accent-color: var(--primary); }
         .pay-hint { display: none; font-size: 13px; color: #92400e; text-align: center; margin: 0 0 10px; }
@@ -1944,7 +1945,8 @@
 
         <!-- PDF zonder afloop: klant bevestigt dat we iets kleiner snijden -->
         <div class="bleed-notice" id="bleedNotice" role="note">
-            <p><strong>Je PDF heeft geen afloop.</strong> We printen hem gewoon, maar snijden je drukwerk iets kleiner zodat er geen witte randjes ontstaan. Houd daarom minimaal 8 mm afstand tussen tekst en de rand van de pagina. <a href="{{ route('landing.aanleveren') }}" target="_blank" rel="noopener">Lees hoe je een PDF met afloop maakt</a> (opent in een nieuw tabblad).</p>
+            <p><strong>Je PDF heeft geen afloop.</strong> We kunnen hem gewoon printen, maar snijden je drukwerk dan iets kleiner zodat er geen witte randjes ontstaan. Houd daarom minimaal 8 mm afstand tussen tekst en de rand van de pagina.</p>
+            <p>Wil je dat liever niet en kun je je bestand aanpassen? Maak dan een PDF met 3 mm afloop en snijtekens (<a href="{{ route('landing.aanleveren') }}" target="_blank" rel="noopener">zo doe je dat</a>, opent in een nieuw tabblad) en <button type="button" class="bleed-reupload" id="bleedReupload">upload die opnieuw</button>.</p>
             <label class="bleed-confirm" for="noBleedAccepted">
                 <input type="checkbox" id="noBleedAccepted">
                 <span>Ik begrijp het: print mijn PDF zonder afloop</span>
@@ -2952,6 +2954,10 @@
 
         payButton.addEventListener('click', submitOrder);
         noBleedAccepted.addEventListener('change', validateForm);
+        document.getElementById('bleedReupload').addEventListener('click', () => {
+            resetUpload();
+            dropzone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
         mobilePayButton.addEventListener('click', submitOrder);
 
         const addressSection = document.getElementById('sectionAddress');
