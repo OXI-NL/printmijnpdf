@@ -1362,6 +1362,7 @@
             margin-bottom: 1rem;
         }
         .bleed-notice.visible { display: block; }
+        .inline-notice, .bleed-notice { scroll-margin-top: 16px; }
         .bleed-notice p { margin: 0 0 10px; line-height: 1.5; }
         .bleed-notice a { color: #92400e; font-weight: 600; }
         .bleed-confirm { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; font-weight: 500; color: #78350f; }
@@ -2550,8 +2551,10 @@
             updatePriceDisplay();
             validateForm();
 
+            // Eerst naar een melding (bv. geen afloop of te veel pagina's), anders naar de afwerking
             setTimeout(() => {
-                sectionBinding.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const notice = [inlineNotice, bleedNotice].find(el => el.classList.contains('visible'));
+                (notice || sectionBinding).scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 300);
 
             if (window.innerWidth <= 640) {
