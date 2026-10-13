@@ -65,4 +65,67 @@ class PdfFormatValidatorTest extends TestCase
         $this->assertTrue($result['valid'], (string) $result['reason']);
         $this->assertSame('A4', $result['format']);
     }
+
+    private function validate(string|array $format, string $orientation = 'P', int $pages = 1): array
+    {
+        $pdf = new FPDF($orientation, 'mm', $format);
+        for ($i = 1; $i <= $pages; $i++) {
+            $pdf->AddPage();
+        }
+        $path = tempnam(sys_get_temp_dir(), 'pmp');
+        $pdf->Output('F', $path);
+        $result = (new PdfFormatValidator())->validate($path);
+        unlink($path);
+
+        return $result;
+    }
+
+    public function test_prijsklasse_is_kleinste_passende_formaat(): void
+    {
+        // [formaat, oriëntatie, prijsklasse, standaard, boekje mogelijk]
+        $cases = [
+            ['A4', 'P', 'A4', true, true],
+            ['A5', 'P', 'A5', true, true],
+            ['A5', 'L', 'A5', false, true],   // 210 × 148: twee naast elkaar = 420 mm, past
+            ['A4', 'L', 'A4', false, false],  // 297 × 210: twee naast elkaar = 594 mm, past niet
+            [[200, 200], 'P', 'A4', false, true],
+            [[140, 140], 'P', 'A5', false, true],
+            [[222, 304], 'P', 'A3', false, true],  // grootste boekjespagina
+            [[230, 304], 'P', 'A3', false, false],
+            ['A3', 'P', 'A3', false, false],
+            ['A3', 'L', 'A3', false, false],
+        ];
+
+        foreach ($cases as [$format, $orientation, $class, $standard, $booklet]) {
+            $label = json_encode($format) . " {$orientation}";
+            $result = $this->validate($format, $orientation);
+
+            $this->assertTrue($result['valid'], "{$label}: " . $result['reason']);
+            $this->assertSame($class, $result['format'], $label);
+            $this->assertSame($standard, $result['standard'], $label);
+            $this->assertSame($booklet, $result['booklet_allowed'], $label);
+        }
+    }
+
+    public function test_groter_dan_a3_wordt_afgekeurd(): void
+    {
+        $result = $this->validate([300, 430]);
+
+        $this->assertFalse($result['valid']);
+        $this->assertStringContainsString('groter dan A3', $result['reason']);
+    }
+
+    public function test_verschillende_formaten_in_een_pdf_worden_afgekeurd(): void
+    {
+        $pdf = new FPDF('P', 'mm', 'A4');
+        $pdf->AddPage();
+        $pdf->AddPage('P', [200, 280]);
+        $path = tempnam(sys_get_temp_dir(), 'pmp');
+        $pdf->Output('F', $path);
+        $result = (new PdfFormatValidator())->validate($path);
+        unlink($path);
+
+        $this->assertFalse($result['valid']);
+        $this->assertStringContainsString('verschillende formaten', $result['reason']);
+    }
 }

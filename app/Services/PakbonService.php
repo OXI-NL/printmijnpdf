@@ -101,8 +101,8 @@ class PakbonService
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->SetFillColor(230, 57, 70);
         $pdf->SetTextColor(255, 255, 255);
-        $pdf->Cell(105, 8, 'Omschrijving', 1, 0, 'L', true);
-        $pdf->Cell(25, 8, 'Formaat', 1, 0, 'C', true);
+        $pdf->Cell(95, 8, 'Omschrijving', 1, 0, 'L', true);
+        $pdf->Cell(35, 8, 'Formaat', 1, 0, 'C', true);
         $pdf->Cell(20, 8, "Pagina's", 1, 0, 'C', true);
         $pdf->Cell(20, 8, 'Aantal', 1, 1, 'C', true);
 
@@ -112,20 +112,20 @@ class PakbonService
         $pdf->SetFillColor(255, 255, 255);
 
         $filename = $order->pdf_original_name;
-        if (strlen($filename) > 50) {
-            $filename = substr($filename, 0, 47) . '...';
+        if (strlen($filename) > 45) {
+            $filename = substr($filename, 0, 42) . '...';
         }
 
         $quantity = $order->quantity ?? 1;
 
-        $pdf->Cell(105, 8, $filename, 1, 0, 'L');
-        $pdf->Cell(25, 8, $order->format, 1, 0, 'C');
+        $pdf->Cell(95, 8, $filename, 1, 0, 'L');
+        $pdf->Cell(35, 8, iconv('UTF-8', 'windows-1252//TRANSLIT', $order->format_short_label), 1, 0, 'C');
         $pdf->Cell(20, 8, $order->blank_pages > 0 ? "{$order->page_count}+{$order->blank_pages}" : $order->page_count, 1, 0, 'C');
         $pdf->Cell(20, 8, $quantity, 1, 1, 'C');
 
         if ($order->binding_type === 'booklet') {
-            $pdf->Cell(105, 8, 'Geniet gebrocheerd', 1, 0, 'L');
-            $pdf->Cell(65, 8, '', 1, 1, 'C');
+            $pdf->Cell(95, 8, 'Geniet gebrocheerd', 1, 0, 'L');
+            $pdf->Cell(75, 8, '', 1, 1, 'C');
         }
 
         $pdf->Ln(15);

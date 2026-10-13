@@ -69,6 +69,10 @@ class OrderController extends Controller
                 'success' => true,
                 'page_count' => $pageCount,
                 'format' => $format,
+                'standard' => $formatResult['standard'],
+                'booklet_allowed' => $formatResult['booklet_allowed'],
+                'width_mm' => $formatResult['detected_width_mm'],
+                'height_mm' => $formatResult['detected_height_mm'],
                 'has_bleed' => false,
                 'bleed_mm' => 0,
             ]);
@@ -91,7 +95,8 @@ class OrderController extends Controller
             // page_count en format van de browser zijn alleen informatief: de
             // prijs wordt berekend op wat de server zelf in de PDF telt
             'page_count' => 'nullable|integer|min:1',
-            'format' => 'required|in:A4,A5',
+            // format komt uit de servercontrole van de PDF; dit veld is alleen informatief
+            'format' => 'nullable|string|max:20',
             'has_bleed' => 'boolean',
             'bleed_mm' => 'nullable|integer',
             'binding_type' => 'required|in:booklet,loose',
@@ -123,6 +128,16 @@ class OrderController extends Controller
         $format = $formatResult['format'];
         $pageCount = (new PdfPageCounter())->count($pdfPath);
         $bindingType = $request->input('binding_type');
+
+        if ($bindingType === 'booklet' && !$formatResult['booklet_allowed']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dit formaat is te groot voor een geniet boekje (max. '
+                    . PdfFormatValidator::BOOKLET_MAX_WIDTH_MM . ' × ' . PdfFormatValidator::BOOKLET_MAX_HEIGHT_MM
+                    . ' mm per pagina). Kies losse pagina\'s.',
+                'errors' => ['binding_type' => ['Formaat te groot voor een boekje.']],
+            ], 422);
+        }
 
         if ($bindingType === 'booklet' && $pageCount > self::MAX_BOOKLET_PAGES) {
             return response()->json([
@@ -178,6 +193,8 @@ class OrderController extends Controller
                 'page_count' => $pageCount,
                 'blank_pages' => $blankPages,
                 'format' => $format,
+                'trim_width_mm' => $formatResult['standard'] ? null : $formatResult['detected_width_mm'],
+                'trim_height_mm' => $formatResult['standard'] ? null : $formatResult['detected_height_mm'],
                 'has_bleed' => $request->boolean('has_bleed'),
                 'bleed_mm' => $request->input('bleed_mm'),
                 'binding_type' => $bindingType,

@@ -13,6 +13,7 @@ return [
     // Prijs per pagina
     'per_page_a4' => env('PRICE_PER_PAGE_A4', 15),  // €0.15
     'per_page_a5' => env('PRICE_PER_PAGE_A5', 10),  // €0.10
+    'per_page_a3' => env('PRICE_PER_PAGE_A3', 20),  // €0.20 (alleen losse pagina's)
 
     // Vaste kosten
     'startup' => env('PRICE_STARTUP', 1000),        // €10.00

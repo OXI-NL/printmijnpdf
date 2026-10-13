@@ -132,7 +132,7 @@ class LandingPageController extends Controller
                 ],
                 [
                     'question' => 'Welk formaat moet mijn PDF zijn?',
-                    'answer' => 'Wij ondersteunen A4 en A5 formaat. De meeste scripties zijn A4. Zorg dat je PDF in het juiste formaat is opgeslagen.',
+                    'answer' => 'De meeste scripties zijn A4, maar we printen elk formaat tot en met A3. Zorg dat je PDF in het formaat is opgeslagen waarin je hem gedrukt wilt hebben.',
                 ],
                 [
                     'question' => 'Kan ik een proefdruk bestellen?',
@@ -412,7 +412,7 @@ class LandingPageController extends Controller
                 ],
                 [
                     'question' => 'Welk formaat is standaard?',
-                    'answer' => 'We printen A4 en A5. A5 is handig voor compacte handleidingen bij producten.',
+                    'answer' => 'We printen A4, A5 en eigen formaten tot en met A3. A5 is handig voor compacte handleidingen bij producten.',
                 ],
             ],
             'slug' => 'handleiding-printen',
@@ -614,7 +614,7 @@ class LandingPageController extends Controller
                 'sections' => [
                     [
                         'title' => 'Welke PDF\'s kun je laten printen?',
-                        'text' => 'Alles wat als staand A4 of staand A5 is opgemaakt: scripties, readers, cursusmateriaal, handleidingen, rapporten, verslagen, receptenboekjes, portfolio\'s en programmaboekjes. Heeft je bestand een ander formaat, neem dan contact met ons op.',
+                        'text' => 'Scripties, readers, cursusmateriaal, handleidingen, rapporten, verslagen, receptenboekjes, portfolio\'s en programmaboekjes. Meestal A4 of A5, maar een eigen formaat kan ook: als boekje tot 222 × 304 mm per pagina, als losse pagina\'s tot en met A3.',
                     ],
                     [
                         'title' => 'Boekje of losse pagina\'s?',
@@ -762,11 +762,11 @@ class LandingPageController extends Controller
                     ],
                     [
                         'title' => 'Wat kun je met spoed laten printen?',
-                        'text' => 'Alles wat we normaal ook printen: geniet boekjes van 4 tot 64 pagina\'s en losse pagina\'s, staand A4 of A5, full colour. Denk aan scripties, programmaboekjes voor een uitvaart of evenement, readers, handleidingen en presentaties. Ander formaat of ander drukwerk nodig? Neem contact op, dan kijken we of de drukkerij het kan maken.',
+                        'text' => 'Alles wat we normaal ook printen: geniet boekjes van 4 tot 64 pagina\'s en losse pagina\'s, in elk formaat tot en met A3, full colour. Denk aan scripties, programmaboekjes voor een uitvaart of evenement, readers, handleidingen en presentaties. Ander drukwerk nodig? Neem contact op, dan kijken we of de drukkerij het kan maken.',
                     ],
                     [
                         'title' => 'Spoed zonder fouten',
-                        'text' => 'Bij haast gaat het vaak mis in het bestand, niet in het printen. Controleer daarom vóór het uploaden of je PDF staand A4 of A5 is en of de pagina\'s in de goede volgorde staan. Voor een boekje zetten wij de pagina\'s zelf in de juiste volgorde op de vellen; jij levert gewoon een PDF met pagina 1, 2, 3 enzovoort aan.',
+                        'text' => 'Bij haast gaat het vaak mis in het bestand, niet in het printen. Controleer daarom vóór het uploaden of je PDF het formaat heeft waarin je hem gedrukt wilt hebben en of de pagina\'s in de goede volgorde staan. Voor een boekje zetten wij de pagina\'s zelf in de juiste volgorde op de vellen; jij levert gewoon een PDF met pagina 1, 2, 3 enzovoort aan.',
                     ],
                 ],
             ],

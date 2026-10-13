@@ -155,7 +155,7 @@
                                         <span style="color: #64748b; font-size: 13px;">Formaat</span>
                                     </td>
                                     <td style="padding: 12px 16px; border-bottom: 1px solid #e2e8f0; text-align: right;">
-                                        <span style="color: #1e293b; font-size: 13px; font-weight: 500;">{{ $order->format }}</span>
+                                        <span style="color: #1e293b; font-size: 13px; font-weight: 500;">{{ $order->format_label }}</span>
                                     </td>
                                 </tr>
                                 <tr>

@@ -8,28 +8,32 @@ use Illuminate\Support\Facades\Log;
 class PdfFormatValidator
 {
     /**
-     * Toegestane formaten in PDF-punten (1 punt = 1/72 inch).
+     * Prijsklassen in PDF-punten (1 punt = 1/72 inch), staand gemeten.
+     * Een pagina valt in de kleinste klasse waar hij (staand of liggend) in past.
      *
-     * A4 staand: 210 × 297 mm = 595.28 × 841.89 pt
-     * A5 staand: 148 × 210 mm = 419.53 × 595.28 pt
+     * A5: 148 × 210 mm = 419.53 × 595.28 pt
+     * A4: 210 × 297 mm = 595.28 × 841.89 pt
+     * A3: 297 × 420 mm = 841.89 × 1190.55 pt (alleen losse pagina's)
      */
-    private const FORMATS = [
-        'A4' => ['width' => 595.28, 'height' => 841.89],
+    public const FORMATS = [
         'A5' => ['width' => 419.53, 'height' => 595.28],
+        'A4' => ['width' => 595.28, 'height' => 841.89],
+        'A3' => ['width' => 841.89, 'height' => 1190.55],
     ];
 
     /**
+     * Grootste pagina voor een geniet boekje: twee pagina's naast elkaar op het
+     * drukvel van 460 × 320 mm met 8 mm marge rondom (444 × 304 mm bedrukbaar).
+     */
+    public const BOOKLET_MAX_WIDTH_MM = 222;
+    public const BOOKLET_MAX_HEIGHT_MM = 304;
+
+    /**
      * Tolerantie in punten voor afrondingsverschillen.
-     * 5 pt ≈ 1.76 mm — ruim genoeg voor afrondingen in PDF-generators,
-     * maar klein genoeg om andere formaten (b.v. Letter, A3) uit te sluiten.
+     * 5 pt ≈ 1.76 mm — ruim genoeg voor afrondingen in PDF-generators.
      */
     private const TOLERANCE_PT = 5.0;
 
-    /**
-     * Typische afloop (bleed) in punten.
-     * 3 mm = 8.504 pt — standaard in drukwerk.
-     * Wordt gebruikt om BleedBox te corrigeren wanneer er geen TrimBox/CropBox is.
-     */
     private const TYPICAL_BLEED_PT = 8.504;
 
     /**
@@ -47,10 +51,11 @@ class PdfFormatValidator
     private const BOX_PRIORITY = ['TrimBox', 'CropBox', 'BleedBox', 'MediaBox'];
 
     /**
-     * Valideer of een PDF-bestand uitsluitend staand A4 of staand A5 is.
+     * Valideer of een PDF-bestand geprint kan worden: alle pagina's even groot
+     * en hoogstens A3. Geeft de prijsklasse terug en of een boekje kan.
      *
      * @param string $filePath Pad naar het PDF-bestand
-     * @return array{valid: bool, format: ?string, reason: ?string, detected_width_mm: ?float, detected_height_mm: ?float, box_used: ?string}
+     * @return array{valid: bool, format: ?string, standard: bool, booklet_allowed: bool, reason: ?string, detected_width_mm: ?float, detected_height_mm: ?float, box_used: ?string}
      */
     public function validate(string $filePath): array
     {
@@ -86,54 +91,54 @@ class PdfFormatValidator
                 return $this->reject('Kon geen pagina\'s vinden in het PDF-bestand.');
             }
 
-            $detectedFormat = null;
-            $lastBoxUsed = null;
-            $lastWidth = null;
-            $lastHeight = null;
-
             foreach ($results as $index => $result) {
                 if ($result === null) {
                     return $this->reject(
                         'Kon het formaat van pagina ' . ($index + 1) . ' niet bepalen.'
                     );
                 }
+            }
 
-                [$format, $boxUsed, $width, $height] = $result;
+            [$boxUsed, $width, $height] = $results[0];
+            $widthMm = self::toMm($width);
+            $heightMm = self::toMm($height);
 
-                if ($format === null) {
-                    $widthMm = round($width / 72 * 25.4, 1);
-                    $heightMm = round($height / 72 * 25.4, 1);
+            // Eén formaat per bestelling
+            foreach ($results as $index => [, $w, $h]) {
+                if (abs($w - $width) > self::TOLERANCE_PT || abs($h - $height) > self::TOLERANCE_PT) {
                     return $this->reject(
-                        "Pagina " . ($index + 1) . " heeft een afwijkend formaat ({$widthMm} × {$heightMm} mm).",
+                        "Je PDF bevat pagina's van verschillende formaten: pagina 1 is {$widthMm} × {$heightMm} mm, "
+                            . 'pagina ' . ($index + 1) . ' is ' . self::toMm($w) . ' × ' . self::toMm($h) . ' mm. '
+                            . 'Per bestelling printen we één formaat.',
                         $widthMm,
                         $heightMm,
                         $boxUsed
                     );
                 }
-
-                // Alle pagina's moeten hetzelfde formaat hebben
-                if ($detectedFormat !== null && $detectedFormat !== $format) {
-                    return $this->reject(
-                        "Pagina " . ($index + 1) . " is {$format} maar eerdere pagina's zijn {$detectedFormat}."
-                    );
-                }
-
-                $detectedFormat = $format;
-                $lastBoxUsed = $boxUsed;
-                $lastWidth = $width;
-                $lastHeight = $height;
             }
 
-            $widthMm = round($lastWidth / 72 * 25.4, 1);
-            $heightMm = round($lastHeight / 72 * 25.4, 1);
+            $format = $this->priceClass($width, $height);
+            if ($format === null) {
+                return $this->reject(
+                    "Je pagina's zijn {$widthMm} × {$heightMm} mm, groter dan A3 (297 × 420 mm).",
+                    $widthMm,
+                    $heightMm,
+                    $boxUsed
+                );
+            }
+
+            $tolMm = self::toMm(self::TOLERANCE_PT);
 
             return [
                 'valid' => true,
-                'format' => $detectedFormat,
+                'format' => $format,
+                'standard' => $this->isStandard($width, $height),
+                'booklet_allowed' => $widthMm <= self::BOOKLET_MAX_WIDTH_MM + $tolMm
+                    && $heightMm <= self::BOOKLET_MAX_HEIGHT_MM + $tolMm,
                 'reason' => null,
                 'detected_width_mm' => $widthMm,
                 'detected_height_mm' => $heightMm,
-                'box_used' => $lastBoxUsed,
+                'box_used' => $boxUsed,
             ];
         } catch (\Exception $e) {
             Log::error('PdfFormatValidator error: ' . $e->getMessage());
@@ -229,9 +234,9 @@ class PdfFormatValidator
     }
 
     /**
-     * Bepaal het formaat van één pagina uit de afmetingen van de gevonden box.
+     * Afmetingen van één pagina zoals hij gedrukt wordt (na afloopcorrectie en rotatie).
      *
-     * @return array [format, boxUsed, width, height]
+     * @return array [boxUsed, width, height]
      */
     private function classify(float $width, float $height, string $boxName, int $rotation): array
     {
@@ -246,12 +251,7 @@ class PdfFormatValidator
             [$width, $height] = [$height, $width];
         }
 
-        // Liggend formaat (breder dan hoog) is niet toegestaan
-        if ($width > $height) {
-            return [null, $boxName, $width, $height];
-        }
-
-        return [$this->matchFormat($width, $height), $boxName, $width, $height];
+        return [$boxName, $width, $height];
     }
 
     /**
@@ -324,24 +324,40 @@ class PdfFormatValidator
     }
 
     /**
-     * Match breedte en hoogte (in staande oriëntatie) tegen bekende formaten.
-     *
-     * @param float $width  Breedte in punten (kleinste zijde)
-     * @param float $height Hoogte in punten (grootste zijde)
-     * @return string|null Formaatcode ('A4', 'A5') of null
+     * Kleinste prijsklasse waar de pagina (staand of liggend) in past, of null als hij groter is dan A3.
      */
-    private function matchFormat(float $width, float $height): ?string
+    private function priceClass(float $width, float $height): ?string
     {
+        $short = min($width, $height);
+        $long = max($width, $height);
+
         foreach (self::FORMATS as $name => $dims) {
-            if (
-                abs($width - $dims['width']) <= self::TOLERANCE_PT &&
-                abs($height - $dims['height']) <= self::TOLERANCE_PT
-            ) {
+            if ($short <= $dims['width'] + self::TOLERANCE_PT && $long <= $dims['height'] + self::TOLERANCE_PT) {
                 return $name;
             }
         }
 
         return null;
+    }
+
+    /**
+     * Precies staand A4 of A5: daarvoor is geen snijmaat nodig op pakbon en factuur.
+     */
+    private function isStandard(float $width, float $height): bool
+    {
+        foreach (['A4', 'A5'] as $name) {
+            $dims = self::FORMATS[$name];
+            if (abs($width - $dims['width']) <= self::TOLERANCE_PT && abs($height - $dims['height']) <= self::TOLERANCE_PT) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static function toMm(float $pt): float
+    {
+        return round($pt / 72 * 25.4, 1);
     }
 
     /**
@@ -430,6 +446,8 @@ class PdfFormatValidator
         return [
             'valid' => false,
             'format' => null,
+            'standard' => false,
+            'booklet_allowed' => false,
             'reason' => $reason,
             'detected_width_mm' => $widthMm,
             'detected_height_mm' => $heightMm,

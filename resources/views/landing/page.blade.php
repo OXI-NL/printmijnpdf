@@ -562,7 +562,7 @@
             <div class="steps-grid">
                 <div class="step">
                     <h3>Upload je PDF</h3>
-                    <p>We herkennen automatisch het formaat (A4 of A5) en het aantal pagina's.</p>
+                    <p>We herkennen automatisch het formaat (A4, A5 of een eigen formaat tot A3) en het aantal pagina's.</p>
                 </div>
                 <div class="step">
                     <h3>Kies je afwerking</h3>

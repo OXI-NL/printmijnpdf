@@ -32,9 +32,9 @@ class OrderStoreTest extends TestCase
         ], 201)]);
     }
 
-    private function pdf(int $pages, string $format = 'A4'): UploadedFile
+    private function pdf(int $pages, string|array $format = 'A4', string $orientation = 'P'): UploadedFile
     {
-        $pdf = new FPDF('P', 'mm', $format);
+        $pdf = new FPDF($orientation, 'mm', $format);
         for ($i = 1; $i <= $pages; $i++) {
             $pdf->AddPage();
         }
@@ -119,5 +119,59 @@ class OrderStoreTest extends TestCase
         $this->bestel(['pdf' => $this->pdf(65), 'blank_pages_accepted' => '1'])
             ->assertStatus(422)
             ->assertJsonValidationErrors('binding_type');
+    }
+
+    public function test_eigen_formaat_als_boekje_krijgt_snijmaat_en_a4_tarief(): void
+    {
+        $this->bestel(['pdf' => $this->pdf(12, [200, 200])])->assertOk();
+
+        $order = Order::sole();
+        $this->assertSame('A4', $order->format);
+        $this->assertSame(200.0, $order->trim_width_mm);
+        $this->assertSame('200 × 200 mm (A4-tarief)', $order->format_label);
+        $this->assertSame('200×200 mm', $order->format_short_label);
+        $this->assertSame(12 * config('pricing.per_page_a4'), $order->price_pages);
+    }
+
+    public function test_standaard_a4_heeft_geen_snijmaat(): void
+    {
+        $this->bestel(['pdf' => $this->pdf(12)])->assertOk();
+
+        $order = Order::sole();
+        $this->assertNull($order->trim_width_mm);
+        $this->assertSame('A4', $order->format_label);
+    }
+
+    public function test_a3_kan_niet_als_boekje(): void
+    {
+        $this->bestel(['pdf' => $this->pdf(12, 'A3')])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('binding_type');
+
+        $this->assertSame(0, Order::count());
+    }
+
+    public function test_liggend_a4_kan_niet_als_boekje(): void
+    {
+        $this->bestel(['pdf' => $this->pdf(12, 'A4', 'L')])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('binding_type');
+    }
+
+    public function test_a3_losse_paginas_tegen_a3_tarief(): void
+    {
+        $this->bestel(['pdf' => $this->pdf(10, 'A3', 'L'), 'binding_type' => 'loose'])->assertOk();
+
+        $order = Order::sole();
+        $this->assertSame('A3', $order->format);
+        $this->assertSame('420 × 297 mm (A3-tarief)', $order->format_label);
+        $this->assertSame(10 * config('pricing.per_page_a3'), $order->price_pages);
+    }
+
+    public function test_groter_dan_a3_wordt_geweigerd(): void
+    {
+        $this->bestel(['pdf' => $this->pdf(2, [300, 430]), 'binding_type' => 'loose'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('pdf');
     }
 }

@@ -55,7 +55,7 @@ class BookletImpositionService
             Storage::disk('local')->makeDirectory('pdfs/imposed');
             $this->impose(
                 $inputPath,
-                $order->format === 'A5' ? 'A5' : 'A4',
+                self::sheetFor($order),
                 $bleedPt,
                 Storage::disk('local')->path($relativePath)
             );
@@ -80,6 +80,21 @@ class BookletImpositionService
             'path' => $relativePath,
             'message' => 'Impositie succesvol aangemaakt'
         ];
+    }
+
+    /**
+     * Welk vel uit SHEETS: SRA4 alleen als de pagina op een halve SRA4 past
+     * (staand A5 of kleiner); al het andere, ook liggend A5, gaat op SRA3.
+     */
+    public static function sheetFor(Order $order): string
+    {
+        $halfSra4Mm = self::SHEETS['A5']['width'] / 2 / 72 * 25.4;
+
+        if ($order->format !== 'A5' || ($order->trim_width_mm !== null && $order->trim_width_mm > $halfSra4Mm - 6)) {
+            return 'A4';
+        }
+
+        return 'A5';
     }
 
     /**
@@ -155,7 +170,7 @@ class BookletImpositionService
         [$template, $trim] = $this->importWithTrim($pdf, $pageNumber, $bleedPt);
         $size = $pdf->getTemplateSize($template);
 
-        // Alleen verkleinen als de pagina niet past (de validatie laat alleen A4/A5 toe)
+        // Alleen verkleinen als de pagina niet past (de validatie laat voor boekjes max. 222 × 304 mm toe)
         $scale = min(1.0, $half / $trim['width'], $sheet['height'] / $trim['height']);
 
         // Snijkader op het vel (PDF-coördinaten, oorsprong linksonder)

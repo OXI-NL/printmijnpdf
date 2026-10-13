@@ -155,4 +155,16 @@ class BookletImpositionTest extends TestCase
         $this->assertFalse($result['success']);
         $this->assertStringStartsWith('PDF kon niet worden verwerkt', $result['message']);
     }
+
+    public function test_vel_volgt_de_snijmaat(): void
+    {
+        $sheet = fn (string $format, ?float $w = null, ?float $h = null) =>
+            BookletImpositionService::sheetFor(new Order(['format' => $format, 'trim_width_mm' => $w, 'trim_height_mm' => $h]));
+
+        $this->assertSame('A5', $sheet('A5'), 'staand A5 op SRA4');
+        $this->assertSame('A5', $sheet('A5', 140, 140), 'klein vierkant past op een halve SRA4');
+        $this->assertSame('A4', $sheet('A5', 210, 148.5), 'liggend A5 is te breed voor een halve SRA4');
+        $this->assertSame('A4', $sheet('A4'));
+        $this->assertSame('A4', $sheet('A3', 222, 304));
+    }
 }

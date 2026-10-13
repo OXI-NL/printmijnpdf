@@ -20,6 +20,8 @@ class Order extends Model
         'page_count',
         'blank_pages',
         'format',
+        'trim_width_mm',
+        'trim_height_mm',
         'has_bleed',
         'bleed_mm',
         'binding_type',
@@ -62,6 +64,8 @@ class Order extends Model
 
     protected $casts = [
         'has_bleed' => 'boolean',
+        'trim_width_mm' => 'float',
+        'trim_height_mm' => 'float',
         'paid_at' => 'datetime',
         'paid_processed_at' => 'datetime',
         'payment_failed_mailed_at' => 'datetime',
@@ -124,13 +128,46 @@ class Order extends Model
             : (string) $this->page_count;
     }
 
+    /**
+     * Bv. "A4", of bij een afwijkend formaat de snijmaat: "200 × 200 mm (A4-tarief)"
+     */
+    public function getFormatLabelAttribute(): string
+    {
+        return $this->trim_width_mm === null || $this->trim_height_mm === null
+            ? $this->format
+            : "{$this->trim_size_label} ({$this->format}-tarief)";
+    }
+
+    /**
+     * Korte variant voor smalle kolommen (pakbon, factuur): "A4" of "200×200 mm"
+     */
+    public function getFormatShortLabelAttribute(): string
+    {
+        return $this->trim_width_mm === null || $this->trim_height_mm === null
+            ? $this->format
+            : str_replace(' × ', '×', $this->trim_size_label);
+    }
+
+    public function getTrimSizeLabelAttribute(): ?string
+    {
+        if ($this->trim_width_mm === null || $this->trim_height_mm === null) {
+            return null;
+        }
+
+        $mm = fn (float $v) => str_replace('.', ',', (string) round($v, 1));
+
+        return "{$mm($this->trim_width_mm)} × {$mm($this->trim_height_mm)} mm";
+    }
+
     public static function calculatePrice(int $pageCount, string $format, string $bindingType = 'booklet', string $deliveryType = 'shipping', int $quantity = 1, ?string $promoCode = null): array
     {
         $pageCount = self::billablePages($pageCount, $bindingType);
 
-        $pricePerPage = $format === 'A5'
-            ? config('pricing.per_page_a5', 7)
-            : config('pricing.per_page_a4', 10);
+        $pricePerPage = match ($format) {
+            'A5' => config('pricing.per_page_a5', 10),
+            'A3' => config('pricing.per_page_a3', 20),
+            default => config('pricing.per_page_a4', 15),
+        };
 
         $startup = config('pricing.startup', 1000);
 

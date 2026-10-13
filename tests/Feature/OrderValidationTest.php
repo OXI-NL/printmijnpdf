@@ -64,12 +64,6 @@ class OrderValidationTest extends TestCase
             ->assertStatus(422)->assertJsonValidationErrors('pdf');
     }
 
-    public function test_onbekend_formaat_wordt_geweigerd(): void
-    {
-        $this->postJson('/api/order', $this->geldigeBestelling(['format' => 'A3']))
-            ->assertStatus(422)->assertJsonValidationErrors('format');
-    }
-
     public function test_onbekende_bindwijze_wordt_geweigerd(): void
     {
         $this->postJson('/api/order', $this->geldigeBestelling(['binding_type' => 'spiraal']))
