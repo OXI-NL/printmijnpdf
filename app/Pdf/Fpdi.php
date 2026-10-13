@@ -5,6 +5,7 @@ namespace App\Pdf;
 use setasign\Fpdi\Fpdi as BaseFpdi;
 use setasign\Fpdi\PdfParser\StreamReader;
 use setasign\Fpdi\PdfReader\DataStructure\Rectangle;
+use setasign\Fpdi\PdfReader\Page;
 use setasign\Fpdi\PdfReader\PageBoundaries;
 
 /**
@@ -47,5 +48,13 @@ class Fpdi extends BaseFpdi
             'trim' => $trim === false ? null : $trim,
             'rotation' => ((int) $page->getRotation() % 360 + 360) % 360,
         ];
+    }
+
+    /**
+     * Een pagina uit het huidige bronbestand, zonder hem te importeren.
+     */
+    public function getSourcePage(int $pageNumber): Page
+    {
+        return $this->getPdfReader($this->currentReaderId)->getPage($pageNumber);
     }
 }

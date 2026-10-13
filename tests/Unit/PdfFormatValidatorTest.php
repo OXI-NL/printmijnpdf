@@ -34,4 +34,35 @@ class PdfFormatValidatorTest extends TestCase
             $this->assertSame($format, $result['format']);
         }
     }
+
+    public function test_grote_afbeeldingsstream_verbergt_de_paginas_niet(): void
+    {
+        // Canva-PDF's bevatten megabytes aan beelddata in één object; een regex die
+        // per object tot "endobj" zoekt liep daarop vast (PCRE backtrack-limiet) en
+        // keurde een gewoon A4-bestand af als "afwijkend formaat"
+        $image = str_repeat('x', 3 * 1024 * 1024);
+        $pdf = "%PDF-1.4\n"
+            . "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n"
+            . "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n"
+            . "4 0 obj\n<< /Type /XObject /Subtype /Image /Length " . strlen($image) . " >>\nstream\n{$image}\nendstream\nendobj\n"
+            . "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0.0 7.8299813 595.5 850.07996] >>\nendobj\n"
+            . "%%EOF\n";
+
+        $path = tempnam(sys_get_temp_dir(), 'pmp');
+        file_put_contents($path, $pdf);
+        $result = (new PdfFormatValidator())->validate($path);
+        unlink($path);
+
+        $this->assertTrue($result['valid'], (string) $result['reason']);
+        $this->assertSame('A4', $result['format']);
+    }
+
+    public function test_paginas_in_gecomprimeerde_object_stream(): void
+    {
+        // PDF 1.5+: de pagina-objecten staan in een ObjStm zonder "obj … endobj"
+        $result = (new PdfFormatValidator())->validate(__DIR__ . '/../Fixtures/a4-6-paginas-xrefstream.pdf');
+
+        $this->assertTrue($result['valid'], (string) $result['reason']);
+        $this->assertSame('A4', $result['format']);
+    }
 }

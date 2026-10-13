@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Pdf\Fpdi;
 use Illuminate\Support\Facades\Log;
 
 class PdfFormatValidator
@@ -64,9 +65,24 @@ class PdfFormatValidator
             // object streams (ObjStm) ook zichtbaar worden voor de regex-parser.
             $content = $this->decompressStreams($content);
 
-            $pages = $this->extractPages($content);
+            // Haal daarna de ruwe streamdata weg: de regexes hieronder lezen per
+            // object tot "endobj" en lopen anders vast op megabytes beelddata
+            // (PCRE backtrack-limiet), waardoor er "geen pagina's" gevonden worden
+            $content = $this->stripStreamData($content);
 
-            if (empty($pages)) {
+            $pages = $this->extractPages($content);
+            $results = [];
+            foreach ($pages as $index => $pageContent) {
+                $results[] = $this->analyzePage($pageContent, $content, $index);
+            }
+
+            // Bij PDF 1.5+ staan pagina-objecten vaak gecomprimeerd in een object
+            // stream, zonder "obj … endobj" eromheen; dan leest FPDI de boxen uit
+            if (empty($results)) {
+                $results = $this->analyzePagesWithFpdi($filePath);
+            }
+
+            if (empty($results)) {
                 return $this->reject('Kon geen pagina\'s vinden in het PDF-bestand.');
             }
 
@@ -75,9 +91,7 @@ class PdfFormatValidator
             $lastWidth = null;
             $lastHeight = null;
 
-            foreach ($pages as $index => $pageContent) {
-                $result = $this->analyzePage($pageContent, $content, $index);
-
+            foreach ($results as $index => $result) {
                 if ($result === null) {
                     return $this->reject(
                         'Kon het formaat van pagina ' . ($index + 1) . ' niet bepalen.'
@@ -172,31 +186,72 @@ class PdfFormatValidator
                 continue;
             }
 
-            [$width, $height] = $dimensions;
-
-            // Corrigeer BleedBox: trek typische afloop af als er geen TrimBox/CropBox was
-            if ($boxName === 'BleedBox') {
-                $width -= 2 * self::TYPICAL_BLEED_PT;
-                $height -= 2 * self::TYPICAL_BLEED_PT;
-            }
-
-            // Pas rotatie toe (90° of 270° draait breedte/hoogte om)
-            if ($rotation === 90 || $rotation === 270) {
-                [$width, $height] = [$height, $width];
-            }
-
-            // Check of het staand is (hoogte > breedte)
-            if ($width > $height) {
-                // Liggend formaat → niet toegestaan
-                $format = $this->matchFormat($height, $width);
-                return [null, $boxName, $width, $height];
-            }
-
-            $format = $this->matchFormat($width, $height);
-            return [$format, $boxName, $width, $height];
+            return $this->classify($dimensions[0], $dimensions[1], $boxName, $rotation);
         }
 
         return null;
+    }
+
+    /**
+     * Zelfde analyse als analyzePage(), maar met de boxen zoals FPDI ze leest
+     * (inclusief gecomprimeerde object streams en overgeërfde boxen).
+     *
+     * @return array<int, array|null>
+     */
+    private function analyzePagesWithFpdi(string $filePath): array
+    {
+        try {
+            $pdf = new Fpdi();
+            $pageCount = $pdf->setSourceFile($filePath);
+        } catch (\Throwable $e) {
+            Log::warning('PdfFormatValidator: FPDI kon het bestand niet lezen: ' . $e->getMessage());
+            return [];
+        }
+
+        $results = [];
+        for ($i = 1; $i <= $pageCount; $i++) {
+            $page = $pdf->getSourcePage($i);
+            $rotation = ((int) $page->getRotation() % 360 + 360) % 360;
+            $result = null;
+
+            foreach (self::BOX_PRIORITY as $boxName) {
+                $box = $page->getBoundary($boxName, false);
+                if ($box !== false) {
+                    $result = $this->classify($box->getWidth(), $box->getHeight(), $boxName, $rotation);
+                    break;
+                }
+            }
+
+            $results[] = $result;
+        }
+
+        return $results;
+    }
+
+    /**
+     * Bepaal het formaat van één pagina uit de afmetingen van de gevonden box.
+     *
+     * @return array [format, boxUsed, width, height]
+     */
+    private function classify(float $width, float $height, string $boxName, int $rotation): array
+    {
+        // Corrigeer BleedBox: trek typische afloop af als er geen TrimBox/CropBox was
+        if ($boxName === 'BleedBox') {
+            $width -= 2 * self::TYPICAL_BLEED_PT;
+            $height -= 2 * self::TYPICAL_BLEED_PT;
+        }
+
+        // Pas rotatie toe (90° of 270° draait breedte/hoogte om)
+        if ($rotation === 90 || $rotation === 270) {
+            [$width, $height] = [$height, $width];
+        }
+
+        // Liggend formaat (breder dan hoog) is niet toegestaan
+        if ($width > $height) {
+            return [null, $boxName, $width, $height];
+        }
+
+        return [$this->matchFormat($width, $height), $boxName, $width, $height];
     }
 
     /**
@@ -336,6 +391,35 @@ class PdfFormatValidator
         }
 
         return $result;
+    }
+
+    /**
+     * Verwijder de inhoud tussen "stream" en "endstream". De dictionaries
+     * (met /Type, /MediaBox enz.) blijven staan; alleen de binaire data gaat eruit.
+     */
+    private function stripStreamData(string $content): string
+    {
+        $result = '';
+        $offset = 0;
+
+        while (($start = strpos($content, 'stream', $offset)) !== false) {
+            // Alleen echte streams: die beginnen direct na de dictionary (">>"),
+            // dus "endstream" en losse tekst met het woord "stream" overslaan
+            if (!str_ends_with(rtrim(substr($content, max(0, $start - 32), min($start, 32))), '>>')) {
+                $offset = $start + 6;
+                continue;
+            }
+
+            $end = strpos($content, 'endstream', $start + 6);
+            if ($end === false) {
+                break;
+            }
+
+            $result .= substr($content, $offset, $start + 6 - $offset) . "\n";
+            $offset = $end;
+        }
+
+        return $result . substr($content, $offset);
     }
 
     /**
