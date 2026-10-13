@@ -139,6 +139,16 @@ class Order extends Model
     }
 
     /**
+     * Voor de productie: met afloop op snijformaat, zonder afloop iets kleiner snijden
+     */
+    public function getBleedLabelAttribute(): string
+    {
+        return $this->has_bleed
+            ? "met {$this->bleed_mm} mm afloop"
+            : 'zonder afloop (iets kleiner snijden)';
+    }
+
+    /**
      * Korte variant voor smalle kolommen (pakbon, factuur): "A4" of "200×200 mm"
      */
     public function getFormatShortLabelAttribute(): string

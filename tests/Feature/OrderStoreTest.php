@@ -58,6 +58,8 @@ class OrderStoreTest extends TestCase
             'number' => '12',
             'postcode' => '1234AB',
             'city' => 'Delft',
+            // FPDF-testbestanden hebben geen afloop
+            'no_bleed_accepted' => '1',
         ], $overrides));
     }
 
@@ -173,5 +175,63 @@ class OrderStoreTest extends TestCase
         $this->bestel(['pdf' => $this->pdf(2, [300, 430]), 'binding_type' => 'loose'])
             ->assertStatus(422)
             ->assertJsonValidationErrors('pdf');
+    }
+
+    private function pdfMetAfloop(): UploadedFile
+    {
+        // A4 met 3 mm afloop en ruimte voor snijtekens, zoals een drukklare export
+        $page = "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 652.0 898.6] "
+            . "/BleedBox [19.84 19.84 632.13 878.74] /TrimBox [28.35 28.35 623.63 870.24] >>";
+        $pdf = "%PDF-1.4\n"
+            . "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n"
+            . "2 0 obj\n<< /Type /Pages /Kids [3 0 R 4 0 R] /Count 2 >>\nendobj\n"
+            . "3 0 obj\n{$page}\nendobj\n4 0 obj\n{$page}\nendobj\n%%EOF\n";
+
+        return UploadedFile::fake()->createWithContent('afloop.pdf', $pdf);
+    }
+
+    public function test_pdf_zonder_afloop_vereist_bevestiging(): void
+    {
+        $this->bestel(['pdf' => $this->pdf(12), 'no_bleed_accepted' => '0'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('no_bleed_accepted');
+
+        $this->assertSame(0, Order::count());
+    }
+
+    public function test_pdf_zonder_afloop_wordt_zo_opgeslagen(): void
+    {
+        $this->bestel(['pdf' => $this->pdf(12)])->assertOk();
+
+        $order = Order::sole();
+        $this->assertFalse($order->has_bleed);
+        $this->assertSame('zonder afloop (iets kleiner snijden)', $order->bleed_label);
+    }
+
+    public function test_pdf_met_afloop_heeft_geen_bevestiging_nodig(): void
+    {
+        $this->bestel([
+            'pdf' => $this->pdfMetAfloop(),
+            'binding_type' => 'loose',
+            'no_bleed_accepted' => '0',
+            'has_bleed' => '0', // de browser bepaalt dit niet
+        ])->assertOk();
+
+        $order = Order::sole();
+        $this->assertTrue($order->has_bleed);
+        $this->assertSame(3, $order->bleed_mm);
+        $this->assertSame('A4', $order->format);
+        $this->assertNull($order->trim_width_mm, 'A4 met afloop is gewoon standaard A4');
+    }
+
+    public function test_prijsberekening_meldt_afloop(): void
+    {
+        $this->postJson('/api/calculate-price', ['pdf' => $this->pdfMetAfloop()])
+            ->assertOk()
+            ->assertJson(['has_bleed' => true, 'bleed_mm' => 3.0]);
+
+        $this->postJson('/api/calculate-price', ['pdf' => $this->pdf(4)])
+            ->assertOk()
+            ->assertJson(['has_bleed' => false]);
     }
 }

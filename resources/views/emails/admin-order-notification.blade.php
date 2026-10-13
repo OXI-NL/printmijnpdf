@@ -159,6 +159,14 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td style="padding: 12px 16px; border-bottom: 1px solid #e2e8f0;">
+                                        <span style="color: #64748b; font-size: 13px;">Afloop</span>
+                                    </td>
+                                    <td style="padding: 12px 16px; border-bottom: 1px solid #e2e8f0; text-align: right;">
+                                        <span style="color: #1e293b; font-size: 13px; font-weight: 500;">{{ $order->bleed_label }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td style="padding: 12px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
                                         <span style="color: #64748b; font-size: 13px;">Aantal pagina's</span>
                                     </td>

@@ -73,8 +73,8 @@ class OrderController extends Controller
                 'booklet_allowed' => $formatResult['booklet_allowed'],
                 'width_mm' => $formatResult['detected_width_mm'],
                 'height_mm' => $formatResult['detected_height_mm'],
-                'has_bleed' => false,
-                'bleed_mm' => 0,
+                'has_bleed' => $formatResult['has_bleed'],
+                'bleed_mm' => $formatResult['bleed_mm'],
             ]);
         } catch (\Exception $e) {
             Log::error('PDF analyse error: ' . $e->getMessage());
@@ -97,8 +97,9 @@ class OrderController extends Controller
             'page_count' => 'nullable|integer|min:1',
             // format komt uit de servercontrole van de PDF; dit veld is alleen informatief
             'format' => 'nullable|string|max:20',
+            // has_bleed en bleed_mm komen uit de servercontrole van de PDF
             'has_bleed' => 'boolean',
-            'bleed_mm' => 'nullable|integer',
+            'bleed_mm' => 'nullable|numeric',
             'binding_type' => 'required|in:booklet,loose',
             'print_side' => 'required|in:single,double',
             'quantity' => 'required|integer|min:1',
@@ -113,6 +114,7 @@ class OrderController extends Controller
             'city' => 'required|string|max:255',
             'promo_code' => 'nullable|string|max:50',
             'blank_pages_accepted' => 'boolean',
+            'no_bleed_accepted' => 'boolean',
         ]);
 
         // Analyseer de PDF zelf, zodat de prijs niet van invoer uit de browser afhangt
@@ -148,6 +150,14 @@ class OrderController extends Controller
         }
 
         $blankPages = Order::blankPagesNeeded($pageCount, $bindingType);
+        if (!$formatResult['has_bleed'] && !$request->boolean('no_bleed_accepted')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Je PDF heeft geen afloop. Bevestig dat we je drukwerk daarom iets kleiner snijden.',
+                'errors' => ['no_bleed_accepted' => ['Bevestiging voor PDF zonder afloop ontbreekt.']],
+            ], 422);
+        }
+
         if ($blankPages > 0 && !$request->boolean('blank_pages_accepted')) {
             return response()->json([
                 'success' => false,
@@ -195,8 +205,8 @@ class OrderController extends Controller
                 'format' => $format,
                 'trim_width_mm' => $formatResult['standard'] ? null : $formatResult['detected_width_mm'],
                 'trim_height_mm' => $formatResult['standard'] ? null : $formatResult['detected_height_mm'],
-                'has_bleed' => $request->boolean('has_bleed'),
-                'bleed_mm' => $request->input('bleed_mm'),
+                'has_bleed' => $formatResult['has_bleed'],
+                'bleed_mm' => (int) round($formatResult['bleed_mm']),
                 'binding_type' => $bindingType,
                 'print_side' => $request->input('print_side'),
                 'quantity' => $request->input('quantity'),

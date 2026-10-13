@@ -37,6 +37,11 @@ class PdfFormatValidator
     private const TYPICAL_BLEED_PT = 8.504;
 
     /**
+     * Minimale afloop rondom om als "PDF met afloop" te tellen.
+     */
+    public const MIN_BLEED_MM = 2.0;
+
+    /**
      * Prioriteitsvolgorde voor PDF-boxes:
      *
      * 1. TrimBox  — het uiteindelijke snijformaat na afwerking (meest betrouwbaar)
@@ -55,7 +60,7 @@ class PdfFormatValidator
      * en hoogstens A3. Geeft de prijsklasse terug en of een boekje kan.
      *
      * @param string $filePath Pad naar het PDF-bestand
-     * @return array{valid: bool, format: ?string, standard: bool, booklet_allowed: bool, reason: ?string, detected_width_mm: ?float, detected_height_mm: ?float, box_used: ?string}
+     * @return array{valid: bool, format: ?string, standard: bool, booklet_allowed: bool, has_bleed: bool, bleed_mm: float, reason: ?string, detected_width_mm: ?float, detected_height_mm: ?float, box_used: ?string}
      */
     public function validate(string $filePath): array
     {
@@ -99,12 +104,13 @@ class PdfFormatValidator
                 }
             }
 
-            [$boxUsed, $width, $height] = $results[0];
+            [$boxUsed, $width, $height, $bleedPt] = $results[0];
+            $bleedMm = self::toMm($bleedPt);
             $widthMm = self::toMm($width);
             $heightMm = self::toMm($height);
 
             // Eén formaat per bestelling
-            foreach ($results as $index => [, $w, $h]) {
+            foreach ($results as $index => [, $w, $h, ]) {
                 if (abs($w - $width) > self::TOLERANCE_PT || abs($h - $height) > self::TOLERANCE_PT) {
                     return $this->reject(
                         "Je PDF bevat pagina's van verschillende formaten: pagina 1 is {$widthMm} × {$heightMm} mm, "
@@ -135,6 +141,9 @@ class PdfFormatValidator
                 'standard' => $this->isStandard($width, $height),
                 'booklet_allowed' => $widthMm <= self::BOOKLET_MAX_WIDTH_MM + $tolMm
                     && $heightMm <= self::BOOKLET_MAX_HEIGHT_MM + $tolMm,
+                // Vanaf 2 mm rondom telt het als afloop (gebruikelijk is 3 mm)
+                'has_bleed' => $bleedMm >= self::MIN_BLEED_MM,
+                'bleed_mm' => $bleedMm >= self::MIN_BLEED_MM ? $bleedMm : 0.0,
                 'reason' => null,
                 'detected_width_mm' => $widthMm,
                 'detected_height_mm' => $heightMm,
@@ -178,23 +187,14 @@ class PdfFormatValidator
         // Detecteer rotatie op de pagina
         $rotation = $this->detectRotation($pageContent);
 
-        // Probeer boxes in prioriteitsvolgorde
+        $boxes = [];
         foreach (self::BOX_PRIORITY as $boxName) {
-            $dimensions = $this->extractBox($pageContent, $boxName, $fullContent);
-
             // Als de box niet direct op de pagina staat, zoek in het parent Pages-object
-            if ($dimensions === null) {
-                $dimensions = $this->extractBoxFromParent($pageContent, $fullContent, $boxName);
-            }
-
-            if ($dimensions === null) {
-                continue;
-            }
-
-            return $this->classify($dimensions[0], $dimensions[1], $boxName, $rotation);
+            $boxes[$boxName] = $this->extractBox($pageContent, $boxName, $fullContent)
+                ?? $this->extractBoxFromParent($pageContent, $fullContent, $boxName);
         }
 
-        return null;
+        return $this->resolve($boxes, $rotation);
     }
 
     /**
@@ -217,20 +217,63 @@ class PdfFormatValidator
         for ($i = 1; $i <= $pageCount; $i++) {
             $page = $pdf->getSourcePage($i);
             $rotation = ((int) $page->getRotation() % 360 + 360) % 360;
-            $result = null;
 
+            $boxes = [];
             foreach (self::BOX_PRIORITY as $boxName) {
                 $box = $page->getBoundary($boxName, false);
-                if ($box !== false) {
-                    $result = $this->classify($box->getWidth(), $box->getHeight(), $boxName, $rotation);
-                    break;
-                }
+                $boxes[$boxName] = $box === false ? null : [$box->getWidth(), $box->getHeight()];
             }
 
-            $results[] = $result;
+            $results[] = $this->resolve($boxes, $rotation);
         }
 
         return $results;
+    }
+
+    /**
+     * Kies de box die het snijformaat bepaalt en meet de afloop eromheen.
+     *
+     * @param array<string, array{float, float}|null> $boxes
+     * @return array|null [boxUsed, width, height, bleedPt]
+     */
+    private function resolve(array $boxes, int $rotation): ?array
+    {
+        foreach (self::BOX_PRIORITY as $boxName) {
+            if ($boxes[$boxName] === null) {
+                continue;
+            }
+
+            [$boxUsed, $width, $height] = $this->classify($boxes[$boxName][0], $boxes[$boxName][1], $boxName, $rotation);
+
+            return [$boxUsed, $width, $height, $this->bleedAround($boxes, $boxName)];
+        }
+
+        return null;
+    }
+
+    /**
+     * Afloop in punten: hoeveel de BleedBox (of anders de MediaBox) aan elke
+     * kant buiten de TrimBox valt. Zonder TrimBox weten we niet waar gesneden
+     * wordt; alleen een losse BleedBox telt dan als de gebruikelijke 3 mm.
+     */
+    private function bleedAround(array $boxes, string $boxUsed): float
+    {
+        if ($boxUsed === 'BleedBox') {
+            return self::TYPICAL_BLEED_PT;
+        }
+
+        if ($boxUsed !== 'TrimBox') {
+            return 0.0;
+        }
+
+        $outer = $boxes['BleedBox'] ?? $boxes['MediaBox'];
+        if ($outer === null) {
+            return 0.0;
+        }
+
+        [$trimW, $trimH] = $boxes['TrimBox'];
+
+        return max(0.0, min($outer[0] - $trimW, $outer[1] - $trimH) / 2);
     }
 
     /**
@@ -375,8 +418,9 @@ class PdfFormatValidator
                 $streamStart = $match[1] + strlen($match[0]);
                 $header = $matches[1][$i][0];
 
-                // Alleen FlateDecode-streams decomprimeren
-                if (strpos($header, '/FlateDecode') === false) {
+                // Alleen gecomprimeerde object streams: beelddata uitpakken kost
+                // bij grote PDF's meer geheugen dan PHP heeft en levert niets op
+                if (strpos($header, '/FlateDecode') === false || strpos($header, '/ObjStm') === false) {
                     continue;
                 }
 
@@ -448,6 +492,8 @@ class PdfFormatValidator
             'format' => null,
             'standard' => false,
             'booklet_allowed' => false,
+            'has_bleed' => false,
+            'bleed_mm' => 0.0,
             'reason' => $reason,
             'detected_width_mm' => $widthMm,
             'detected_height_mm' => $heightMm,

@@ -149,5 +149,16 @@ class PdfFormatValidatorTest extends TestCase
         $this->assertSame('A4', $result['format']);
         $this->assertTrue($result['standard']);
         $this->assertSame('TrimBox', $result['box_used']);
+        $this->assertTrue($result['has_bleed']);
+        $this->assertSame(3.0, $result['bleed_mm']);
+    }
+
+    public function test_pdf_zonder_afloop(): void
+    {
+        $result = $this->validate('A4');
+
+        $this->assertTrue($result['valid']);
+        $this->assertFalse($result['has_bleed']);
+        $this->assertSame(0.0, $result['bleed_mm']);
     }
 }

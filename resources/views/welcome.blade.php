@@ -1349,6 +1349,25 @@
         .inline-notice.info { background: #f0f9ff; color: #0369a1; }
         .inline-notice.error { background: #fef2f2; color: #b91c1c; }
         .inline-notice svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+        /* ===== GEEN AFLOOP ===== */
+        .bleed-notice {
+            display: none;
+            padding: 14px 16px;
+            border-radius: 10px;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
+            font-size: 14px;
+            margin-bottom: 1rem;
+        }
+        .bleed-notice.visible { display: block; }
+        .bleed-notice p { margin: 0 0 10px; line-height: 1.5; }
+        .bleed-notice a { color: #92400e; font-weight: 600; }
+        .bleed-confirm { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; font-weight: 500; color: #78350f; }
+        .bleed-confirm input { width: 18px; height: 18px; margin-top: 1px; flex-shrink: 0; accent-color: var(--primary); }
+        .pay-hint { display: none; font-size: 13px; color: #92400e; text-align: center; margin: 0 0 10px; }
+        .pay-hint.visible { display: block; }
         
         /* ===== ERROR STATE ===== */
         .error-message {
@@ -1922,6 +1941,15 @@
             <span id="inlineNoticeText"></span>
         </div>
 
+        <!-- PDF zonder afloop: klant bevestigt dat we iets kleiner snijden -->
+        <div class="bleed-notice" id="bleedNotice" role="note">
+            <p><strong>Je PDF heeft geen afloop.</strong> We printen hem gewoon, maar snijden je drukwerk iets kleiner zodat er geen witte randjes ontstaan. Houd daarom minimaal 8 mm afstand tussen tekst en de rand van de pagina. <a href="{{ route('landing.aanleveren') }}" target="_blank" rel="noopener">Lees hoe je een PDF met afloop maakt</a> (opent in een nieuw tabblad).</p>
+            <label class="bleed-confirm" for="noBleedAccepted">
+                <input type="checkbox" id="noBleedAccepted">
+                <span>Ik begrijp het: print mijn PDF zonder afloop</span>
+            </label>
+        </div>
+
         <!-- Section: Afwerking -->
         <section class="section hidden" id="sectionBinding">
             <h2 class="section-title">
@@ -2113,6 +2141,7 @@
 
         <!-- Section: Betalen -->
         <section class="section hidden" id="sectionPay">
+            <p class="pay-hint" id="payHint">Bevestig bovenaan dat je PDF zonder afloop geprint mag worden.</p>
             <button type="button" class="btn btn-primary" id="payButton" disabled>
                 <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-4-4 1.41-1.41L11 14.17l5.59-5.59L18 10l-7 7z"/>
@@ -2296,6 +2325,9 @@
         const progressSteps = document.getElementById('progressSteps');
         const errorMessage = document.getElementById('errorMessage');
         const inlineNotice = document.getElementById('inlineNotice');
+        const bleedNotice = document.getElementById('bleedNotice');
+        const noBleedAccepted = document.getElementById('noBleedAccepted');
+        const payHint = document.getElementById('payHint');
 
         const sectionBinding = document.getElementById('sectionBinding');
         const sectionPrice = document.getElementById('sectionPrice');
@@ -2469,6 +2501,8 @@
                     : detectedFormat;
                 hasBleed = data.has_bleed || false;
                 bleedMM = data.bleed_mm || 0;
+                noBleedAccepted.checked = false;
+                bleedNotice.classList.toggle('visible', !hasBleed);
 
                 showUploadSuccess(file, data);
 
@@ -2534,6 +2568,9 @@
             currentFile = null;
             pageCount = 0;
             bookletAllowed = true;
+            hasBleed = false;
+            noBleedAccepted.checked = false;
+            bleedNotice.classList.remove('visible');
             blankPagesAccepted = false;
             closeBlankPagesModal();
 
@@ -2658,7 +2695,11 @@
             const postcode = document.getElementById('postcode').value.trim();
             const city = document.getElementById('city').value.trim();
 
+            const bleedOk = hasBleed || noBleedAccepted.checked;
+            payHint.classList.toggle('visible', Boolean(currentFile) && !bleedOk);
+
             const isValid = currentFile && 
+                bleedOk &&
                 name.length >= 2 && 
                 /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
                 street.length >= 2 &&
@@ -2723,6 +2764,7 @@
             formData.append('bleed_mm', bleedMM);
             formData.append('binding_type', bindingType);
             formData.append('blank_pages_accepted', blankPagesAccepted ? '1' : '0');
+            formData.append('no_bleed_accepted', noBleedAccepted.checked ? '1' : '0');
             formData.append('print_side', printSide);
             formData.append('quantity', quantity);
             formData.append('delivery_type', deliveryType);
@@ -2906,6 +2948,7 @@
         });
 
         payButton.addEventListener('click', submitOrder);
+        noBleedAccepted.addEventListener('change', validateForm);
         mobilePayButton.addEventListener('click', submitOrder);
 
         const addressSection = document.getElementById('sectionAddress');
