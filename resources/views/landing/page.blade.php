@@ -254,6 +254,8 @@
             color: #525252;
         }
         .content-section li { margin-bottom: 0.375rem; }
+        .content-figure { margin: 1.25rem 0 0.5rem; }
+        .content-figure svg { width: 100%; max-width: 560px; height: auto; display: block; }
         .content-section p + p { margin-top: 0.75rem; }
         .steps {
             padding: 3rem 0;
@@ -550,6 +552,9 @@
                 @endif
                 @if(!empty($section['after']))
                 <p>{{ $section['after'] }}</p>
+                @endif
+                @if(!empty($section['figure']))
+                @include('landing.figures.' . $section['figure'])
                 @endif
             </div>
             @endforeach

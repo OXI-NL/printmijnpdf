@@ -2164,6 +2164,7 @@
                 <li>Een afwijkend formaat snijden we op maat. Je betaalt het tarief van het kleinste standaardformaat waar je pagina in past (A5, A4 of A3).</li>
             </ul>
             <p>Heeft je PDF pagina's van verschillende formaten? Splits hem dan in aparte bestellingen, of <a href="mailto:info@printmijnpdf.nl" style="color: var(--primary); text-decoration: none; font-weight: 500;">neem contact met ons op</a>.</p>
+            <p>Lees ook <a href="{{ route('landing.aanleveren') }}" style="color: var(--primary); text-decoration: none; font-weight: 500;">hoe je je PDF aanlevert voor het beste resultaat</a>: met afloop, snijtekens en een veilige marge.</p>
         </details>
         
         <details>

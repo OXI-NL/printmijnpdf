@@ -128,4 +128,26 @@ class PdfFormatValidatorTest extends TestCase
         $this->assertFalse($result['valid']);
         $this->assertStringContainsString('verschillende formaten', $result['reason']);
     }
+
+    public function test_pdf_met_afloop_en_snijtekens_telt_het_snijformaat(): void
+    {
+        // Zoals een drukklare export (bv. Canva "Bijsnijmarkeringen en afloop"):
+        // MediaBox met ruimte voor snijtekens, BleedBox 3 mm, TrimBox exact A4
+        $pdf = "%PDF-1.4\n"
+            . "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n"
+            . "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n"
+            . "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 652.0 898.6] "
+            . "/BleedBox [19.84 19.84 632.13 878.74] /TrimBox [28.35 28.35 623.63 870.24] >>\nendobj\n"
+            . "%%EOF\n";
+
+        $path = tempnam(sys_get_temp_dir(), 'pmp');
+        file_put_contents($path, $pdf);
+        $result = (new PdfFormatValidator())->validate($path);
+        unlink($path);
+
+        $this->assertTrue($result['valid'], (string) $result['reason']);
+        $this->assertSame('A4', $result['format']);
+        $this->assertTrue($result['standard']);
+        $this->assertSame('TrimBox', $result['box_used']);
+    }
 }

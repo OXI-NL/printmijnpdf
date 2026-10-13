@@ -37,6 +37,7 @@ Route::prefix('/')->group(function () {
     Route::get('boekje-printen', [LandingPageController::class, 'boekjePrinten'])->name('landing.boekje-printen');
     Route::get('pdf-printen-met-spoed', [LandingPageController::class, 'spoed'])->name('landing.spoed');
     Route::get('prijzen', [LandingPageController::class, 'prijzen'])->name('landing.prijzen');
+    Route::get('pdf-aanleveren', [LandingPageController::class, 'aanleveren'])->name('landing.aanleveren');
     Route::get('scriptie-printen', [LandingPageController::class, 'scriptie'])->name('landing.scriptie');
     Route::get('reader-printen', [LandingPageController::class, 'reader'])->name('landing.reader');
     Route::get('cursusmateriaal-printen', [LandingPageController::class, 'cursusmateriaal'])->name('landing.cursusmateriaal');
