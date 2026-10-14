@@ -19,5 +19,8 @@ return [
 
     'google_maps' => 'https://maps.google.com/?cid=8050172775051229699',
 
+    // "Review vragen" in het Bedrijfsprofiel; staat in de verzend- en afhaalmail
+    'google_review' => 'https://g.page/r/CQP6cr189bdvECE/review',
+
     'indexnow_key' => env('INDEXNOW_KEY', '20c98bcbfac88b239eec811a988ab9ab'),
 ];

@@ -106,6 +106,8 @@
                         </td>
                     </tr>
 
+                    @include('emails.partials.review')
+
                     <!-- Footer -->
                     <tr>
                         <td bgcolor="#1e293b" style="background: #1e293b; padding: 28px 30px; text-align: center;">

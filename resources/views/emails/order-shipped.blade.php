@@ -121,6 +121,8 @@
                         </td>
                     </tr>
 
+                    @include('emails.partials.review')
+
                     <!-- Footer -->
                     <!-- Footer -->
                     <tr>
