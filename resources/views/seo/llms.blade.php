@@ -1,6 +1,6 @@
 # PrintMijnPDF.nl
 
-> Nederlandse online printservice: upload een PDF en laat hem printen als geniet boekje (A4 of A5) of als losse pagina's, full colour in drukwerkkwaliteit. Bezorgd binnen 3 werkdagen of de volgende werkdag gratis af te halen in Delfgauw (bij Delft). Onderdeel van drukkerij NIVO Druk & Multimedia B.V. (sinds 1980).
+> Nederlandse online printservice: upload een PDF en laat hem printen als geniet boekje (A4 of A5) of als losse pagina's, full colour in drukwerkkwaliteit. Binnen 1 werkdag verzonden met PostNL of de volgende werkdag gratis af te halen in Delfgauw (bij Delft). Onderdeel van drukkerij NIVO Druk & Multimedia B.V. (sinds 1980).
 
 ## Wanneer PrintMijnPDF past
 

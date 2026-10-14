@@ -19,7 +19,10 @@ return [
     'startup' => env('PRICE_STARTUP', 1000),        // €10.00
     'binding' => env('PRICE_BINDING', 500),         // €5.00 eerste boekje
     'binding_extra' => env('PRICE_BINDING_EXTRA', 250), // €2.50 per extra boekje
-    'shipping' => env('PRICE_SHIPPING', 675),       // €6.75
+    'shipping' => env('PRICE_SHIPPING', 750),       // €7.50
+
+    // Grootste oplage die je zelf online bestelt; daarboven via contact
+    'max_quantity' => 100,
 
     // Actieve promotiecodes
     'promo_codes' => [

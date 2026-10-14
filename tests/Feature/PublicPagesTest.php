@@ -29,6 +29,8 @@ class PublicPagesTest extends TestCase
             'sitemap' => ['/sitemap.xml'],
             'health' => ['/up'],
             'admin login' => ['/admin/login'],
+            'privacy' => ['/privacy'],
+            'leveringsvoorwaarden' => ['/leveringsvoorwaarden'],
         ];
     }
 
@@ -66,5 +68,12 @@ class PublicPagesTest extends TestCase
     public function test_onbekende_pagina_geeft_404(): void
     {
         $this->get('/bestaat-echt-niet')->assertNotFound();
+    }
+
+    public function test_footer_linkt_naar_privacy_en_leveringsvoorwaarden(): void
+    {
+        $this->get('/')
+            ->assertSee(route('privacy'), false)
+            ->assertSee(route('leveringsvoorwaarden'), false);
     }
 }

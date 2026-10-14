@@ -106,7 +106,7 @@ class OrderController extends Controller
             'bleed_mm' => 'nullable|numeric',
             'binding_type' => 'required|in:booklet,loose',
             'print_side' => 'required|in:single,double',
-            'quantity' => 'required|integer|min:1',
+            'quantity' => 'required|integer|min:1|max:' . config('pricing.max_quantity', 100),
             'delivery_type' => 'required|in:shipping,pickup',
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', 'max:255', new SafeEmail],

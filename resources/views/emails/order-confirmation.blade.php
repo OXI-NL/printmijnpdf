@@ -166,7 +166,7 @@
                                             </tr>
                                             <tr>
                                                 <td style="padding: 6px 0; color: #64748b; font-size: 13px; vertical-align: top;">→</td>
-                                                <td style="padding: 6px 0; color: #475569; font-size: 13px;"><strong>Binnen 3 werkdagen bezorgd!</strong></td>
+                                                <td style="padding: 6px 0; color: #475569; font-size: 13px;"><strong>Binnen 1 werkdag verzonden met PostNL</strong></td>
                                             </tr>
                                         </table>
                                     </td>

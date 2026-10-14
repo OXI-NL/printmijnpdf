@@ -12,13 +12,13 @@
     <link rel="dns-prefetch" href="https://www.google-analytics.com">
     <link rel="dns-prefetch" href="https://js.mollie.com">
 
-    <title>PDF Printen als Boekje | Binnen 3 Dagen | PrintMijnPDF</title>
-    <meta name="description" content="Upload je PDF → professioneel geprint boekje binnen 3 werkdagen. Full colour drukwerkkwaliteit, vanaf €0,15/pagina. Gratis afhalen mogelijk.">
+    <title>PDF Printen als Boekje | Binnen 1 Werkdag Verzonden | PrintMijnPDF</title>
+    <meta name="description" content="Upload je PDF → professioneel geprint boekje, binnen 1 werkdag verzonden met PostNL. Full colour drukwerkkwaliteit, vanaf €0,15/pagina. Gratis afhalen mogelijk.">
     <meta name="msvalidate.01" content="1A1260063F50FF0586F052944BAF1CF1">
 
     <!-- Open Graph -->
-    <meta property="og:title" content="PDF Printen als Boekje | Binnen 3 Dagen | PrintMijnPDF">
-    <meta property="og:description" content="Upload je PDF en ontvang full colour printwerk binnen 3 werkdagen. Professioneel geniet boekje of losse pagina's. Echte drukwerkkwaliteit.">
+    <meta property="og:title" content="PDF Printen als Boekje | Binnen 1 Werkdag Verzonden | PrintMijnPDF">
+    <meta property="og:description" content="Upload je PDF en ontvang full colour printwerk, binnen 1 werkdag verzonden. Professioneel geniet boekje of losse pagina's. Echte drukwerkkwaliteit.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://printmijnpdf.nl/">
     <meta property="og:image" content="https://printmijnpdf.nl/og-image.jpg">
@@ -30,8 +30,8 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="PDF Printen als Boekje | Binnen 3 Dagen">
-    <meta name="twitter:description" content="Upload je PDF → professioneel geprint boekje binnen 3 werkdagen. Full colour drukwerkkwaliteit.">
+    <meta name="twitter:title" content="PDF Printen als Boekje | Binnen 1 Werkdag Verzonden">
+    <meta name="twitter:description" content="Upload je PDF → professioneel geprint boekje, binnen 1 werkdag verzonden. Full colour drukwerkkwaliteit.">
     <meta name="twitter:image" content="https://printmijnpdf.nl/og-image.jpg">
 
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
@@ -204,7 +204,7 @@
         "@@context": "https://schema.org",
         "@type": "PrintingService",
         "name": "PrintMijnPDF",
-        "description": "Professionele PDF printservice. Upload je PDF en ontvang een geprint boekje of losse pagina's binnen 3 werkdagen.",
+        "description": "Professionele PDF printservice. Upload je PDF en ontvang een geprint boekje of losse pagina's, binnen 1 werkdag verzonden met PostNL.",
         "url": "https://printmijnpdf.nl",
         "telephone": "+31152192525",
         "email": "info@printmijnpdf.nl",
@@ -627,7 +627,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
+            max-width: 480px;
+            margin: 1.5rem auto 0;
             padding: 0 0.5rem;
             position: relative;
         }
@@ -874,7 +875,7 @@
         .qty-btn:hover:not(:disabled) { background: #e2e8f0; }
         .qty-btn:disabled { color: #cbd5e1; cursor: not-allowed; }
         .qty-input {
-            width: 48px;
+            width: 64px;
             height: 40px;
             border: none;
             border-left: 1px solid var(--border);
@@ -894,6 +895,8 @@
             font-size: 12px;
             color: var(--text-muted);
         }
+        .quantity-hint a { color: inherit; }
+        .quantity-hint.warn { color: #b45309; }
 
         /* ===== PRICE SUMMARY ===== */
         .price-summary {
@@ -912,7 +915,6 @@
         
         .price-row.subtle {
             font-size: 13px;
-            color: #adb5bd;
         }
         
         .price-row.total {
@@ -1076,13 +1078,21 @@
             margin-top: 4px;
             display: block;
         }
+        .privacy-hint { color: var(--text-muted); line-height: 1.5; margin-top: 0.5rem; }
+        .privacy-hint a { color: inherit; }
         
         /* ===== DELIVERY OPTIONS ===== */
+        .delivery-question {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
         .delivery-options {
             display: flex;
             flex-direction: column;
             gap: 10px;
-            margin-top: 1.5rem;
+            margin-bottom: 1rem;
         }
         
         .delivery-option {
@@ -1136,7 +1146,7 @@
             background: #f0f9ff;
             border-radius: 10px;
             padding: 1rem;
-            margin-top: 12px;
+            margin: -4px 0 1rem;
             font-size: 14px;
             color: #0369a1;
         }
@@ -1731,7 +1741,7 @@
                     <line x1="12" y1="17" x2="12.01" y2="17"/>
                 </svg>
             </div>
-            <h2 id="blankPagesModalTitle" style="text-align:center">Een boekje gaat per 4 pagina's</h2>
+            <h2 id="blankPagesModalTitle" style="text-align:center">Een magazine gaat per 4 pagina's</h2>
             <p class="modal-sub-warning" id="blankPagesModalText" style="text-align:center"></p>
             <div class="modal-actions">
                 <button type="button" class="btn btn-primary" id="blankPagesContinue" style="width:100%"></button>
@@ -1808,7 +1818,7 @@
                 <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
             <span id="urgency-text">
-                <strong>Binnen 3 werkdagen</strong> in huis na bestelling
+                <strong>Binnen 1 werkdag</strong> verzonden met PostNL
             </span>
         </div>
 
@@ -1844,6 +1854,26 @@
             </div>
         </div>
         
+        <!-- Progress Steps -->
+        <div class="progress-steps" id="progressSteps">
+            <div class="step-item active" data-step="1">
+                <div class="step-number">1</div>
+                <span class="step-label">Uploaden</span>
+            </div>
+            <div class="step-item" data-step="2">
+                <div class="step-number">2</div>
+                <span class="step-label">Afwerking</span>
+            </div>
+            <div class="step-item" data-step="3">
+                <div class="step-number">3</div>
+                <span class="step-label">Adres</span>
+            </div>
+            <div class="step-item" data-step="4">
+                <div class="step-number">4</div>
+                <span class="step-label">Betalen</span>
+            </div>
+        </div>
+
         <!-- Trust Badges -->
         <div class="trust-badges">
             <div class="trust-badge">
@@ -1869,7 +1899,7 @@
                     <circle cx="5" cy="18" r="2"></circle>
                     <circle cx="19" cy="18" r="2"></circle>
                 </svg>
-                <span>Binnen 3 werkdagen bezorgd</span>
+                <span>Binnen 1 werkdag verzonden</span>
             </div>
             <div class="trust-badge">
                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1901,26 +1931,6 @@
 
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Progress Steps -->
-        <div class="progress-steps" id="progressSteps">
-            <div class="step-item active" data-step="1">
-                <div class="step-number">1</div>
-                <span class="step-label">Uploaden</span>
-            </div>
-            <div class="step-item" data-step="2">
-                <div class="step-number">2</div>
-                <span class="step-label">Afwerking</span>
-            </div>
-            <div class="step-item" data-step="3">
-                <div class="step-number">3</div>
-                <span class="step-label">Adres</span>
-            </div>
-            <div class="step-item" data-step="4">
-                <div class="step-number">4</div>
-                <span class="step-label">Betalen</span>
-            </div>
-        </div>
-
         <!-- Error Message -->
         <div class="error-message" id="errorMessage" role="alert">
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1959,7 +1969,7 @@
 
         <!-- PDF zonder afloop: we vullen de rand aan, of snijden iets kleiner -->
         <div class="bleed-notice" id="bleedNotice" role="group" aria-labelledby="bleedTitle">
-            <p id="bleedTitle"><strong>Je PDF loopt niet door over de rand.</strong> Na het printen snijden we je drukwerk op maat. Zonder een klein stukje extra rondom (afloop) kan er dan een dun wit randje ontstaan.</p>
+            <p id="bleedTitle"><strong>Let op de randen van je pagina's.</strong> We printen op een groter vel en snijden je drukwerk daarna op maat. Staat er kleur of een foto tot helemaal aan de rand? Dan kan daar na het snijden een dun wit randje zichtbaar worden.</p>
 
             <!-- Als we de rand kunnen aanvullen: twee keuzes -->
             <div class="bleed-choices" id="bleedChoices">
@@ -1968,14 +1978,14 @@
                     <input type="radio" name="bleed_choice" value="auto" id="bleedChoiceAuto">
                     <span>
                         <span class="bleed-choice-title">Rand aanvullen <span class="bleed-badge">aanbevolen</span></span>
-                        <span class="bleed-choice-text">We laten je ontwerp rondom 3 mm doorlopen door de rand te spiegelen, en snijden dat stukje er daarna weer af. Je krijgt precies <span class="bleed-size">A4</span>, zonder witte randjes. Aan je ontwerp zelf verandert niets.</span>
+                        <span class="bleed-choice-text">We maken de kleur of foto aan de rand van je pagina's een heel klein stukje breder. Zo loopt alles na het snijden netjes tot aan de rand door. Je krijgt precies <span class="bleed-size">A4</span>, zonder witte randjes, en je ontwerp ziet er verder hetzelfde uit.</span>
                     </span>
                 </label>
                 <label class="bleed-choice">
                     <input type="radio" name="bleed_choice" value="trim" id="bleedChoiceTrim">
                     <span>
                         <span class="bleed-choice-title">Iets kleiner snijden</span>
-                        <span class="bleed-choice-text">We printen je PDF zoals hij is en snijden er rondom een klein stukje af. Je drukwerk wordt dan iets kleiner dan <span class="bleed-size">A4</span>; houd minimaal 8 mm afstand tussen tekst en de rand.</span>
+                        <span class="bleed-choice-text">We printen je PDF zoals hij is en snijden er rondom een smal reepje af. Je drukwerk wordt dan net iets kleiner dan <span class="bleed-size">A4</span>. Staat er tekst dichter dan 8 mm (bijna een centimeter) bij de rand? Dan kan die deels wegvallen.</span>
                     </span>
                 </label>
 
@@ -1990,20 +2000,20 @@
                             <span class="bleed-preview-caption" id="bleedPreviewZoomCaption">Vergroot: hoek</span>
                         </div>
                     </div>
-                    <figcaption id="bleedPreviewText">Voorbeeld: buiten de stippellijn staat de aangevulde rand. Langs de stippellijn snijden we, dus die rand verdwijnt weer.</figcaption>
+                    <figcaption id="bleedPreviewText">Voorbeeld: buiten de stippellijn zie je het stukje dat we erbij maken. Op de stippellijn snijden we, dus dat stukje zie je straks niet meer.</figcaption>
                 </figure>
             </div>
 
             <!-- Als we de rand niet kunnen aanvullen (bv. invulvelden): alleen iets kleiner snijden -->
             <div class="bleed-trim-only" id="bleedTrimOnly" hidden>
-                <p>We snijden je drukwerk daarom iets kleiner, zodat er geen witte randjes ontstaan. Houd minimaal 8 mm afstand tussen tekst en de rand van de pagina.</p>
+                <p>We snijden je drukwerk daarom net iets kleiner, zodat er geen witte randjes ontstaan. Staat er tekst dichter dan 8 mm (bijna een centimeter) bij de rand? Dan kan die deels wegvallen.</p>
                 <label class="bleed-confirm" for="noBleedAccepted">
                     <input type="checkbox" id="noBleedAccepted">
-                    <span>Ik begrijp het: print mijn PDF zonder afloop</span>
+                    <span>Prima, snijd mijn drukwerk net iets kleiner</span>
                 </label>
             </div>
 
-            <p class="bleed-foot">Maak je liever zelf een PDF met afloop? <a href="{{ route('landing.aanleveren') }}" target="_blank" rel="noopener">Zo doe je dat</a> (opent in een nieuw tabblad). Daarna kun je <button type="button" class="bleed-reupload" id="bleedReupload">je nieuwe PDF uploaden</button>.</p>
+            <p class="bleed-foot">Pas je je ontwerp liever zelf aan? Op <a href="{{ route('landing.aanleveren') }}" target="_blank" rel="noopener">PDF aanleveren</a> lees je de technische uitleg over afloop, snijtekens en marges (opent in een nieuw tabblad). Daarna kun je <button type="button" class="bleed-reupload" id="bleedReupload">je aangepaste PDF uploaden</button>.</p>
         </div>
 
         <!-- Section: Afwerking -->
@@ -2019,13 +2029,13 @@
             <div class="binding-options">
                 <div class="binding-option selected" id="optBooklet" data-binding="booklet" role="button" tabindex="0" aria-pressed="true">
                     <div class="icon" aria-hidden="true">📖</div>
-                    <div class="title">Geniet boekje</div>
-                    <div class="note">Dubbelzijdig · Per 4 pag. · Max 64</div>
+                    <div class="title">Magazine</div>
+                    <div class="note">Gevouwen en in het midden geniet · tot 64 pagina's</div>
                 </div>
                 <div class="binding-option" id="optLoose" data-binding="loose" role="button" tabindex="0" aria-pressed="false">
                     <div class="icon" aria-hidden="true">📄</div>
                     <div class="title">Losse pagina's</div>
-                    <div class="note">Enkel- of dubbelzijdig</div>
+                    <div class="note">Losse vellen, aan één of twee kanten bedrukt</div>
                 </div>
             </div>
             
@@ -2042,9 +2052,10 @@
                 <label class="quantity-label">Aantal exemplaren</label>
                 <div class="quantity-control">
                     <button type="button" class="qty-btn" id="qtyMinus" aria-label="Aantal verminderen" disabled>−</button>
-                    <input type="number" id="qtyInput" class="qty-input" value="1" min="1" readonly aria-label="Aantal exemplaren">
+                    <input type="number" id="qtyInput" class="qty-input" value="1" min="1" max="{{ (int) config('pricing.max_quantity') }}" inputmode="numeric" aria-label="Aantal exemplaren" aria-describedby="qtyHint">
                     <button type="button" class="qty-btn" id="qtyPlus" aria-label="Aantal verhogen">+</button>
                 </div>
+                <span class="quantity-hint" id="qtyHint">Typ een aantal of gebruik − en +. Online bestel je tot {{ (int) config('pricing.max_quantity') }} exemplaren; wil je er meer, mail dan naar <a href="mailto:info@printmijnpdf.nl">info@printmijnpdf.nl</a>.</span>
             </div>
         </section>
 
@@ -2058,18 +2069,47 @@
                 Prijsoverzicht
             </h2>
             
+            <!-- Bezorgen of afhalen: bewust nog niets gekozen -->
+            <p class="delivery-question" id="deliveryQuestion">Hoe wil je je drukwerk ontvangen?</p>
+            <div class="delivery-options" role="radiogroup" aria-labelledby="deliveryQuestion">
+                <label class="delivery-option" id="deliveryShipping">
+                    <input type="radio" name="delivery_type" value="shipping">
+                    <div class="delivery-radio"></div>
+                    <div class="delivery-content">
+                        <div class="delivery-title">Thuisbezorgd met PostNL</div>
+                        <div class="delivery-subtitle">Binnen 1 werkdag verzonden, PostNL bezorgt binnen 2 werkdagen</div>
+                    </div>
+                    <div class="delivery-price" id="deliveryShippingPrice">€{{ number_format(config('pricing.shipping') / 100, 2, ',', '.') }}</div>
+                </label>
+
+                <label class="delivery-option" id="deliveryPickup">
+                    <input type="radio" name="delivery_type" value="pickup">
+                    <div class="delivery-radio"></div>
+                    <div class="delivery-content">
+                        <div class="delivery-title">Zelf afhalen in Delfgauw</div>
+                        <div class="delivery-subtitle">Bij NIVO, elke werkdag 17:00–17:30</div>
+                    </div>
+                    <div class="delivery-price">Gratis</div>
+                </label>
+            </div>
+
+            <div class="pickup-info" id="pickupInfo">
+                📍 <strong>NIVO</strong>, Exportweg 11, 2645ED Delfgauw<br>
+                Je ontvangt een mail zodra je bestelling klaarligt.
+            </div>
+
             <div class="price-summary">
                 <div class="price-row">
                     <span id="pricePageLabel">0 pagina's × €0,15</span>
                     <span id="pricePagesValue">€0,00</span>
                 </div>
                 <div class="price-row" id="priceBindingRow" style="display: none;">
-                    <span id="priceBindingLabel">Vouwen/Nieten (Boekje)</span>
+                    <span id="priceBindingLabel">Vouwen en nieten (magazine)</span>
                     <span id="priceBindingValue">€5,00</span>
                 </div>
                 <div class="price-row" id="priceShippingRow">
-                    <span id="priceShippingLabel">Verzending (PostNL)</span>
-                    <span id="priceShippingValue">€6,75</span>
+                    <span id="priceShippingLabel">Bezorgen of afhalen</span>
+                    <span id="priceShippingValue">nog kiezen</span>
                 </div>
                 <div class="price-row subtle">
                     <span id="priceStartupLabel">Incl. voorbereiding & kwaliteitscheck</span>
@@ -2080,7 +2120,7 @@
                     <span id="priceDiscountValue">-€0,00</span>
                 </div>
                 <div class="price-row total">
-                    <span>Totaal</span>
+                    <span id="priceTotalLabel">Totaal</span>
                     <span id="priceTotalValue">€0,00</span>
                 </div>
             </div>
@@ -2164,40 +2204,12 @@
                 </div>
             </div>
             
-            <span class="field-hint" style="margin-bottom: 1rem; display: block;">🔒 Je gegevens worden niet gedeeld met derden.</span>
-            
-            <!-- Delivery Options -->
-            <div class="delivery-options">
-                <label class="delivery-option selected" id="deliveryShipping">
-                    <input type="radio" name="delivery_type" value="shipping" checked>
-                    <div class="delivery-radio"></div>
-                    <div class="delivery-content">
-                        <div class="delivery-title">Thuisbezorgd</div>
-                        <div class="delivery-subtitle">Binnen 3 werkdagen in huis</div>
-                    </div>
-                    <div class="delivery-price">€6,75</div>
-                </label>
-
-                <label class="delivery-option" id="deliveryPickup">
-                    <input type="radio" name="delivery_type" value="pickup">
-                    <div class="delivery-radio"></div>
-                    <div class="delivery-content">
-                        <div class="delivery-title">Afhalen bij NIVO</div>
-                        <div class="delivery-subtitle">Elke werkdag 17:00–17:30</div>
-                    </div>
-                    <div class="delivery-price">Gratis</div>
-                </label>
-            </div>
-            
-            <div class="pickup-info" id="pickupInfo">
-                📍 <strong>NIVO</strong>, Exportweg 11, 2645ED Delfgauw<br>
-                Je ontvangt een mail zodra je bestelling klaarligt.
-            </div>
+            <span class="field-hint privacy-hint">🔒 We gebruiken je gegevens alleen om je bestelling te maken, te versturen en te factureren. Alleen PostNL en onze betaalprovider krijgen wat zij daarvoor nodig hebben. We verkopen niets door en sturen je geen nieuwsbrief, reclame of andere ongevraagde e-mail. <a href="{{ route('privacy') }}" target="_blank" rel="noopener">Lees ons privacybeleid</a>.</span>
         </section>
 
         <!-- Section: Betalen -->
         <section class="section hidden" id="sectionPay">
-            <p class="pay-hint" id="payHint">Bevestig bovenaan dat je PDF zonder afloop geprint mag worden.</p>
+            <p class="pay-hint" id="payHint"></p>
             <button type="button" class="btn btn-primary" id="payButton" disabled>
                 <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-4-4 1.41-1.41L11 14.17l5.59-5.59L18 10l-7 7z"/>
@@ -2326,7 +2338,8 @@
         </div>
 
         <div class="footer-bottom">
-            © 2026 PrintMijnPDF.nl · Onderdeel van NIVO Druk & Multimedia B.V.
+            © 2026 PrintMijnPDF.nl · Onderdeel van NIVO Druk & Multimedia B.V.<br>
+            <a href="{{ route('privacy') }}">Privacy</a> · <a href="{{ route('leveringsvoorwaarden') }}">Leveringsvoorwaarden</a>
         </div>
     </footer>
 
@@ -2346,14 +2359,15 @@
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
         const MAX_BOOKLET_PAGES = 64;
         const PRICES = {
-            startup: 1000,
+            startup: {{ (int) config('pricing.startup') }},
             perPageA3: {{ (int) config('pricing.per_page_a3') }},
             perPageA4: {{ (int) config('pricing.per_page_a4') }},
             perPageA5: {{ (int) config('pricing.per_page_a5') }},
-            binding: 500,
-            bindingExtra: 250,
-            shipping: 675
+            binding: {{ (int) config('pricing.binding') }},
+            bindingExtra: {{ (int) config('pricing.binding_extra') }},
+            shipping: {{ (int) config('pricing.shipping') }}
         };
+        const MAX_QUANTITY = {{ (int) config('pricing.max_quantity') }};
 
         const PROMO_CODES = {
             'PMPNIEUW': { discountPercent: 25, appliesTo: ['pages', 'startup', 'binding'] }
@@ -2370,7 +2384,7 @@
         let bleedFixable = false;
         let bindingType = 'booklet';
         let printSide = 'double';
-        let deliveryType = 'shipping';
+        let deliveryType = null; // 'shipping' of 'pickup'; de klant kiest zelf
         let quantity = 1;
         let activePromo = null;
         let blankPagesAccepted = false;
@@ -2433,9 +2447,9 @@
         function openBlankPagesModal() {
             const blanks = blankPagesNeeded();
             document.getElementById('blankPagesModalText').textContent =
-                `Je document heeft ${pageCount} pagina's. Een geniet boekje bestaat altijd uit een veelvoud van 4 pagina's. ` +
+                `Je document heeft ${pageCount} pagina's. Een magazine bestaat altijd uit een veelvoud van 4 pagina's. ` +
                 `Gaan we door, dan voegen wij ${blankPagesText(blanks)} toe aan het eind van je document. ` +
-                `Je boekje telt dan ${billablePages()} pagina's en die rekenen we ook af.`;
+                `Je magazine telt dan ${billablePages()} pagina's en die rekenen we ook af.`;
             document.getElementById('blankPagesContinue').textContent = `Doorgaan met ${billablePages()} pagina's`;
             blankPagesModal.classList.add('visible');
             document.getElementById('blankPagesContinue').focus();
@@ -2447,7 +2461,7 @@
 
         function showBlankPagesNotice() {
             showInlineNotice(
-                `We voegen ${blankPagesText(blankPagesNeeded())} toe aan het eind van je boekje (${billablePages()} pagina's in totaal).`,
+                `We voegen ${blankPagesText(blankPagesNeeded())} toe aan het eind van je magazine (${billablePages()} pagina's in totaal).`,
                 'info'
             );
         }
@@ -2595,8 +2609,8 @@
                 subOptions.classList.add('visible');
                 showInlineNotice(
                     bookletAllowed
-                        ? `Je document heeft ${pageCount} pagina's. We printen dit als losse pagina's.`
-                        : `Dit formaat is te groot voor een geniet boekje (max. 222 × 304 mm per pagina). We printen dit als losse pagina's.`,
+                        ? `Je document heeft ${pageCount} pagina's. Dat is te veel voor een magazine (maximaal 64), dus we printen het als losse vellen.`
+                        : `Je pagina's zijn te groot om er een magazine van te maken. We printen ze daarom als losse vellen.`,
                     'info'
                 );
             }
@@ -2811,8 +2825,8 @@
                 }
                 document.getElementById('bleedPreviewZoomCaption').textContent = `Vergroot: hoek ${corner}`;
                 document.getElementById('bleedPreviewText').textContent = white
-                    ? 'Je pagina heeft een witte rand, dus de aangevulde rand is ook wit. Langs de stippellijn snijden we.'
-                    : 'Buiten de stippellijn zie je de aangevulde rand: je ontwerp loopt gespiegeld door. Langs de stippellijn snijden we, dus die rand verdwijnt weer.';
+                    ? 'De rand van je pagina is wit, dus het stukje dat we erbij maken is ook wit. Op de stippellijn snijden we.'
+                    : 'Buiten de stippellijn zie je het stukje dat we erbij maken. Op de stippellijn snijden we, dus dat stukje zie je straks niet meer.';
 
                 bleedPreview.dataset.ready = '1';
                 bleedPreview.hidden = !bleedChoiceAuto.checked;
@@ -2887,6 +2901,8 @@
             quantity = 1;
             document.getElementById('qtyInput').value = 1;
             document.getElementById('qtyMinus').disabled = true;
+            document.getElementById('qtyPlus').disabled = false;
+            document.getElementById('qtyHint').classList.remove('warn');
 
             mobileSticky.classList.remove('visible');
             document.body.classList.remove('has-sticky');
@@ -2945,7 +2961,9 @@
             if (bindingType === 'booklet') {
                 bindingRow.style.display = 'flex';
                 document.getElementById('priceBindingLabel').textContent =
-                    quantity > 1 ? `Vouwen/Nieten (1× €5,00 + ${quantity - 1}× €2,50)` : 'Vouwen/Nieten (Boekje)';
+                    quantity > 1
+                        ? `Vouwen en nieten (1× ${formatPrice(PRICES.binding)} + ${quantity - 1}× ${formatPrice(PRICES.bindingExtra)})`
+                        : 'Vouwen en nieten (magazine)';
                 document.getElementById('priceBindingValue').textContent = formatPrice(prices.bindingCost);
             } else {
                 bindingRow.style.display = 'none';
@@ -2954,10 +2972,15 @@
             if (deliveryType === 'pickup') {
                 document.getElementById('priceShippingLabel').textContent = 'Afhalen';
                 document.getElementById('priceShippingValue').textContent = 'Gratis';
-            } else {
+            } else if (deliveryType === 'shipping') {
                 document.getElementById('priceShippingLabel').textContent = 'Verzending (PostNL)';
                 document.getElementById('priceShippingValue').textContent = formatPrice(PRICES.shipping);
+            } else {
+                document.getElementById('priceShippingLabel').textContent = 'Bezorgen of afhalen';
+                document.getElementById('priceShippingValue').textContent = 'nog kiezen';
             }
+            document.getElementById('priceTotalLabel').textContent =
+                deliveryType ? 'Totaal' : 'Totaal (zonder verzending)';
 
             document.getElementById('priceStartupValue').textContent = formatPrice(prices.startupCost);
             document.getElementById('priceStartupLabel').textContent = 'Incl. voorbereiding & kwaliteitscheck';
@@ -2990,13 +3013,18 @@
             const city = document.getElementById('city').value.trim();
 
             const bleedOk = hasBleed || bleedChoice() !== null;
-            payHint.textContent = bleedFixable
-                ? 'Kies bovenaan wat we met de rand van je PDF doen.'
-                : 'Bevestig bovenaan dat je PDF zonder afloop geprint mag worden.';
-            payHint.classList.toggle('visible', Boolean(currentFile) && !bleedOk);
+            if (!bleedOk) {
+                payHint.textContent = bleedFixable
+                    ? 'Kies bovenaan wat we met de rand van je PDF doen.'
+                    : 'Vink bovenaan aan dat we je drukwerk iets kleiner mogen snijden.';
+            } else {
+                payHint.textContent = 'Kies bij het prijsoverzicht of je je drukwerk laat bezorgen of zelf afhaalt.';
+            }
+            payHint.classList.toggle('visible', Boolean(currentFile) && (!bleedOk || !deliveryType));
 
             const isValid = currentFile && 
                 bleedOk &&
+                deliveryType !== null &&
                 name.length >= 2 && 
                 /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
                 street.length >= 2 &&
@@ -3176,24 +3204,32 @@
             deliveryPickup.classList.remove('selected');
             pickupInfo.classList.remove('visible');
             updatePriceDisplay();
+            validateForm();
             PMP_Analytics.trackShipping('delivery');
         });
 
-        document.getElementById('qtyPlus').addEventListener('click', () => {
-            quantity++;
-            document.getElementById('qtyInput').value = quantity;
-            document.getElementById('qtyMinus').disabled = (quantity <= 1);
-            updatePriceDisplay();
-        });
+        const qtyInput = document.getElementById('qtyInput');
+        const qtyHint = document.getElementById('qtyHint');
 
-        document.getElementById('qtyMinus').addEventListener('click', () => {
-            if (quantity > 1) {
-                quantity--;
-                document.getElementById('qtyInput').value = quantity;
-                document.getElementById('qtyMinus').disabled = (quantity <= 1);
-                updatePriceDisplay();
-            }
+        function setQuantity(n, { updateField = true } = {}) {
+            quantity = Math.min(MAX_QUANTITY, Math.max(1, n));
+            if (updateField) qtyInput.value = quantity;
+            document.getElementById('qtyMinus').disabled = (quantity <= 1);
+            document.getElementById('qtyPlus').disabled = (quantity >= MAX_QUANTITY);
+            qtyHint.classList.toggle('warn', n > MAX_QUANTITY);
+            updatePriceDisplay();
+        }
+
+        document.getElementById('qtyPlus').addEventListener('click', () => setQuantity(quantity + 1));
+        document.getElementById('qtyMinus').addEventListener('click', () => setQuantity(quantity - 1));
+
+        // Zelf typen: tijdens het typen niet in het veld ingrijpen, pas bij verlaten corrigeren
+        qtyInput.addEventListener('input', () => {
+            const n = parseInt(qtyInput.value, 10);
+            if (!Number.isNaN(n)) setQuantity(n, { updateField: n > MAX_QUANTITY });
         });
+        qtyInput.addEventListener('blur', () => { qtyInput.value = quantity; });
+        qtyInput.addEventListener('focus', () => qtyInput.select());
 
         deliveryPickup.addEventListener('click', () => {
             deliveryType = 'pickup';
@@ -3202,6 +3238,7 @@
             pickupInfo.classList.add('visible');
             PMP_Analytics.trackShipping('pickup');
             updatePriceDisplay();
+            validateForm();
         });
 
         document.querySelectorAll('#sectionAddress input').forEach(input => {
@@ -3449,7 +3486,7 @@
 
             if (day === 0 || day === 6 || hour >= 11) {
                 banner.classList.add('standard');
-                textEl.innerHTML = '<strong>Binnen 3 werkdagen</strong> in huis na bestelling';
+                textEl.innerHTML = '<strong>Binnen 1 werkdag</strong> verzonden met PostNL';
                 return;
             }
 
@@ -3462,7 +3499,7 @@
             // De afteltekst komt pas in de browser: zonder JavaScript (crawlers,
             // AI-assistenten) staat er geen lege timer met "verzending vandaag"
             banner.classList.remove('standard');
-            textEl.innerHTML = 'Bestel binnen <strong>' + hoursLeft + 'u ' + minutesLeft + 'm</strong> voor verzending vandaag (tot 50 exemplaren)';
+            textEl.innerHTML = 'Bestel binnen <strong>' + hoursLeft + 'u ' + minutesLeft + 'm</strong>, dan gaat je pakket vandaag nog op de post (tot 50 exemplaren)';
         }
 
         updateUrgencyBanner();

@@ -58,7 +58,7 @@ class LandingPageController extends Controller
             'binding' => $e['binding'] === 'booklet' ? 'Geniet boekje' : 'Losse pagina\'s',
             'total' => self::euro(Order::calculatePrice($e['pages'], $e['format'], $e['binding'], 'shipping', 1)['total']),
         ], $examples);
-        $data['shippingPrice'] = self::euro((int) config('pricing.shipping', 675));
+        $data['shippingPrice'] = self::euro((int) config('pricing.shipping', 750));
         $data['related'] = self::links($data['slug'] ?? null);
 
         return view('landing.page', $data);
@@ -76,8 +76,8 @@ class LandingPageController extends Controller
     {
         return $this->page([
             'meta' => [
-                'title' => 'Scriptie Printen en Inbinden | Binnen 3 Dagen | PrintMijnPDF',
-                'description' => 'Laat je scriptie professioneel printen als geniet boekje. Full colour drukwerkkwaliteit, binnen 3 werkdagen klaar. Ideaal voor HBO en WO afstudeerders.',
+                'title' => 'Scriptie Printen en Inbinden | Binnen 1 Werkdag Verzonden | PrintMijnPDF',
+                'description' => 'Laat je scriptie professioneel printen als geniet boekje. Full colour drukwerkkwaliteit, binnen 1 werkdag verzonden. Ideaal voor HBO en WO afstudeerders.',
                 'canonical' => route('landing.scriptie'),
                 'keywords' => 'scriptie printen, scriptie inbinden, afstudeerscriptie drukken, scriptie laten printen',
             ],
@@ -89,8 +89,8 @@ class LandingPageController extends Controller
             'benefits' => [
                 [
                     'icon' => 'clock',
-                    'title' => 'Binnen 3 werkdagen klaar',
-                    'text' => 'Bestel voor 11:00, binnen 3 werkdagen in huis of gratis afhalen.',
+                    'title' => 'Binnen 1 werkdag verzonden',
+                    'text' => 'Binnen 1 werkdag op de post met PostNL, daarna bezorgt PostNL binnen 2 werkdagen. Of gratis afhalen.',
                 ],
                 [
                     'icon' => 'palette',
@@ -118,7 +118,7 @@ class LandingPageController extends Controller
                     ],
                     [
                         'title' => 'Hoe werkt het?',
-                        'text' => 'Upload je PDF, kies voor een geniet boekje, vul je gegevens in en reken af met iDEAL. Binnen 3 werkdagen heb je je scripties in huis. Heb je haast? Bel ons, dan kijken we wat mogelijk is.',
+                        'text' => 'Upload je PDF, kies voor een geniet boekje, vul je gegevens in en reken af met iDEAL. Binnen 1 werkdag versturen we je scripties met PostNL. Heb je haast? Bel ons, dan kijken we wat mogelijk is.',
                     ],
                     [
                         'title' => 'Meerdere exemplaren nodig?',
@@ -156,7 +156,7 @@ class LandingPageController extends Controller
         return $this->page([
             'meta' => [
                 'title' => 'Reader Printen | Studiehandleiding Drukken | PrintMijnPDF',
-                'description' => 'Laat je reader of studiehandleiding printen in full colour. Binnen 3 werkdagen klaar, vanaf €0,15 per pagina. Echte drukwerkkwaliteit.',
+                'description' => 'Laat je reader of studiehandleiding printen in full colour. Binnen 1 werkdag verzonden, vanaf €0,15 per pagina. Echte drukwerkkwaliteit.',
                 'canonical' => route('landing.reader'),
                 'keywords' => 'reader printen, studiehandleiding drukken, syllabus printen, collegebundel',
             ],
@@ -168,7 +168,7 @@ class LandingPageController extends Controller
             'benefits' => [
                 [
                     'icon' => 'clock',
-                    'title' => 'Binnen 3 werkdagen',
+                    'title' => 'Binnen 1 werkdag verzonden',
                     'text' => 'Snel in huis, ook als het semester al begonnen is.',
                 ],
                 [
@@ -223,7 +223,7 @@ class LandingPageController extends Controller
         return $this->page([
             'meta' => [
                 'title' => 'Cursusmateriaal Printen | Trainingsmateriaal Drukken | PrintMijnPDF',
-                'description' => 'Print je cursusmateriaal of trainingshandleiding professioneel. Full colour, binnen 3 werkdagen. Ideaal voor trainers, coaches en docenten.',
+                'description' => 'Print je cursusmateriaal of trainingshandleiding professioneel. Full colour, binnen 1 werkdag verzonden. Ideaal voor trainers, coaches en docenten.',
                 'canonical' => route('landing.cursusmateriaal'),
                 'keywords' => 'cursusmateriaal printen, trainingsmateriaal drukken, syllabus laten printen, workshop materiaal',
             ],
@@ -246,7 +246,7 @@ class LandingPageController extends Controller
                 [
                     'icon' => 'clock',
                     'title' => 'Snel geleverd',
-                    'text' => 'Binnen 3 werkdagen, ook voor last-minute trainingen.',
+                    'text' => 'Binnen 1 werkdag verzonden, ook voor last-minute trainingen.',
                 ],
                 [
                     'icon' => 'shield',
@@ -290,7 +290,7 @@ class LandingPageController extends Controller
         return $this->page([
             'meta' => [
                 'title' => 'Eigen Boekje Maken | Receptenboek, Fotoboekje en Meer | PrintMijnPDF',
-                'description' => 'Maak je eigen boekje van een PDF. Receptenboekje, fotoboekje, verhalen bundelen. Full colour geprint, binnen 3 dagen in huis.',
+                'description' => 'Maak je eigen boekje van een PDF. Receptenboekje, fotoboekje, verhalen bundelen. Full colour geprint, binnen 1 werkdag verzonden.',
                 'canonical' => route('landing.boekje'),
                 'keywords' => 'boekje maken, eigen boekje printen, pdf naar boekje, boekje laten drukken',
             ],
@@ -361,7 +361,7 @@ class LandingPageController extends Controller
         return $this->page([
             'meta' => [
                 'title' => 'Handleiding Printen | Instructieboekje Drukken | PrintMijnPDF',
-                'description' => 'Print je handleiding of instructieboekje professioneel. Technische documentatie in drukwerkkwaliteit. Binnen 3 werkdagen.',
+                'description' => 'Print je handleiding of instructieboekje professioneel. Technische documentatie in drukwerkkwaliteit. Binnen 1 werkdag verzonden.',
                 'canonical' => route('landing.handleiding'),
                 'keywords' => 'handleiding printen, instructieboekje drukken, documentatie printen, gebruiksaanwijzing',
             ],
@@ -446,7 +446,7 @@ class LandingPageController extends Controller
                 [
                     'icon' => 'clock',
                     'title' => 'Snelle levering',
-                    'text' => 'Binnen 3 werkdagen. Spoed mogelijk in overleg.',
+                    'text' => 'Binnen 1 werkdag verzonden. Spoed mogelijk in overleg.',
                 ],
                 [
                     'icon' => 'shield',
@@ -608,7 +608,7 @@ class LandingPageController extends Controller
         return $this->page([
             'meta' => [
                 'title' => 'PDF naar Boekje | Zelf Afdrukken of Laten Printen | PrintMijnPDF',
-                'description' => 'Zo maak je van een PDF een boekje: stap voor stap zelf afdrukken met Acrobat Reader of Word, of laat het printen als geniet boekje. Full colour, binnen 3 werkdagen.',
+                'description' => 'Zo maak je van een PDF een boekje: stap voor stap zelf afdrukken met Acrobat Reader of Word, of laat het printen als geniet boekje. Full colour, binnen 1 werkdag verzonden.',
                 'canonical' => route('landing.pdf-naar-boekje'),
                 'keywords' => 'pdf naar boekje, pdf als boekje printen, pdf boekje afdrukken, boekje printen van pdf',
                 'service_type' => 'PDF als boekje printen',
@@ -623,7 +623,7 @@ class LandingPageController extends Controller
                 ['icon' => 'file-text', 'title' => 'Gewone PDF uploaden', 'text' => 'Je hoeft niets om te zetten. Wij zetten de pagina\'s zelf in de juiste boekjesvolgorde.'],
                 ['icon' => 'palette', 'title' => 'Full colour', 'text' => 'Geprint in echte drukwerkkwaliteit, met heldere kleuren en scherpe tekst.'],
                 ['icon' => 'package', 'title' => 'Gevouwen en geniet', 'text' => 'Je ontvangt een kant-en-klaar boekje, geen losse vellen om zelf te vouwen.'],
-                ['icon' => 'clock', 'title' => 'Binnen 3 werkdagen', 'text' => 'Bestel vóór 11:00 en je boekje is binnen 3 werkdagen in huis.'],
+                ['icon' => 'clock', 'title' => 'Binnen 1 werkdag verzonden', 'text' => 'Bestel vóór 11:00 en je boekje gaat dezelfde dag op de post met PostNL.'],
             ],
             'content' => [
                 'intro' => 'Een boekje maken van een PDF kan op twee manieren: je drukt het thuis zelf af met de boekjesfunctie van je printprogramma, of je laat het printen. Hieronder lees je hoe allebei werkt en waar je op moet letten.',
@@ -697,7 +697,7 @@ class LandingPageController extends Controller
     {
         return $this->page([
             'meta' => [
-                'title' => 'PDF Laten Printen | Online Uploaden, Binnen 3 Dagen Thuis | PrintMijnPDF',
+                'title' => 'PDF Laten Printen | Online Uploaden, Binnen 1 Werkdag Verzonden | PrintMijnPDF',
                 'description' => 'PDF laten printen zonder gedoe: upload je bestand, kies boekje of losse pagina\'s en betaal met iDEAL. Full colour drukwerkkwaliteit vanaf €0,15 per pagina.',
                 'canonical' => route('landing.pdf'),
                 'keywords' => 'pdf laten printen, pdf printen, pdf online printen, pdf afdrukken laten, document laten printen',
@@ -713,7 +713,7 @@ class LandingPageController extends Controller
                 ['icon' => 'zap', 'title' => 'Direct de prijs', 'text' => 'Na het uploaden zie je meteen het aantal pagina\'s, het formaat en de prijs.'],
                 ['icon' => 'palette', 'title' => 'Drukwerkkwaliteit', 'text' => 'Geprint in full colour door een professionele drukkerij, niet op een kantoorprinter.'],
                 ['icon' => 'euro', 'title' => 'Vanaf €0,15 per pagina', 'text' => 'Geen abonnement en geen minimale oplage. Je betaalt alleen wat je print.'],
-                ['icon' => 'clock', 'title' => 'Binnen 3 werkdagen', 'text' => 'Bezorgd met PostNL of gratis af te halen in Delfgauw.'],
+                ['icon' => 'clock', 'title' => 'Binnen 1 werkdag verzonden', 'text' => 'Bezorgd met PostNL of gratis af te halen in Delfgauw.'],
             ],
             'content' => [
                 'intro' => 'Geen printer thuis, of wil je dat je document er echt goed uitziet? Laat je PDF dan printen. Je uploadt het bestand, kiest hoe je het wilt hebben en betaalt met iDEAL. Wij printen, werken af en versturen.',
@@ -762,7 +762,7 @@ class LandingPageController extends Controller
         return $this->page([
             'meta' => [
                 'title' => 'Boekje Printen | A4 en A5 Boekje Laten Drukken | PrintMijnPDF',
-                'description' => 'Boekje printen vanaf 1 exemplaar: A4 of A5, full colour en geniet. Upload je PDF en zie direct de prijs. Binnen 3 werkdagen in huis of gratis afhalen.',
+                'description' => 'Boekje printen vanaf 1 exemplaar: A4 of A5, full colour en geniet. Upload je PDF en zie direct de prijs. Binnen 1 werkdag verzonden of gratis afhalen.',
                 'canonical' => route('landing.boekje-printen'),
                 'keywords' => 'boekje printen, boekje laten drukken, a5 boekje printen, a4 boekje printen, geniet boekje, brochure printen',
                 'service_type' => 'Boekje printen',
@@ -777,7 +777,7 @@ class LandingPageController extends Controller
                 ['icon' => 'book', 'title' => 'A4 of A5', 'text' => 'We herkennen het formaat van je PDF automatisch.'],
                 ['icon' => 'palette', 'title' => 'Full colour', 'text' => 'Elke pagina in kleur, zonder meerprijs voor kleur.'],
                 ['icon' => 'users', 'title' => 'Vanaf 1 exemplaar', 'text' => 'Geen minimale oplage. Elk extra exemplaar wordt voordeliger.'],
-                ['icon' => 'clock', 'title' => 'Snel geleverd', 'text' => 'Binnen 3 werkdagen in huis, of gratis afhalen in Delfgauw.'],
+                ['icon' => 'clock', 'title' => 'Snel geleverd', 'text' => 'Binnen 1 werkdag verzonden met PostNL, of gratis afhalen in Delfgauw.'],
             ],
             'content' => [
                 'intro' => 'Een geniet boekje is de snelste manier om van een PDF iets tastbaars te maken: een programmaboekje, brochure, reader, receptenboek of verslag. Je uploadt je PDF en bestelt in een paar minuten.',
@@ -842,7 +842,7 @@ class LandingPageController extends Controller
             'benefits' => [
                 ['icon' => 'clock', 'title' => 'Morgen afhalen', 'text' => 'Gratis afhalen vanaf de volgende werkdag, 17:00–17:30 in Delfgauw.'],
                 ['icon' => 'zap', 'title' => 'Zelfde dag in overleg', 'text' => 'Bel 015-219 2525, dan kijken we wat er nog kan.'],
-                ['icon' => 'package', 'title' => 'Of laten bezorgen', 'text' => 'Vóór 11:00 besteld: tot 50 exemplaren vandaag verzonden, binnen 2 werkdagen bezorgd.'],
+                ['icon' => 'package', 'title' => 'Of laten bezorgen', 'text' => 'Vóór 11:00 besteld: tot 50 exemplaren vandaag verzonden, binnen 2 werkdagen bezorgd door PostNL.'],
                 ['icon' => 'euro', 'title' => 'Geen spoedtoeslag', 'text' => 'Afhalen is gratis; je betaalt alleen het printwerk.'],
             ],
             'content' => [
@@ -880,7 +880,7 @@ class LandingPageController extends Controller
                 ['question' => 'Kan ik mijn PDF vandaag nog laten printen?', 'answer' => 'Standaard haal je je bestelling de volgende werkdag op. Heb je het dezelfde dag nodig? Bel dan 015-219 2525, dan kijken we wat er mogelijk is.'],
                 ['question' => 'Waar kan ik mijn drukwerk afhalen?', 'answer' => 'Bij NIVO Druk & Multimedia, Exportweg 11, 2645 ED Delfgauw (gemeente Pijnacker-Nootdorp, naast Delft). Op werkdagen tussen 17:00 en 17:30.'],
                 ['question' => 'Kost spoed extra?', 'answer' => 'Nee. Afhalen is gratis en er is geen spoedtoeslag; je betaalt startkosten, de pagina\'s en eventueel het nieten.'],
-                ['question' => 'Ik woon niet in de buurt van Delft, hoe snel kan het dan?', 'answer' => 'Dan versturen we met PostNL. Bestel je vóór 11:00 op een werkdag, dan gaat je pakket (tot 50 exemplaren) dezelfde dag de deur uit en heb je het binnen 2 werkdagen in huis.'],
+                ['question' => 'Ik woon niet in de buurt van Delft, hoe snel kan het dan?', 'answer' => 'Dan versturen we met PostNL. Bestel je vóór 11:00 op een werkdag, dan gaat je pakket (tot 50 exemplaren) dezelfde dag de deur uit en bezorgt PostNL het binnen 2 werkdagen.'],
             ],
             'slug' => 'pdf-printen-met-spoed',
         ]);

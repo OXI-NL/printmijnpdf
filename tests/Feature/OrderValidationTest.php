@@ -76,6 +76,12 @@ class OrderValidationTest extends TestCase
             ->assertStatus(422)->assertJsonValidationErrors('quantity');
     }
 
+    public function test_aantal_mag_niet_boven_de_maximale_oplage(): void
+    {
+        $this->postJson('/api/order', $this->geldigeBestelling(['quantity' => 101]))
+            ->assertStatus(422)->assertJsonValidationErrors('quantity');
+    }
+
     public function test_prijsberekening_vereist_een_pdf(): void
     {
         $this->postJson('/api/calculate-price', [])

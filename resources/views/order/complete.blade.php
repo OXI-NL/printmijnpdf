@@ -190,7 +190,7 @@
                     <li>Je ontvangt een bevestigingsmail op <strong>{{ $order->customer_email }}</strong></li>
                     <li>Wij printen en binden je document</li>
                     <li>Je ontvangt een Track & Trace code zodra het pakket onderweg is</li>
-                    <li>Binnen 3 werkdagen wordt het bezorgd!</li>
+                    <li>Binnen 1 werkdag versturen we het met PostNL; PostNL bezorgt het daarna binnen 2 werkdagen.</li>
                 </ol>
             </div>
             @elseif($order->status === 'cancelled')

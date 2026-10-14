@@ -30,6 +30,10 @@ Route::post('/api/order', [OrderController::class, 'store'])->name('api.order');
 Route::post('/api/contact', [ContactController::class, 'send'])->name('api.contact');
 Route::post('/api/contact/custom-format', [ContactController::class, 'sendCustomFormat'])->name('api.contact.custom-format');
 
+// Privacy en leveringsvoorwaarden
+Route::view('/privacy', 'legal.privacy')->name('privacy');
+Route::view('/leveringsvoorwaarden', 'legal.leveringsvoorwaarden')->name('leveringsvoorwaarden');
+
 // SEO Landingspagina's
 Route::prefix('/')->group(function () {
     Route::get('pdf-laten-printen', [LandingPageController::class, 'pdfLatenPrinten'])->name('landing.pdf');

@@ -200,7 +200,7 @@ class Order extends Model
         }
 
         // Verzendkosten blijven gelijk ongeacht aantal
-        $shipping = $deliveryType === 'pickup' ? 0 : config('pricing.shipping', 675);
+        $shipping = $deliveryType === 'pickup' ? 0 : config('pricing.shipping', 750);
 
         // Kortingscode toepassen
         $discount = 0;

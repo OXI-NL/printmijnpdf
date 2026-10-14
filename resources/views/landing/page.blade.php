@@ -635,7 +635,7 @@
     <section class="cta-section">
         <div class="container">
             <h2>Klaar om te printen?</h2>
-            <p>Upload je PDF en ontvang je drukwerk binnen 3 werkdagen.</p>
+            <p>Upload je PDF; binnen 1 werkdag versturen we je drukwerk met PostNL.</p>
             <a href="{{ url('/') }}#upload" class="hero-cta">Start je bestelling &rarr;</a>
         </div>
     </section>
@@ -649,6 +649,10 @@
             <p style="margin-top: 0.5rem;">
                 <a href="mailto:info@printmijnpdf.nl">info@printmijnpdf.nl</a> ·
                 <a href="tel:0152192525">015-219 2525</a>
+            </p>
+            <p style="margin-top: 0.5rem;">
+                <a href="{{ route('privacy') }}">Privacy</a> ·
+                <a href="{{ route('leveringsvoorwaarden') }}">Leveringsvoorwaarden</a>
             </p>
         </div>
     </footer>
