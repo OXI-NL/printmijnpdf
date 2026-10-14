@@ -222,6 +222,7 @@
         },
         "priceRange": "€",
         "sameAs": {!! json_encode(config('seo.same_as', []), JSON_UNESCAPED_SLASHES) !!},
+        "hasMap": "{{ config('seo.google_maps') }}",
         "image": "https://printmijnpdf.nl/og-image.jpg",
         "areaServed": {
             "@type": "Country",
