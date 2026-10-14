@@ -1368,6 +1368,20 @@
         .bleed-reupload { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
         .bleed-confirm { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; font-weight: 500; color: #78350f; }
         .bleed-confirm input { width: 18px; height: 18px; margin-top: 1px; flex-shrink: 0; accent-color: var(--primary); }
+        .bleed-foot { margin: 12px 0 0 !important; font-size: 13px; }
+        .bleed-question { font-weight: 600; color: #78350f; margin-bottom: 8px !important; }
+        .bleed-choice { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; margin-bottom: 8px; border: 1px solid #fde68a; border-radius: 8px; background: #fff; cursor: pointer; color: #451a03; }
+        .bleed-choice:has(input:checked) { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+        .bleed-choice input { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; accent-color: var(--primary); }
+        .bleed-choice-title { display: block; font-weight: 600; }
+        .bleed-choice-text { display: block; margin-top: 2px; line-height: 1.5; color: #57534e; }
+        .bleed-badge { display: inline-block; margin-left: 4px; padding: 1px 7px; border-radius: 999px; background: #dcfce7; color: #166534; font-size: 12px; font-weight: 600; vertical-align: 1px; }
+        .bleed-preview { margin: 4px 0 0; padding: 12px; border-radius: 8px; background: #fff; border: 1px solid #fde68a; color: #57534e; }
+        .bleed-preview-images { display: flex; gap: 16px; align-items: flex-end; justify-content: center; flex-wrap: wrap; }
+        .bleed-preview-images > div:not([hidden]) { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .bleed-preview canvas { display: block; max-width: 100%; box-shadow: 0 1px 4px rgba(0,0,0,.18); background: #fff; }
+        .bleed-preview-caption { font-size: 12px; color: #78716c; }
+        .bleed-preview figcaption { margin-top: 10px; font-size: 13px; line-height: 1.5; text-align: center; }
         .pay-hint { display: none; font-size: 13px; color: #92400e; text-align: center; margin: 0 0 10px; }
         .pay-hint.visible { display: block; }
         
@@ -1943,14 +1957,53 @@
             <span id="inlineNoticeText"></span>
         </div>
 
-        <!-- PDF zonder afloop: klant bevestigt dat we iets kleiner snijden -->
-        <div class="bleed-notice" id="bleedNotice" role="note">
-            <p><strong>Je PDF heeft geen afloop.</strong> We kunnen hem gewoon printen, maar snijden je drukwerk dan iets kleiner zodat er geen witte randjes ontstaan. Houd daarom minimaal 8 mm afstand tussen tekst en de rand van de pagina.</p>
-            <p>Wil je dat liever niet en kun je je bestand aanpassen? Maak dan een PDF met 3 mm afloop en snijtekens (<a href="{{ route('landing.aanleveren') }}" target="_blank" rel="noopener">zo doe je dat</a>, opent in een nieuw tabblad) en <button type="button" class="bleed-reupload" id="bleedReupload">upload die opnieuw</button>.</p>
-            <label class="bleed-confirm" for="noBleedAccepted">
-                <input type="checkbox" id="noBleedAccepted">
-                <span>Ik begrijp het: print mijn PDF zonder afloop</span>
-            </label>
+        <!-- PDF zonder afloop: we vullen de rand aan, of snijden iets kleiner -->
+        <div class="bleed-notice" id="bleedNotice" role="group" aria-labelledby="bleedTitle">
+            <p id="bleedTitle"><strong>Je PDF loopt niet door over de rand.</strong> Na het printen snijden we je drukwerk op maat. Zonder een klein stukje extra rondom (afloop) kan er dan een dun wit randje ontstaan.</p>
+
+            <!-- Als we de rand kunnen aanvullen: twee keuzes -->
+            <div class="bleed-choices" id="bleedChoices">
+                <p class="bleed-question">Wat zullen we doen?</p>
+                <label class="bleed-choice">
+                    <input type="radio" name="bleed_choice" value="auto" id="bleedChoiceAuto">
+                    <span>
+                        <span class="bleed-choice-title">Rand aanvullen <span class="bleed-badge">aanbevolen</span></span>
+                        <span class="bleed-choice-text">We laten je ontwerp rondom 3 mm doorlopen door de rand te spiegelen, en snijden dat stukje er daarna weer af. Je krijgt precies <span class="bleed-size">A4</span>, zonder witte randjes. Aan je ontwerp zelf verandert niets.</span>
+                    </span>
+                </label>
+                <label class="bleed-choice">
+                    <input type="radio" name="bleed_choice" value="trim" id="bleedChoiceTrim">
+                    <span>
+                        <span class="bleed-choice-title">Iets kleiner snijden</span>
+                        <span class="bleed-choice-text">We printen je PDF zoals hij is en snijden er rondom een klein stukje af. Je drukwerk wordt dan iets kleiner dan <span class="bleed-size">A4</span>; houd minimaal 8 mm afstand tussen tekst en de rand.</span>
+                    </span>
+                </label>
+
+                <figure class="bleed-preview" id="bleedPreview" hidden>
+                    <div class="bleed-preview-images">
+                        <div>
+                            <canvas id="bleedPreviewPage" aria-hidden="true"></canvas>
+                            <span class="bleed-preview-caption">Je eerste pagina</span>
+                        </div>
+                        <div>
+                            <canvas id="bleedPreviewZoom" aria-hidden="true"></canvas>
+                            <span class="bleed-preview-caption" id="bleedPreviewZoomCaption">Vergroot: hoek</span>
+                        </div>
+                    </div>
+                    <figcaption id="bleedPreviewText">Voorbeeld: buiten de stippellijn staat de aangevulde rand. Langs de stippellijn snijden we, dus die rand verdwijnt weer.</figcaption>
+                </figure>
+            </div>
+
+            <!-- Als we de rand niet kunnen aanvullen (bv. invulvelden): alleen iets kleiner snijden -->
+            <div class="bleed-trim-only" id="bleedTrimOnly" hidden>
+                <p>We snijden je drukwerk daarom iets kleiner, zodat er geen witte randjes ontstaan. Houd minimaal 8 mm afstand tussen tekst en de rand van de pagina.</p>
+                <label class="bleed-confirm" for="noBleedAccepted">
+                    <input type="checkbox" id="noBleedAccepted">
+                    <span>Ik begrijp het: print mijn PDF zonder afloop</span>
+                </label>
+            </div>
+
+            <p class="bleed-foot">Maak je liever zelf een PDF met afloop? <a href="{{ route('landing.aanleveren') }}" target="_blank" rel="noopener">Zo doe je dat</a> (opent in een nieuw tabblad). Daarna kun je <button type="button" class="bleed-reupload" id="bleedReupload">je nieuwe PDF uploaden</button>.</p>
         </div>
 
         <!-- Section: Afwerking -->
@@ -2314,6 +2367,7 @@
         let bookletAllowed = true;
         let hasBleed = false;
         let bleedMM = 0;
+        let bleedFixable = false;
         let bindingType = 'booklet';
         let printSide = 'double';
         let deliveryType = 'shipping';
@@ -2330,6 +2384,11 @@
         const inlineNotice = document.getElementById('inlineNotice');
         const bleedNotice = document.getElementById('bleedNotice');
         const noBleedAccepted = document.getElementById('noBleedAccepted');
+        const bleedChoices = document.getElementById('bleedChoices');
+        const bleedTrimOnly = document.getElementById('bleedTrimOnly');
+        const bleedChoiceAuto = document.getElementById('bleedChoiceAuto');
+        const bleedChoiceTrim = document.getElementById('bleedChoiceTrim');
+        const bleedPreview = document.getElementById('bleedPreview');
         const payHint = document.getElementById('payHint');
 
         const sectionBinding = document.getElementById('sectionBinding');
@@ -2504,8 +2563,8 @@
                     : detectedFormat;
                 hasBleed = data.has_bleed || false;
                 bleedMM = data.bleed_mm || 0;
-                noBleedAccepted.checked = false;
-                bleedNotice.classList.toggle('visible', !hasBleed);
+                bleedFixable = !hasBleed && data.bleed_fixable === true;
+                setupBleedNotice(file, data);
 
                 showUploadSuccess(file, data);
 
@@ -2565,6 +2624,236 @@
             }
         }
 
+        // ===== PDF ZONDER AFLOOP =====
+
+        /** 'auto' (wij vullen de rand aan), 'trim' (iets kleiner snijden) of null (nog geen keuze) */
+        function bleedChoice() {
+            if (hasBleed) return null;
+            if (bleedFixable) {
+                return bleedChoiceAuto.checked ? 'auto' : (bleedChoiceTrim.checked ? 'trim' : null);
+            }
+            return noBleedAccepted.checked ? 'trim' : null;
+        }
+
+        function resetBleedNotice() {
+            previewToken++; // lopend voorbeeld niet meer tonen
+            noBleedAccepted.checked = false;
+            bleedChoiceAuto.checked = false;
+            bleedChoiceTrim.checked = false;
+            bleedPreview.hidden = true;
+            delete bleedPreview.dataset.ready;
+            bleedNotice.classList.remove('visible');
+        }
+
+        function setupBleedNotice(file, data) {
+            resetBleedNotice();
+            if (hasBleed) return;
+
+            bleedChoices.hidden = !bleedFixable;
+            bleedTrimOnly.hidden = bleedFixable;
+            const size = data.standard === false && data.width_mm
+                ? `${formatMm(data.width_mm)} × ${formatMm(data.height_mm)} mm`
+                : detectedFormat;
+            document.querySelectorAll('.bleed-size').forEach(el => el.textContent = size);
+            bleedNotice.classList.add('visible');
+
+            if (bleedFixable) {
+                // Aanbevolen keuze staat aan; de klant kan altijd nog wisselen
+                bleedChoiceAuto.checked = true;
+                renderBleedPreview(file);
+            }
+        }
+
+        let pdfjsPromise = null;
+        function loadPdfJs() {
+            if (!pdfjsPromise) {
+                pdfjsPromise = new Promise((resolve, reject) => {
+                    const base = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+                    const script = document.createElement('script');
+                    script.src = base + 'pdf.min.js';
+                    script.integrity = 'sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e';
+                    script.crossOrigin = 'anonymous';
+                    script.onload = () => {
+                        window.pdfjsLib.GlobalWorkerOptions.workerSrc = base + 'pdf.worker.min.js';
+                        resolve(window.pdfjsLib);
+                    };
+                    script.onerror = () => {
+                        pdfjsPromise = null;
+                        reject(new Error('pdf.js kon niet laden'));
+                    };
+                    document.head.appendChild(script);
+                });
+            }
+            return pdfjsPromise;
+        }
+
+        /**
+         * Teken src op (ox, oy) met eromheen een strook van b pixels met het
+         * gespiegelde beeld van de rand, zoals de server de afloop maakt.
+         */
+        function drawWithMirroredBleed(ctx, src, ox, oy, b) {
+            const w = src.width, h = src.height;
+            for (const col of [-1, 0, 1]) {
+                for (const row of [-1, 0, 1]) {
+                    const x = col < 0 ? ox - b : (col > 0 ? ox + w : ox);
+                    const y = row < 0 ? oy - b : (row > 0 ? oy + h : oy);
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.rect(x, y, col === 0 ? w : b, row === 0 ? h : b);
+                    ctx.clip();
+                    // Spiegelen in de rand: x' = 2·rand − x
+                    ctx.translate(col < 0 ? 2 * ox : (col > 0 ? 2 * (ox + w) : 0), row < 0 ? 2 * oy : (row > 0 ? 2 * (oy + h) : 0));
+                    ctx.scale(col === 0 ? 1 : -1, row === 0 ? 1 : -1);
+                    ctx.drawImage(src, ox, oy);
+                    ctx.restore();
+                }
+            }
+        }
+
+        /** Stippellijn op de snijkant, wit onderlegd zodat hij op elke kleur zichtbaar is */
+        function drawCutLine(ctx, x, y, w, h, lineWidth) {
+            ctx.save();
+            ctx.lineWidth = lineWidth * 2;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.strokeRect(x, y, w, h);
+            ctx.lineWidth = lineWidth;
+            ctx.setLineDash([lineWidth * 4, lineWidth * 3]);
+            ctx.strokeStyle = '#111827';
+            ctx.strokeRect(x, y, w, h);
+            ctx.restore();
+        }
+
+        async function renderPdfRegion(page, scale, offsetX, offsetY, width, height) {
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(width);
+            canvas.height = Math.round(height);
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // intent 'print': toont wat gedrukt wordt en wacht niet op requestAnimationFrame
+            // (dat staat stil in een tabblad op de achtergrond)
+            await page.render({
+                canvasContext: ctx,
+                viewport: page.getViewport({ scale }),
+                transform: [1, 0, 0, 1, -offsetX, -offsetY],
+                intent: 'print',
+            }).promise;
+            return canvas;
+        }
+
+        let previewToken = 0;
+        async function renderBleedPreview(file) {
+            const token = ++previewToken;
+            const PT_PER_MM = 72 / 25.4;
+            const dpr = Math.min(window.devicePixelRatio || 1, 3);
+
+            try {
+                const pdfjsLib = await loadPdfJs();
+                const doc = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+                const page = await doc.getPage(1);
+                const base = page.getViewport({ scale: 1 });
+                const pageWmm = base.width / PT_PER_MM, pageHmm = base.height / PT_PER_MM;
+
+                // Hele pagina, klein
+                const thumbCss = 130;
+                const thumbPxPerMm = thumbCss * dpr / (pageWmm + 6);
+                const full = await renderPdfRegion(page, thumbPxPerMm / PT_PER_MM, 0, 0, pageWmm * thumbPxPerMm, pageHmm * thumbPxPerMm);
+                if (token !== previewToken) return;
+
+                // Hoek met de meeste kleur langs de rand vergroten (een witte rand blijft wit)
+                const ink = cornerInk(full, Math.max(1, Math.round(2 * thumbPxPerMm)), Math.round(40 * thumbPxPerMm));
+                const corner = ['linksboven', 'rechtsboven', 'linksonder', 'rechtsonder']
+                    .reduce((best, c) => ink[c] > ink[best] ? c : best, 'linksboven');
+                const right = corner.startsWith('rechts'), bottom = corner.endsWith('onder');
+
+                const thumbB = 3 * thumbPxPerMm;
+                const thumb = document.getElementById('bleedPreviewPage');
+                thumb.width = Math.round(full.width + 2 * thumbB);
+                thumb.height = Math.round(full.height + 2 * thumbB);
+                thumb.style.width = thumbCss + 'px';
+                const tctx = thumb.getContext('2d');
+                drawWithMirroredBleed(tctx, full, thumbB, thumbB, thumbB);
+                drawCutLine(tctx, thumbB, thumbB, full.width, full.height, dpr);
+
+                // Uitvergrote hoek: 22 mm van de pagina plus de afloop
+                const zoomMm = Math.min(22, pageWmm, pageHmm);
+                const zoomCss = 200;
+                const zoomPxPerMm = zoomCss * dpr / (zoomMm + 3);
+                const region = zoomMm * zoomPxPerMm;
+                const scale = zoomPxPerMm / PT_PER_MM;
+                const part = await renderPdfRegion(page, scale,
+                    right ? pageWmm * zoomPxPerMm - region : 0,
+                    bottom ? pageHmm * zoomPxPerMm - region : 0,
+                    region, region);
+                if (token !== previewToken) return;
+
+                const zoomB = 3 * zoomPxPerMm;
+                const zoom = document.getElementById('bleedPreviewZoom');
+                zoom.width = zoom.height = Math.round(region + zoomB);
+                zoom.style.width = zoomCss + 'px';
+                const zctx = zoom.getContext('2d');
+                const ox = right ? 0 : zoomB, oy = bottom ? 0 : zoomB;
+                drawWithMirroredBleed(zctx, part, ox, oy, zoomB);
+                drawCutLine(zctx, ox, oy, part.width, part.height, dpr * 1.5);
+
+                // Een lege witte vergroting zegt niets; dan alleen de hele pagina
+                const white = ink[corner] === 0;
+                zoom.parentElement.hidden = white;
+
+                // Op de kleine pagina aangeven welke hoek vergroot is
+                if (!white) {
+                    tctx.save();
+                    tctx.strokeStyle = '#2563eb';
+                    tctx.lineWidth = 2 * dpr;
+                    const zw = (zoomMm + 3) * thumbPxPerMm;
+                    tctx.strokeRect(right ? thumb.width - zw : 0, bottom ? thumb.height - zw : 0, zw, zw);
+                    tctx.restore();
+                }
+                document.getElementById('bleedPreviewZoomCaption').textContent = `Vergroot: hoek ${corner}`;
+                document.getElementById('bleedPreviewText').textContent = white
+                    ? 'Je pagina heeft een witte rand, dus de aangevulde rand is ook wit. Langs de stippellijn snijden we.'
+                    : 'Buiten de stippellijn zie je de aangevulde rand: je ontwerp loopt gespiegeld door. Langs de stippellijn snijden we, dus die rand verdwijnt weer.';
+
+                bleedPreview.dataset.ready = '1';
+                bleedPreview.hidden = !bleedChoiceAuto.checked;
+                doc.destroy();
+            } catch (e) {
+                // Zonder voorbeeld werken de keuzes gewoon; de uitleg staat in de tekst
+                console.warn('Voorbeeld afloop niet gelukt:', e);
+            }
+        }
+
+        /** Aantal niet-witte pixels in een strook langs de rand bij elke hoek */
+        function cornerInk(canvas, band, reach) {
+            const { width: w, height: h } = canvas;
+            const data = canvas.getContext('2d').getImageData(0, 0, w, h).data;
+            const isInk = (x, y) => {
+                const i = (y * w + x) * 4;
+                return data[i] < 245 || data[i + 1] < 245 || data[i + 2] < 245;
+            };
+            const count = (x0, x1, y0, y1) => {
+                let n = 0;
+                for (let y = Math.max(0, y0); y < Math.min(h, y1); y++) {
+                    for (let x = Math.max(0, x0); x < Math.min(w, x1); x++) {
+                        if (isInk(x, y)) n++;
+                    }
+                }
+                return n;
+            };
+            const corner = (left, top) => {
+                const xs = left ? [0, reach] : [w - reach, w];
+                const ys = top ? [0, reach] : [h - reach, h];
+                return count(xs[0], xs[1], top ? 0 : h - band, top ? band : h)   // langs boven/onder
+                    + count(left ? 0 : w - band, left ? band : w, ys[0], ys[1]); // langs links/rechts
+            };
+            return {
+                linksboven: corner(true, true),
+                rechtsboven: corner(false, true),
+                linksonder: corner(true, false),
+                rechtsonder: corner(false, false),
+            };
+        }
+
         function resetUpload() {
             dropzone.classList.remove('uploading', 'processing');
             dropzone.style.display = 'block';
@@ -2574,8 +2863,8 @@
             pageCount = 0;
             bookletAllowed = true;
             hasBleed = false;
-            noBleedAccepted.checked = false;
-            bleedNotice.classList.remove('visible');
+            bleedFixable = false;
+            resetBleedNotice();
             blankPagesAccepted = false;
             closeBlankPagesModal();
 
@@ -2700,7 +2989,10 @@
             const postcode = document.getElementById('postcode').value.trim();
             const city = document.getElementById('city').value.trim();
 
-            const bleedOk = hasBleed || noBleedAccepted.checked;
+            const bleedOk = hasBleed || bleedChoice() !== null;
+            payHint.textContent = bleedFixable
+                ? 'Kies bovenaan wat we met de rand van je PDF doen.'
+                : 'Bevestig bovenaan dat je PDF zonder afloop geprint mag worden.';
             payHint.classList.toggle('visible', Boolean(currentFile) && !bleedOk);
 
             const isValid = currentFile && 
@@ -2769,7 +3061,8 @@
             formData.append('bleed_mm', bleedMM);
             formData.append('binding_type', bindingType);
             formData.append('blank_pages_accepted', blankPagesAccepted ? '1' : '0');
-            formData.append('no_bleed_accepted', noBleedAccepted.checked ? '1' : '0');
+            formData.append('no_bleed_accepted', bleedChoice() === 'trim' ? '1' : '0');
+            formData.append('add_bleed', bleedChoice() === 'auto' ? '1' : '0');
             formData.append('print_side', printSide);
             formData.append('quantity', quantity);
             formData.append('delivery_type', deliveryType);
@@ -2954,6 +3247,10 @@
 
         payButton.addEventListener('click', submitOrder);
         noBleedAccepted.addEventListener('change', validateForm);
+        [bleedChoiceAuto, bleedChoiceTrim].forEach(radio => radio.addEventListener('change', () => {
+            bleedPreview.hidden = !bleedChoiceAuto.checked || !bleedPreview.dataset.ready;
+            validateForm();
+        }));
         document.getElementById('bleedReupload').addEventListener('click', () => {
             resetUpload();
             dropzone.scrollIntoView({ behavior: 'smooth', block: 'center' });

@@ -9,6 +9,7 @@ use App\Mail\PaymentFailed;
 use App\Models\Order;
 use App\Rules\SafeEmail;
 use App\Services\BookletImpositionService;
+use App\Services\MirroredBleedService;
 use App\Services\PdfFormatValidator;
 use App\Services\PdfPageCounter;
 use Illuminate\Http\Request;
@@ -75,6 +76,9 @@ class OrderController extends Controller
                 'height_mm' => $formatResult['detected_height_mm'],
                 'has_bleed' => $formatResult['has_bleed'],
                 'bleed_mm' => $formatResult['bleed_mm'],
+                // Zonder afloop: kunnen wij de rand aanvullen (gespiegeld)?
+                'bleed_fixable' => !$formatResult['has_bleed']
+                    && app(MirroredBleedService::class)->canAddBleed($pdf->getRealPath()),
             ]);
         } catch (\Exception $e) {
             Log::error('PDF analyse error: ' . $e->getMessage());
@@ -115,6 +119,7 @@ class OrderController extends Controller
             'promo_code' => 'nullable|string|max:50',
             'blank_pages_accepted' => 'boolean',
             'no_bleed_accepted' => 'boolean',
+            'add_bleed' => 'boolean',
         ]);
 
         // Analyseer de PDF zelf, zodat de prijs niet van invoer uit de browser afhangt
@@ -150,12 +155,19 @@ class OrderController extends Controller
         }
 
         $blankPages = Order::blankPagesNeeded($pageCount, $bindingType);
-        if (!$formatResult['has_bleed'] && !$request->boolean('no_bleed_accepted')) {
+        // Zonder afloop kiest de klant: wij vullen de rand aan, of we snijden iets kleiner
+        $addBleed = !$formatResult['has_bleed'] && $request->boolean('add_bleed');
+        if (!$formatResult['has_bleed'] && !$addBleed && !$request->boolean('no_bleed_accepted')) {
             return response()->json([
                 'success' => false,
-                'message' => 'Je PDF heeft geen afloop. Bevestig dat we je drukwerk daarom iets kleiner snijden.',
+                'message' => 'Je PDF heeft geen afloop. Kies bovenaan of we de rand aanvullen of je drukwerk iets kleiner snijden.',
                 'errors' => ['no_bleed_accepted' => ['Bevestiging voor PDF zonder afloop ontbreekt.']],
             ], 422);
+        }
+
+        // Niet op de browser vertrouwen: formuliervelden zouden bij het aanvullen verdwijnen
+        if ($addBleed && !app(MirroredBleedService::class)->canAddBleed($pdfPath)) {
+            return $this->bleedFailed();
         }
 
         if ($blankPages > 0 && !$request->boolean('blank_pages_accepted')) {
@@ -171,7 +183,22 @@ class OrderController extends Controller
             $pdf = $request->file('pdf');
             $originalName = $pdf->getClientOriginalName();
             $storedName = time() . '_' . uniqid() . '.pdf';
-            $path = $pdf->storeAs('pdfs', $storedName, 'local');
+
+            if ($addBleed) {
+                // We bewaren alleen de versie met afloop: binnen de snijlijn is die gelijk aan het origineel
+                $path = 'pdfs/' . $storedName;
+                Storage::disk('local')->makeDirectory('pdfs');
+                try {
+                    app(MirroredBleedService::class)->addBleed($pdfPath, Storage::disk('local')->path($path));
+                } catch (\Throwable $e) {
+                    Log::error('Afloop aanvullen mislukt voor ' . $originalName . ': ' . $e->getMessage());
+                    Storage::disk('local')->delete($path);
+
+                    return $this->bleedFailed();
+                }
+            } else {
+                $path = $pdf->storeAs('pdfs', $storedName, 'local');
+            }
 
             // Valideer kortingscode
             $promoCode = $request->input('promo_code') ? strtoupper(str_replace(' ', '', $request->input('promo_code'))) : null;
@@ -205,8 +232,9 @@ class OrderController extends Controller
                 'format' => $format,
                 'trim_width_mm' => $formatResult['standard'] ? null : $formatResult['detected_width_mm'],
                 'trim_height_mm' => $formatResult['standard'] ? null : $formatResult['detected_height_mm'],
-                'has_bleed' => $formatResult['has_bleed'],
-                'bleed_mm' => (int) round($formatResult['bleed_mm']),
+                'has_bleed' => $formatResult['has_bleed'] || $addBleed,
+                'bleed_mm' => $addBleed ? MirroredBleedService::BLEED_MM : (int) round($formatResult['bleed_mm']),
+                'bleed_added' => $addBleed,
                 'binding_type' => $bindingType,
                 'print_side' => $request->input('print_side'),
                 'quantity' => $request->input('quantity'),
@@ -406,6 +434,15 @@ class OrderController extends Controller
         $order = Order::where('order_number', $orderNumber)->firstOrFail();
 
         return view('order.status', compact('order'));
+    }
+
+    private function bleedFailed()
+    {
+        return response()->json([
+            'success' => false,
+            'message' => 'We konden de rand van je PDF niet automatisch aanvullen. Kies bovenaan "Iets kleiner snijden", of upload een PDF met afloop.',
+            'errors' => ['add_bleed' => ['Afloop aanvullen mislukt.']],
+        ], 422);
     }
 
     private function sanitizeReferrer(?string $referrer): ?string

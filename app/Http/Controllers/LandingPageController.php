@@ -515,13 +515,13 @@ class LandingPageController extends Controller
                 'cta' => 'Upload je PDF',
             ],
             'benefits' => [
-                ['icon' => 'file-text', 'title' => 'Elke PDF kan', 'text' => 'Ook zonder afloop printen we je bestand. Met afloop en snijtekens wordt het net wat mooier.'],
+                ['icon' => 'file-text', 'title' => 'Elke PDF kan', 'text' => 'Ook zonder afloop printen we je bestand: we vullen de rand dan voor je aan.'],
                 ['icon' => 'shield', 'title' => 'Geen witte randjes', 'text' => 'Met 3 mm afloop lopen kleuren en foto\'s na het snijden echt tot de rand.'],
                 ['icon' => 'book', 'title' => 'Niets valt weg', 'text' => 'Met een veilige marge blijft je tekst ver genoeg van de snijkant en de vouw.'],
                 ['icon' => 'palette', 'title' => 'Tips voor Canva', 'text' => 'Stap voor stap een drukklare PDF met afloop en snijtekens downloaden.'],
             ],
             'content' => [
-                'intro' => 'Je kunt elke PDF bij ons laten printen. Heb je geen bestand met afloop, dan snijden we je drukwerk iets kleiner, zodat er geen witte randjes ontstaan. Het beste resultaat krijg je met een PDF met 3 mm afloop en snijtekens. Hieronder lees je wat dat is, waarom het helpt en hoe je zo\'n bestand maakt.',
+                'intro' => 'Je kunt elke PDF bij ons laten printen. Heb je geen bestand met afloop, dan kies je bij het bestellen: wij vullen de rand voor je aan, of we snijden je drukwerk iets kleiner. Het beste resultaat krijg je met een PDF met 3 mm afloop en snijtekens. Hieronder lees je wat dat is, waarom het helpt en hoe je zo\'n bestand maakt.',
                 'sections' => [
                     [
                         'title' => 'Waarom afloop en snijtekens nodig zijn',
@@ -536,16 +536,18 @@ class LandingPageController extends Controller
                         'text' => 'Tekst, logo\'s, paginanummers en kaders zet je niet tot aan de rand, maar op veilige afstand van de snijkant. Zo valt er bij het snijden niets weg en komt bij een boekje niets in de vouw terecht.',
                         'list' => [
                             'PDF met afloop: houd minimaal 5 mm afstand tot de snijkant.',
-                            'PDF zonder afloop: houd minimaal 8 mm afstand tot de rand. Omdat we je drukwerk dan iets kleiner snijden, heb je wat meer ruimte nodig.',
+                            'PDF zonder afloop: houd minimaal 8 mm afstand tot de rand. Dan blijft je tekst veilig, welke keuze je bij het bestellen ook maakt.',
                         ],
                         'after' => 'De marge geldt rondom, ook aan de kant van de vouw bij een boekje. Achtergronden en foto\'s die tot de rand lopen mogen gewoon blijven staan; het gaat alleen om tekst en andere belangrijke onderdelen.',
                     ],
                     [
-                        'title' => 'Geen afloop? Dan snijden we iets kleiner',
-                        'text' => [
-                            'Heb je alleen een gewone PDF zonder afloop, bijvoorbeeld uit Word? Geen probleem. We snijden je drukwerk dan iets kleiner dan het formaat van je PDF, zodat er ook zonder afloop geen witte randjes ontstaan. Er gaat dan wel een klein stukje van de rand af. Met een marge van 8 mm blijft je tekst daarbij ruim veilig.',
-                            'Wil je dat je drukwerk precies op het formaat van je ontwerp uitkomt, met kleuren tot de rand? Lever dan een PDF met afloop en snijtekens aan.',
+                        'title' => 'Geen afloop? Dan vullen we de rand aan',
+                        'text' => 'Heb je alleen een gewone PDF zonder afloop, bijvoorbeeld uit Word? Geen probleem. Na het uploaden kies je wat we doen:',
+                        'list' => [
+                            'Rand aanvullen (aanbevolen): we laten je ontwerp rondom 3 mm doorlopen door de rand van elke pagina te spiegelen, en snijden dat stukje er daarna weer af. Je drukwerk komt precies op het formaat van je PDF uit, zonder witte randjes, en aan je ontwerp zelf verandert niets. Je ziet vooraf een voorbeeld.',
+                            'Iets kleiner snijden: we printen je PDF zoals hij is en snijden er rondom een klein stukje af. Je drukwerk wordt dan iets kleiner dan het formaat van je PDF.',
                         ],
+                        'after' => 'Bij een PDF met invulvelden kunnen we de rand niet automatisch aanvullen; die snijden we iets kleiner. Wil je zelf bepalen hoe je ontwerp over de rand doorloopt? Lever dan een PDF met afloop en snijtekens aan.',
                     ],
                     [
                         'title' => 'Een PDF met afloop en snijtekens maken in Canva',
@@ -558,12 +560,12 @@ class LandingPageController extends Controller
                             'Klik op Delen › Downloaden en kies bij Bestandstype de PDF voor afdrukken.',
                             'Vink Bijsnijmarkeringen en afloop aan en download je PDF.',
                         ],
-                        'after' => 'Is je ontwerp begonnen als een ander soort ontwerp, zoals een presentatie, dan kun je er in de gratis versie van Canva geen afloop aan toevoegen. Houd dan een marge van 8 mm aan; wij snijden je drukwerk iets kleiner.',
+                        'after' => 'Is je ontwerp begonnen als een ander soort ontwerp, zoals een presentatie, dan kun je er in de gratis versie van Canva geen afloop aan toevoegen. Houd dan een marge van 8 mm aan; bij het bestellen vullen we de rand voor je aan.',
                     ],
                     [
                         'title' => 'Een PDF maken in Word of een ander programma',
                         'text' => [
-                            'Word kent geen afloop. Houd daarom rondom minimaal 8 mm marge aan en kies Opslaan als › PDF. Wij snijden je drukwerk dan iets kleiner.',
+                            'Word kent geen afloop. Houd daarom rondom minimaal 8 mm marge aan en kies Opslaan als › PDF. Bij het bestellen vullen we de rand voor je aan.',
                             'Werk je met een opmaakprogramma zoals Adobe InDesign of Affinity Publisher, stel dan in je document 3 mm afloop in en exporteer een PDF voor drukwerk met snijtekens en afloop.',
                         ],
                     ],
@@ -589,7 +591,7 @@ class LandingPageController extends Controller
                 ],
             ],
             'faq' => [
-                ['question' => 'Moet mijn PDF afloop hebben?', 'answer' => 'Nee. Zonder afloop printen we je bestand ook; we snijden het dan iets kleiner zodat er geen witte randjes ontstaan. Houd in dat geval minimaal 8 mm marge aan. Met 3 mm afloop en snijtekens krijg je het beste resultaat.'],
+                ['question' => 'Moet mijn PDF afloop hebben?', 'answer' => 'Nee. Zonder afloop printen we je bestand ook. Bij het bestellen kies je of we de rand voor je aanvullen (we spiegelen de rand van je pagina 3 mm naar buiten) of je drukwerk iets kleiner snijden. Houd in beide gevallen minimaal 8 mm marge aan. Met een eigen PDF met 3 mm afloop en snijtekens bepaal je zelf precies hoe je ontwerp doorloopt.'],
                 ['question' => 'Hoeveel marge moet ik aanhouden?', 'answer' => 'Met afloop minimaal 5 mm vanaf de snijkant, zonder afloop minimaal 8 mm vanaf de rand. Dat geldt voor tekst, logo\'s, paginanummers en kaders, rondom en ook aan de vouwkant van een boekje.'],
                 ['question' => 'Wat zijn snijtekens?', 'answer' => 'Kleine lijntjes in de hoeken buiten je pagina die aangeven waar gesneden moet worden. Canva zet ze erbij als je bij het downloaden Bijsnijmarkeringen en afloop aanvinkt.'],
                 ['question' => 'Wordt mijn PDF met afloop als groter formaat gezien?', 'answer' => 'Nee. We lezen het snijformaat uit je PDF, dus een A4 met afloop en snijtekens wordt gewoon als A4 herkend en geprijsd.'],

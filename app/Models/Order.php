@@ -24,6 +24,7 @@ class Order extends Model
         'trim_height_mm',
         'has_bleed',
         'bleed_mm',
+        'bleed_added',
         'binding_type',
         'print_side',
         'quantity',
@@ -64,6 +65,7 @@ class Order extends Model
 
     protected $casts = [
         'has_bleed' => 'boolean',
+        'bleed_added' => 'boolean',
         'trim_width_mm' => 'float',
         'trim_height_mm' => 'float',
         'paid_at' => 'datetime',
@@ -143,6 +145,10 @@ class Order extends Model
      */
     public function getBleedLabelAttribute(): string
     {
+        if ($this->has_bleed && $this->bleed_added) {
+            return "met {$this->bleed_mm} mm afloop (door ons aangevuld)";
+        }
+
         return $this->has_bleed
             ? "met {$this->bleed_mm} mm afloop"
             : 'zonder afloop (iets kleiner snijden)';
