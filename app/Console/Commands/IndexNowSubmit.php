@@ -24,7 +24,7 @@ class IndexNowSubmit extends Command
         URL::forceRootUrl(rtrim((string) config('seo.site_url'), '/'));
         URL::forceScheme('https');
         // array_values: PAGES heeft slugs als sleutels, en IndexNow wil een lijst, geen object
-        $urls = array_values(array_merge([url('/')], array_map(fn ($page) => route($page[0]), LandingPageController::PAGES)));
+        $urls = array_values(array_merge([url('/'), route('over-ons')], array_map(fn ($page) => route($page[0]), LandingPageController::PAGES)));
 
         if ($this->option('dry-run')) {
             $this->line(implode("\n", $urls));

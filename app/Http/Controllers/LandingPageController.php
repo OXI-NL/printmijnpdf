@@ -24,6 +24,10 @@ class LandingPageController extends Controller
         'handleiding-printen' => ['landing.handleiding', 'Handleiding printen'],
         'boekje-maken' => ['landing.boekje', 'Eigen boekje maken'],
         'zakelijk' => ['landing.zakelijk', 'Zakelijk printen'],
+        'liturgie-uitvaart-printen' => ['landing.uitvaart', 'Liturgie uitvaart printen'],
+        'boekje-bruiloft-printen' => ['landing.bruiloft', 'Boekje bruiloft printen'],
+        'printen-zonder-printer' => ['landing.zonder-printer', 'Printen zonder printer'],
+        'printen-delft' => ['landing.delft', 'Printen in Delft en omgeving'],
     ];
 
     /**
@@ -76,13 +80,13 @@ class LandingPageController extends Controller
     {
         return $this->page([
             'meta' => [
-                'title' => 'Scriptie Printen en Inbinden | Binnen 1 Werkdag Verzonden | PrintMijnPDF',
-                'description' => 'Laat je scriptie professioneel printen als geniet boekje. Full colour drukwerkkwaliteit, binnen 1 werkdag verzonden. Ideaal voor HBO en WO afstudeerders.',
+                'title' => 'Scriptie Printen als Boekje | Binnen 1 Werkdag Verzonden | PrintMijnPDF',
+                'description' => 'Laat je scriptie printen als geniet boekje (tot 64 pagina\'s) of als losse pagina\'s. Full colour drukwerkkwaliteit, binnen 1 werkdag verzonden. Voor HBO en WO.',
                 'canonical' => route('landing.scriptie'),
                 'keywords' => 'scriptie printen, scriptie inbinden, afstudeerscriptie drukken, scriptie laten printen',
             ],
             'hero' => [
-                'title' => 'Scriptie printen en inbinden',
+                'title' => 'Scriptie printen als boekje',
                 'subtitle' => 'Jouw afstudeerwerk verdient drukwerkkwaliteit',
                 'cta' => 'Upload je scriptie',
             ],
@@ -100,7 +104,7 @@ class LandingPageController extends Controller
                 [
                     'icon' => 'book',
                     'title' => 'Professioneel geniet',
-                    'text' => 'Nette afwerking als boekje, geen goedkope ringband.',
+                    'text' => 'Gevouwen en in de rug geniet, tot 64 pagina\'s. Langer? Dan printen we losse pagina\'s.',
                 ],
                 [
                     'icon' => 'euro',
@@ -129,7 +133,7 @@ class LandingPageController extends Controller
             'faq' => [
                 [
                     'question' => 'Hoeveel pagina\'s mag mijn scriptie hebben?',
-                    'answer' => 'Voor een geniet boekje geldt een maximum van 64 pagina\'s. Heb je een langere scriptie? Neem contact op, dan bespreken we de opties zoals ringband of lijmbinding.',
+                    'answer' => 'Voor een geniet boekje geldt een maximum van 64 pagina\'s. Is je scriptie langer, dan kun je hem online als losse pagina\'s bestellen. Wil je hem gebonden hebben, bijvoorbeeld met een ringband of lijmbinding? Dat kan niet via de website, maar wel via de drukkerij: mail naar info@printmijnpdf.nl met je naam en telefoonnummer, dan bellen we je.',
                 ],
                 [
                     'question' => 'Welk formaat moet mijn PDF zijn?',
@@ -142,6 +146,10 @@ class LandingPageController extends Controller
                 [
                     'question' => 'Wordt dubbelzijdig geprint?',
                     'answer' => 'Ja, boekjes worden standaard dubbelzijdig geprint. Zo bespaar je papier en krijg je een compacter resultaat.',
+                ],
+                [
+                    'question' => 'Kan ik mijn scriptie ook laten inbinden met een harde kaft?',
+                    'answer' => 'Online bieden we een geniet boekje (tot 64 pagina\'s) en losse pagina\'s. Een harde kaft, lijmbinding of ringband regelen we via de drukkerij: mail naar info@printmijnpdf.nl, dan bespreken we de mogelijkheden en de prijs.',
                 ],
             ],
             'slug' => 'scriptie-printen',
@@ -956,6 +964,257 @@ class LandingPageController extends Controller
                 ['question' => 'Kan ik een zakelijke factuur krijgen?', 'answer' => 'Ja. Mail je bestelnummer en bedrijfsgegevens naar info@printmijnpdf.nl, dan sturen we je een factuur met btw-specificatie.'],
             ],
             'slug' => 'prijzen',
+        ]);
+    }
+
+    /**
+     * Liturgie / programmaboekje voor een uitvaart: haast, regio Delft, afhalen
+     */
+    public function uitvaart(): View
+    {
+        return $this->page([
+            'meta' => [
+                'title' => 'Liturgie Uitvaart Printen | Morgen Afhalen | PrintMijnPDF',
+                'description' => 'Liturgie voor een uitvaart laten printen: full colour geniet boekje in A5 of A4. Vandaag bestellen, morgen gratis afhalen bij Delft of verzonden met PostNL.',
+                'canonical' => route('landing.uitvaart'),
+                'keywords' => 'liturgie uitvaart printen, rouwboekje printen, programmaboekje uitvaart, liturgie begrafenis drukken, liturgie crematie printen',
+                'service_type' => 'Liturgie uitvaart printen',
+            ],
+            'breadcrumb' => 'Liturgie uitvaart printen',
+            'hero' => [
+                'title' => 'Liturgie voor een uitvaart printen',
+                'subtitle' => 'Een mooi boekje voor het afscheid, zonder extra zorgen',
+                'cta' => 'Upload je liturgie',
+            ],
+            'benefits' => [
+                ['icon' => 'clock', 'title' => 'Morgen klaar', 'text' => 'Vandaag bestellen, de volgende werkdag gratis afhalen in Delfgauw. Zelfde dag in overleg.'],
+                ['icon' => 'palette', 'title' => 'Foto\'s in full colour', 'text' => 'Een foto op de voorkant en kleur in het hele boekje, in drukwerkkwaliteit.'],
+                ['icon' => 'book', 'title' => 'Gevouwen en geniet', 'text' => 'Een net boekje in A5 of A4, van 4 tot 64 pagina\'s.'],
+                ['icon' => 'phone', 'title' => 'Persoonlijk contact', 'text' => 'Twijfel of haast? Bel 015-219 2525, dan denken we met je mee.'],
+            ],
+            'content' => [
+                'intro' => 'Tussen het overlijden en de uitvaart zit vaak maar een paar dagen. De liturgie of het programmaboekje moet dan snel en goed gedrukt worden. Bij PrintMijnPDF upload je de PDF, zie je meteen de prijs, en haal je de boekjes de volgende werkdag op bij onze drukkerij in Delfgauw, vlak bij Delft. Of we versturen ze met PostNL.',
+                'sections' => [
+                    [
+                        'title' => 'Wat staat er meestal in een liturgie?',
+                        'list' => [
+                            'Een foto en de naam van de overledene op de voorkant, met geboorte- en sterfdatum.',
+                            'Het verloop van de dienst: welkom, sprekers, muziek, gebeden of gedichten.',
+                            'Teksten van liederen die samen gezongen worden.',
+                            'Een dankwoord en eventueel informatie over de condoleance of koffietafel.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Welk formaat kies je?',
+                        'text' => 'De meeste liturgieën zijn een A5-boekje: een A4-vel dubbelgevouwen en in het midden geniet. Een boekje heeft altijd een veelvoud van 4 pagina\'s, dus 4, 8, 12 of 16. Heeft je PDF bijvoorbeeld 10 pagina\'s, dan vullen wij aan het eind 2 lege pagina\'s aan. Wil je zelf bepalen waar de lege pagina\'s komen, voeg ze dan toe voordat je de PDF uploadt.',
+                    ],
+                    [
+                        'title' => 'Zo bestel je een liturgie',
+                        'ordered' => true,
+                        'list' => [
+                            'Maak de liturgie in Word, Canva of een ander programma en sla hem op als PDF, in het formaat van één pagina (meestal A5).',
+                            'Upload de PDF op printmijnpdf.nl en kies "Magazine" (geniet boekje).',
+                            'Vul het aantal exemplaren in. Online bestel je tot 100 stuks; heb je er meer nodig, mail of bel ons dan.',
+                            'Kies afhalen (gratis, de volgende werkdag tussen 17:00 en 17:30) of bezorgen, en betaal met iDEAL.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Controleer vóór het uploaden',
+                        'text' => 'Bij haast sluipen er makkelijk fouten in. Laat iemand anders de namen, datums en liedteksten nog één keer nalezen. Staat er een foto of kleur tot aan de rand van de pagina? Dan vullen wij de rand automatisch aan, zodat er na het snijden geen wit randje ontstaat.',
+                    ],
+                ],
+            ],
+            'faq' => [
+                ['question' => 'Hoe snel kan een liturgie klaar zijn?', 'answer' => 'Bestel je op een werkdag, dan kun je de boekjes de volgende werkdag tussen 17:00 en 17:30 gratis afhalen in Delfgauw. Laat je ze bezorgen, dan versturen we binnen 1 werkdag en bezorgt PostNL binnen 2 werkdagen. Is het nog sneller nodig? Bel 015-219 2525, dan kijken we wat er kan.'],
+                ['question' => 'Hoeveel exemplaren kan ik bestellen?', 'answer' => 'Online bestel je 1 tot 100 exemplaren. Verwacht je meer gasten, mail dan naar info@printmijnpdf.nl of bel 015-219 2525, dan maken we het via de drukkerij.'],
+                ['question' => 'Wat kost een liturgie?', 'answer' => 'Dat zie je direct na het uploaden van je PDF. De prijs bestaat uit € 10,00 startkosten, een prijs per pagina en het nieten. Afhalen is gratis.'],
+                ['question' => 'Waar kan ik de liturgie afhalen?', 'answer' => 'Bij NIVO Druk & Multimedia, Exportweg 11, 2645 ED Delfgauw, naast Delft. Op werkdagen tussen 17:00 en 17:30. Je krijgt een mail zodra de boekjes klaarliggen.'],
+            ],
+            'slug' => 'liturgie-uitvaart-printen',
+        ]);
+    }
+
+    /**
+     * Ceremonie- of programmaboekje voor een bruiloft
+     */
+    public function bruiloft(): View
+    {
+        return $this->page([
+            'meta' => [
+                'title' => 'Boekje Bruiloft Printen | Liturgie en Programmaboekje | PrintMijnPDF',
+                'description' => 'Ceremonie- of programmaboekje voor je bruiloft laten printen: full colour geniet boekje in A5 of A4, vanaf 1 exemplaar. Upload je PDF en zie direct de prijs.',
+                'canonical' => route('landing.bruiloft'),
+                'keywords' => 'boekje bruiloft printen, liturgie bruiloft drukken, programmaboekje bruiloft, ceremonieboekje printen, trouwboekje printen',
+                'service_type' => 'Boekje bruiloft printen',
+            ],
+            'breadcrumb' => 'Boekje bruiloft printen',
+            'hero' => [
+                'title' => 'Boekje voor je bruiloft printen',
+                'subtitle' => 'Liturgie, ceremonie- of programmaboekje in drukwerkkwaliteit',
+                'cta' => 'Upload je boekje',
+            ],
+            'benefits' => [
+                ['icon' => 'heart', 'title' => 'Mooi in full colour', 'text' => 'Jullie foto\'s en ontwerp haarscherp op wit papier.'],
+                ['icon' => 'book', 'title' => 'Gevouwen en geniet', 'text' => 'Een net boekje in A5 of A4, van 4 tot 64 pagina\'s.'],
+                ['icon' => 'repeat', 'title' => 'Eerst een proefexemplaar', 'text' => 'Bestel er één om te controleren, daarna de rest.'],
+                ['icon' => 'euro', 'title' => 'Duidelijke prijs', 'text' => 'Je ziet de prijs direct na het uploaden, inclusief btw.'],
+            ],
+            'content' => [
+                'intro' => 'Een boekje voor de ceremonie of het feest maakt je trouwdag persoonlijk: gasten lezen mee met de teksten, zingen de liedjes en weten wat er komt. Je ontwerpt het zelf, bijvoorbeeld in Canva of Word, en wij printen het als een net geniet boekje in drukwerkkwaliteit.',
+                'sections' => [
+                    [
+                        'title' => 'Wat zet je in een bruiloftsboekje?',
+                        'list' => [
+                            'Jullie namen, de datum en een foto op de voorkant.',
+                            'Het programma van de ceremonie: sprekers, muziek, gelofte en ringen.',
+                            'Liedteksten, gedichten of lezingen om mee te lezen.',
+                            'Praktische informatie voor de rest van de dag.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Tips voor het ontwerp',
+                        'list' => [
+                            'Kies A5 als je een handzaam boekje wilt; dat is het meest gebruikte formaat.',
+                            'Een boekje heeft altijd een veelvoud van 4 pagina\'s (4, 8, 12, 16…). Ontbreken er pagina\'s, dan vullen wij lege pagina\'s aan het eind aan.',
+                            'Houd tekst minstens 5 mm van de rand. Op de pagina PDF aanleveren lees je hoe je achtergronden goed tot de rand laat doorlopen.',
+                            'Sla je ontwerp op als PDF in het formaat van één pagina, niet als twee pagina\'s naast elkaar.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Op tijd bestellen',
+                        'text' => 'Bestel je boekjes een week of twee voor de bruiloft. Bestel eerst één exemplaar om kleuren en teksten te controleren. We versturen binnen 1 werkdag met PostNL, of je haalt het gratis af in Delfgauw bij Delft.',
+                    ],
+                ],
+            ],
+            'faq' => [
+                ['question' => 'Hoeveel boekjes kan ik bestellen?', 'answer' => 'Online bestel je 1 tot 100 exemplaren. Heb je er meer nodig, mail dan naar info@printmijnpdf.nl.'],
+                ['question' => 'Kan ik het boekje in Canva maken?', 'answer' => 'Ja. Kies in Canva bij downloaden "PDF voor drukwerk" en zet "Snijtekens en afloop" aan als je achtergrond tot de rand doorloopt. Upload daarna de PDF bij ons.'],
+                ['question' => 'Op welk papier printen jullie?', 'answer' => 'Op hoogwaardig wit papier van professionele drukwerkkwaliteit, met heldere kleuren voor foto\'s en tekst.'],
+                ['question' => 'Wanneer moet ik bestellen?', 'answer' => 'Liefst een week of twee van tevoren, zodat je eerst een proefexemplaar kunt bekijken. Haast? We versturen binnen 1 werkdag en afhalen kan de volgende werkdag.'],
+            ],
+            'slug' => 'boekje-bruiloft-printen',
+        ]);
+    }
+
+    /**
+     * Printen zonder eigen printer: eerlijk over wanneer het loont
+     */
+    public function zonderPrinter(): View
+    {
+        return $this->page([
+            'meta' => [
+                'title' => 'Printen Zonder Printer | PDF Online Laten Printen | PrintMijnPDF',
+                'description' => 'Geen printer thuis? Upload je PDF en laat hem printen in full colour, als boekje of losse pagina\'s. Binnen 1 werkdag verzonden of gratis afhalen bij Delft.',
+                'canonical' => route('landing.zonder-printer'),
+                'keywords' => 'printen zonder printer, online printen, document laten printen, pdf online printen, waar kan ik printen',
+                'service_type' => 'Online printservice',
+            ],
+            'breadcrumb' => 'Printen zonder printer',
+            'hero' => [
+                'title' => 'Printen zonder printer',
+                'subtitle' => 'Upload je PDF, wij printen hem en sturen hem op',
+                'cta' => 'Upload je PDF',
+            ],
+            'benefits' => [
+                ['icon' => 'file-text', 'title' => 'Geen printer nodig', 'text' => 'Geen inkt, geen vastgelopen papier, geen gedoe.'],
+                ['icon' => 'palette', 'title' => 'Beter dan thuis', 'text' => 'Full colour in drukwerkkwaliteit, van een echte drukkerij.'],
+                ['icon' => 'package', 'title' => 'Thuisbezorgd', 'text' => 'Binnen 1 werkdag verzonden, PostNL bezorgt binnen 2 werkdagen.'],
+                ['icon' => 'euro', 'title' => 'Vanaf € 0,15 per pagina', 'text' => 'Plus € 10,00 startkosten per bestelling. Geen account nodig.'],
+            ],
+            'content' => [
+                'intro' => 'Steeds minder mensen hebben een printer thuis. Moet je toch iets op papier hebben, zoals een reader, een handleiding, een verslag of een boekje? Upload je PDF bij PrintMijnPDF, kies of je losse pagina\'s of een geniet boekje wilt, en wij printen het in drukwerkkwaliteit.',
+                'sections' => [
+                    [
+                        'title' => 'Wanneer is dit handig?',
+                        'text' => [
+                            'Online laten printen loont vooral bij documenten van meerdere pagina\'s, bij kleur, en als je het netjes wilt hebben, bijvoorbeeld als boekje. Je hebt dan geen gedoe met inkt en papier en het resultaat is mooier dan van een thuisprinter.',
+                            'Heb je maar één of twee zwart-witpagina\'s nodig, bijvoorbeeld een formulier? Dan is de bibliotheek of een copyshop in de buurt goedkoper, omdat wij per bestelling € 10,00 startkosten rekenen.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Geen PDF maar een Word-bestand?',
+                        'list' => [
+                            'Word: kies Bestand › Opslaan als › PDF.',
+                            'Google Docs: kies Bestand › Downloaden › PDF-document.',
+                            'Pages (Mac): kies Archief › Exporteer naar › PDF.',
+                            'Canva: kies Delen › Downloaden › PDF voor drukwerk.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Zo werkt het',
+                        'ordered' => true,
+                        'list' => [
+                            'Upload je PDF op printmijnpdf.nl; je ziet direct het aantal pagina\'s en de prijs.',
+                            'Kies losse pagina\'s (enkel- of dubbelzijdig) of een geniet boekje.',
+                            'Kies bezorgen met PostNL of gratis afhalen in Delfgauw.',
+                            'Betaal met iDEAL. Binnen 1 werkdag gaat je pakket op de post.',
+                        ],
+                    ],
+                ],
+            ],
+            'faq' => [
+                ['question' => 'Waar kan ik printen als ik geen printer heb?', 'answer' => 'Bij een bibliotheek, copyshop of online printservice zoals PrintMijnPDF. Online is handig voor documenten van meerdere pagina\'s of in kleur: je uploadt je PDF en krijgt het geprint thuisbezorgd.'],
+                ['question' => 'Moet ik een account aanmaken?', 'answer' => 'Nee. Je uploadt je PDF, vult je adres in en betaalt met iDEAL.'],
+                ['question' => 'Kan ik ook zwart-wit printen?', 'answer' => 'We printen standaard in full colour. Een document in zwart-wit wordt gewoon zwart-wit geprint, tegen dezelfde prijs.'],
+                ['question' => 'Wat kost het?', 'answer' => 'Je betaalt € 10,00 startkosten per bestelling plus € 0,15 per A4-pagina of € 0,10 per A5-pagina. Bezorgen kost € 7,50, afhalen is gratis. Na het uploaden zie je meteen de totaalprijs.'],
+            ],
+            'slug' => 'printen-zonder-printer',
+        ]);
+    }
+
+    /**
+     * Regio Delft, Den Haag, Zoetermeer, Rotterdam: afhalen in Delfgauw
+     */
+    public function delft(): View
+    {
+        return $this->page([
+            'meta' => [
+                'title' => 'Printen in Delft | Morgen Gratis Afhalen | PrintMijnPDF',
+                'description' => 'PDF of boekje printen in de regio Delft, Den Haag, Zoetermeer of Rotterdam? Bestel online en haal het de volgende werkdag gratis af bij onze drukkerij in Delfgauw.',
+                'canonical' => route('landing.delft'),
+                'keywords' => 'printen delft, pdf printen delft, boekje printen den haag, printen zoetermeer, drukkerij delft, printshop delft',
+                'service_type' => 'PDF printen regio Delft',
+            ],
+            'breadcrumb' => 'Printen in Delft en omgeving',
+            'hero' => [
+                'title' => 'Printen in Delft en omgeving',
+                'subtitle' => 'Online bestellen, morgen gratis afhalen in Delfgauw',
+                'cta' => 'Upload je PDF',
+            ],
+            'benefits' => [
+                ['icon' => 'clock', 'title' => 'Morgen afhalen', 'text' => 'Vanaf de volgende werkdag, tussen 17:00 en 17:30.'],
+                ['icon' => 'euro', 'title' => 'Afhalen is gratis', 'text' => 'Geen verzendkosten en geen spoedtoeslag.'],
+                ['icon' => 'briefcase', 'title' => 'Echte drukkerij', 'text' => 'NIVO Druk & Multimedia, sinds 1980 in de regio.'],
+                ['icon' => 'phone', 'title' => 'Vandaag nodig?', 'text' => 'Bel 015-219 2525, dan kijken we wat er kan.'],
+            ],
+            'content' => [
+                'intro' => 'PrintMijnPDF is de online printservice van drukkerij NIVO in Delfgauw, gemeente Pijnacker-Nootdorp, direct naast Delft. Woon of werk je in Delft, Den Haag, Rijswijk, Zoetermeer, Pijnacker, Nootdorp, het Westland of Rotterdam? Dan bestel je online en haal je je drukwerk de volgende werkdag gratis op.',
+                'sections' => [
+                    [
+                        'title' => 'Afhaaladres',
+                        'list' => [
+                            'NIVO Druk & Multimedia, Exportweg 11, 2645 ED Delfgauw.',
+                            'Afhalen op werkdagen tussen 17:00 en 17:30, vanaf de werkdag na je bestelling.',
+                            'Je krijgt een mail zodra je bestelling klaarligt.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Wat kun je laten printen?',
+                        'text' => 'Geniet boekjes van 4 tot 64 pagina\'s en losse pagina\'s, full colour, in elk formaat tot en met A3. Handig voor studenten in Delft en Den Haag met een scriptie of reader, voor verenigingen en kerken met een programmaboekje, en voor bedrijven met handleidingen of cursusmateriaal.',
+                    ],
+                    [
+                        'title' => 'Liever bezorgd?',
+                        'text' => 'Dat kan in heel Nederland. We versturen binnen 1 werkdag met PostNL en PostNL bezorgt binnen 2 werkdagen. Verzending kost € 7,50 per bestelling.',
+                    ],
+                ],
+            ],
+            'faq' => [
+                ['question' => 'Waar kan ik in Delft een PDF laten printen?', 'answer' => 'Bestel online bij PrintMijnPDF en haal je drukwerk de volgende werkdag gratis op bij drukkerij NIVO, Exportweg 11 in Delfgauw, vlak bij Delft. Afhalen kan op werkdagen tussen 17:00 en 17:30.'],
+                ['question' => 'Kan ik mijn drukwerk dezelfde dag ophalen?', 'answer' => 'Standaard haal je het de volgende werkdag op. Heb je het dezelfde dag nodig, bel dan voor je bestelt naar 015-219 2525, dan kijken we wat er mogelijk is.'],
+                ['question' => 'Kan ik ook langskomen zonder online te bestellen?', 'answer' => 'Bestellen gaat via de website, zodat je bestand direct gecontroleerd wordt en de prijs vastligt. Daarna haal je het op in Delfgauw.'],
+                ['question' => 'Vanuit welke plaatsen haal je het makkelijk op?', 'answer' => 'Delfgauw ligt naast Delft, Pijnacker en Nootdorp, en op korte afstand van Den Haag, Rijswijk, Zoetermeer en Rotterdam.'],
+            ],
+            'slug' => 'printen-delft',
         ]);
     }
 }

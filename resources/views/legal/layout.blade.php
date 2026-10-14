@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    @yield('schema')
     <style>
         :root {
             --primary: #d63447;
@@ -37,6 +38,7 @@
         ul { padding-left: 1.25rem; }
         a { color: var(--primary); }
         .lead { color: var(--text-muted); margin-top: 0; }
+        .cta { display: inline-block; margin-top: 1.5rem; padding: 0.75rem 1.25rem; border-radius: 10px; background: var(--primary); color: #fff; font-weight: 600; text-decoration: none; }
         .updated { color: var(--text-muted); font-size: 13px; margin-top: 2rem; }
         footer { border-top: 1px solid var(--border); padding: 1.5rem 0; font-size: 14px; color: var(--text-muted); text-align: center; }
         footer a { color: inherit; }
@@ -53,7 +55,7 @@
         <div class="container">
             <p>
                 <a href="{{ url('/') }}">PrintMijnPDF</a> · Onderdeel van NIVO Druk & Multimedia B.V.<br>
-                <a href="{{ route('privacy') }}">Privacy</a> · <a href="{{ route('leveringsvoorwaarden') }}">Leveringsvoorwaarden</a> ·
+                <a href="{{ route('over-ons') }}">Over ons</a> · <a href="{{ route('privacy') }}">Privacy</a> · <a href="{{ route('leveringsvoorwaarden') }}">Leveringsvoorwaarden</a> ·
                 <a href="mailto:info@printmijnpdf.nl">info@printmijnpdf.nl</a> · <a href="tel:0152192525">015-219 2525</a>
             </p>
         </div>

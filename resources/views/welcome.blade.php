@@ -12,12 +12,12 @@
     <link rel="dns-prefetch" href="https://www.google-analytics.com">
     <link rel="dns-prefetch" href="https://js.mollie.com">
 
-    <title>PDF Printen als Boekje | Binnen 1 Werkdag Verzonden | PrintMijnPDF</title>
+    <title>PDF Printen als Boekje, Morgen Verzonden | PrintMijnPDF</title>
     <meta name="description" content="Upload je PDF → professioneel geprint boekje, binnen 1 werkdag verzonden met PostNL. Full colour drukwerkkwaliteit, vanaf €0,15/pagina. Gratis afhalen mogelijk.">
     <meta name="msvalidate.01" content="1A1260063F50FF0586F052944BAF1CF1">
 
     <!-- Open Graph -->
-    <meta property="og:title" content="PDF Printen als Boekje | Binnen 1 Werkdag Verzonden | PrintMijnPDF">
+    <meta property="og:title" content="PDF Printen als Boekje, Morgen Verzonden | PrintMijnPDF">
     <meta property="og:description" content="Upload je PDF en ontvang full colour printwerk, binnen 1 werkdag verzonden. Professioneel geniet boekje of losse pagina's. Echte drukwerkkwaliteit.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://printmijnpdf.nl/">
@@ -30,7 +30,7 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="PDF Printen als Boekje | Binnen 1 Werkdag Verzonden">
+    <meta name="twitter:title" content="PDF Printen als Boekje, Morgen Verzonden">
     <meta name="twitter:description" content="Upload je PDF → professioneel geprint boekje, binnen 1 werkdag verzonden. Full colour drukwerkkwaliteit.">
     <meta name="twitter:image" content="https://printmijnpdf.nl/og-image.jpg">
 
@@ -204,7 +204,7 @@
         "@@context": "https://schema.org",
         "@type": "PrintingService",
         "name": "PrintMijnPDF",
-        "description": "Professionele PDF printservice. Upload je PDF en ontvang een geprint boekje of losse pagina's, binnen 1 werkdag verzonden met PostNL.",
+        "description": "Online printservice van drukkerij NIVO in Delfgauw (bij Delft). Upload je PDF en ontvang een geprint boekje of losse pagina's, binnen 1 werkdag verzonden met PostNL, of haal het de volgende werkdag gratis af (werkdagen 17:00-17:30).",
         "url": "https://printmijnpdf.nl",
         "telephone": "+31152192525",
         "email": "info@printmijnpdf.nl",
@@ -220,13 +220,8 @@
             "latitude": 52.0116,
             "longitude": 4.3931
         },
-        "openingHoursSpecification": {
-            "@type": "OpeningHoursSpecification",
-            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-            "opens": "17:00",
-            "closes": "17:30"
-        },
         "priceRange": "€",
+        "sameAs": {!! json_encode(config('seo.same_as', []), JSON_UNESCAPED_SLASHES) !!},
         "image": "https://printmijnpdf.nl/og-image.jpg",
         "areaServed": {
             "@type": "Country",
@@ -274,7 +269,7 @@
                 "@type": "OfferShippingDetails",
                 "shippingRate": {
                     "@type": "MonetaryAmount",
-                    "value": "6.75",
+                    "value": "{{ number_format(config('pricing.shipping') / 100, 2, '.', '') }}",
                     "currency": "EUR"
                 },
                 "deliveryTime": {
@@ -1906,7 +1901,7 @@
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                     <path d="m9 12 2 2 4-4"></path>
                 </svg>
-                <span>Niet tevreden? Geld terug</span>
+                <span>Drukfout? Gratis opnieuw gedrukt</span>
             </div>
         </div>
 
@@ -2112,7 +2107,7 @@
                     <span id="priceShippingValue">nog kiezen</span>
                 </div>
                 <div class="price-row subtle">
-                    <span id="priceStartupLabel">Incl. voorbereiding & kwaliteitscheck</span>
+                    <span id="priceStartupLabel">Voorbereiding & kwaliteitscheck</span>
                     <span id="priceStartupValue">€10,00</span>
                 </div>
                 <div class="price-row discount" id="priceDiscountRow" style="display: none;">
@@ -2339,7 +2334,7 @@
 
         <div class="footer-bottom">
             © 2026 PrintMijnPDF.nl · Onderdeel van NIVO Druk & Multimedia B.V.<br>
-            <a href="{{ route('privacy') }}">Privacy</a> · <a href="{{ route('leveringsvoorwaarden') }}">Leveringsvoorwaarden</a>
+            <a href="{{ route('over-ons') }}">Over ons</a> · <a href="{{ route('privacy') }}">Privacy</a> · <a href="{{ route('leveringsvoorwaarden') }}">Leveringsvoorwaarden</a>
         </div>
     </footer>
 
@@ -2983,7 +2978,7 @@
                 deliveryType ? 'Totaal' : 'Totaal (zonder verzending)';
 
             document.getElementById('priceStartupValue').textContent = formatPrice(prices.startupCost);
-            document.getElementById('priceStartupLabel').textContent = 'Incl. voorbereiding & kwaliteitscheck';
+            document.getElementById('priceStartupLabel').textContent = 'Voorbereiding & kwaliteitscheck';
 
             const discountRow = document.getElementById('priceDiscountRow');
             if (prices.discount > 0) {

@@ -11,6 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // 301 van /pagina/ en /index.php naar het canonieke adres
+        $middleware->prepend(\App\Http\Middleware\CanonicalUrl::class);
+
         // Mollie webhook heeft geen CSRF token
         $middleware->validateCsrfTokens(except: [
             'webhook/mollie',

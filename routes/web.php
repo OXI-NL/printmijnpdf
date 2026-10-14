@@ -30,7 +30,8 @@ Route::post('/api/order', [OrderController::class, 'store'])->name('api.order');
 Route::post('/api/contact', [ContactController::class, 'send'])->name('api.contact');
 Route::post('/api/contact/custom-format', [ContactController::class, 'sendCustomFormat'])->name('api.contact.custom-format');
 
-// Privacy en leveringsvoorwaarden
+// Over ons, privacy en leveringsvoorwaarden
+Route::view('/over-ons', 'legal.over-ons')->name('over-ons');
 Route::view('/privacy', 'legal.privacy')->name('privacy');
 Route::view('/leveringsvoorwaarden', 'legal.leveringsvoorwaarden')->name('leveringsvoorwaarden');
 
@@ -48,6 +49,10 @@ Route::prefix('/')->group(function () {
     Route::get('boekje-maken', [LandingPageController::class, 'boekje'])->name('landing.boekje');
     Route::get('handleiding-printen', [LandingPageController::class, 'handleiding'])->name('landing.handleiding');
     Route::get('zakelijk', [LandingPageController::class, 'zakelijk'])->name('landing.zakelijk');
+    Route::get('liturgie-uitvaart-printen', [LandingPageController::class, 'uitvaart'])->name('landing.uitvaart');
+    Route::get('boekje-bruiloft-printen', [LandingPageController::class, 'bruiloft'])->name('landing.bruiloft');
+    Route::get('printen-zonder-printer', [LandingPageController::class, 'zonderPrinter'])->name('landing.zonder-printer');
+    Route::get('printen-delft', [LandingPageController::class, 'delft'])->name('landing.delft');
 });
 
 // Mollie webhook (CSRF uitgezonderd in bootstrap/app.php)

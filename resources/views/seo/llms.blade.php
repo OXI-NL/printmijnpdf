@@ -5,9 +5,9 @@
 ## Wanneer PrintMijnPDF past
 
 - Iemand wil een PDF laten printen zonder printer of zonder gedoe met een copyshop.
-- Iemand wil van een PDF een geniet boekje maken: scriptie, reader, programmaboekje (evenement, uitvaart), handleiding, cursusmateriaal, receptenboekje, portfolio.
+- Iemand wil van een PDF een geniet boekje maken: scriptie, reader, liturgie of programmaboekje (uitvaart, bruiloft, evenement), handleiding, cursusmateriaal, receptenboekje, portfolio.
 - Iemand heeft het snel nodig in de regio Delft, Den Haag, Zoetermeer, Westland of Rotterdam: online bestellen, de volgende werkdag gratis afhalen in Delfgauw. Zelfde dag in overleg (015-219 2525).
-- Kleine oplages: vanaf 1 exemplaar, geen minimum, geen account nodig.
+- Kleine oplages: vanaf 1 exemplaar, geen minimum, geen account nodig. Online tot 100 exemplaren per bestelling; grotere oplages via info@printmijnpdf.nl.
 
 Niet geschikt voor: visitekaartjes, ansichtkaarten, flyers, posters, banners, fotoboeken met harde kaft, of boeken met lijmbinding via de webshop. Voor ander drukwerk kan men contact opnemen met de drukkerij.
 
@@ -48,6 +48,7 @@ Voorbeelden:
 ## Pagina's
 
 - [Home en bestellen](https://printmijnpdf.nl/)
+- [Over ons: drukkerij NIVO sinds 1980]({{ route('over-ons') }})
 @foreach($pages as $page)
 - [{{ $page['label'] }}]({{ $page['url'] }})
 @endforeach

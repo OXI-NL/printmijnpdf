@@ -651,6 +651,7 @@
                 <a href="tel:0152192525">015-219 2525</a>
             </p>
             <p style="margin-top: 0.5rem;">
+                <a href="{{ route('over-ons') }}">Over ons</a> ·
                 <a href="{{ route('privacy') }}">Privacy</a> ·
                 <a href="{{ route('leveringsvoorwaarden') }}">Leveringsvoorwaarden</a>
             </p>

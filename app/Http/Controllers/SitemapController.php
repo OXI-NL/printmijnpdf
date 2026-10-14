@@ -25,6 +25,13 @@ class SitemapController extends Controller
             'priority' => '1.0',
         ]];
 
+        $urls[] = [
+            'loc' => route('over-ons'),
+            'lastmod' => $this->lastModified([resource_path('views/legal/over-ons.blade.php')]),
+            'changefreq' => 'yearly',
+            'priority' => '0.5',
+        ];
+
         foreach (LandingPageController::PAGES as [$route]) {
             $urls[] = [
                 'loc' => route($route),
