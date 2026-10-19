@@ -59,14 +59,13 @@ class AdminController extends Controller
         try {
             $impositionService = new BookletImpositionService();
 
-            // Check of impositie bestaat, zo niet: maak aan
-            if (!$impositionService->hasImposition($order)) {
-                $result = $impositionService->createImposition($order);
-                if (!$result['success']) {
-                    return redirect()->back()->with('error', 'Impositie kon niet worden aangemaakt: ' . $result['message']);
-                }
-                $order->refresh();
+            // Altijd opnieuw maken, zodat een oude inslag nooit verouderde opmaak (zoals ontbrekende snijtekens) heeft
+            $impositionService->deleteImposition($order);
+            $result = $impositionService->createImposition($order);
+            if (!$result['success']) {
+                return redirect()->back()->with('error', 'Impositie kon niet worden aangemaakt: ' . $result['message']);
             }
+            $order->refresh();
 
             $imposedPath = $impositionService->getImposedPath($order);
 

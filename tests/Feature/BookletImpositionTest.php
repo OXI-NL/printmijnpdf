@@ -164,6 +164,30 @@ class BookletImpositionTest extends TestCase
         Storage::disk('local')->assertExists('pdfs/imposed/boekje_imposed.pdf');
     }
 
+    public function test_inslag_knop_maakt_altijd_een_nieuwe_inslag(): void
+    {
+        Storage::disk('local')->put('pdfs/boekje.pdf', file_get_contents($this->maakPdf(8)));
+        Storage::disk('local')->put('pdfs/imposed/boekje_imposed.pdf', 'oude inslag zonder snijtekens');
+
+        Order::create([
+            'order_number' => 'PMP-OUDEINSLAG', 'status' => 'paid',
+            'pdf_original_name' => 'boekje.pdf', 'pdf_stored_name' => 'boekje.pdf', 'pdf_path' => 'pdfs/boekje.pdf',
+            'pdf_imposed_path' => 'pdfs/imposed/boekje_imposed.pdf',
+            'page_count' => 8, 'format' => 'A4', 'binding_type' => 'booklet', 'print_side' => 'double', 'quantity' => 1,
+            'price_startup' => 0, 'price_pages' => 0, 'price_binding' => 0, 'price_shipping' => 0, 'price_total' => 0,
+            'customer_name' => 'Test', 'customer_email' => 'test@example.com',
+            'address_street' => 'Straat', 'address_number' => '1', 'address_postcode' => '1234AB', 'address_city' => 'Delft',
+            'delivery_type' => 'shipping',
+        ]);
+
+        $this->withSession(['admin_authenticated' => true])
+            ->get('/admin/orders/PMP-OUDEINSLAG/imposed')
+            ->assertOk();
+
+        $pdf = Storage::disk('local')->get('pdfs/imposed/boekje_imposed.pdf');
+        $this->assertStringStartsWith('%PDF', $pdf, 'de opgeslagen oude inslag is vervangen');
+    }
+
     public function test_onleesbare_pdf_geeft_nette_foutmelding(): void
     {
         Storage::disk('local')->put('pdfs/kapot.pdf', 'dit is geen pdf');
