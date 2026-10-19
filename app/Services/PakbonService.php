@@ -16,10 +16,16 @@ class PakbonService
         $pdf->AddPage();
         $pdf->SetMargins(20, 20, 20);
 
-        // Logo/Header
+        // Logo: beeldmerk + woordmerk "Print<Mijn>PDF", zoals in de siteheader
+        $logoHeight = 14;
+        $pdf->Image(public_path('PMP_beeldmerk.png'), 20, 20, 0, $logoHeight);
+        $pdf->SetXY(20 + $logoHeight * 337 / 392 + 3, 20);
         $pdf->SetFont('Arial', 'B', 24);
-        $pdf->SetTextColor(230, 57, 70);
-        $pdf->Cell(0, 15, 'PrintMijnPDF', 0, 1, 'L');
+        foreach ([['Print', [26, 26, 46]], ['Mijn', [214, 52, 71]], ['PDF', [26, 26, 46]]] as [$part, $rgb]) {
+            $pdf->SetTextColor(...$rgb);
+            $pdf->Cell($pdf->GetStringWidth($part), $logoHeight, $part, 0, 0, 'L');
+        }
+        $pdf->SetXY(20, 20 + $logoHeight + 2);
 
         $pdf->SetFont('Arial', '', 10);
         $pdf->SetTextColor(100, 100, 100);
