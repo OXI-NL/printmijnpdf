@@ -6,6 +6,7 @@ use App\Mail\OrderShipped;
 use App\Models\Order;
 use App\Services\InvoiceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /** KvK en BTW-id van NIVO staan op factuur, site en klantmail */
@@ -64,5 +65,29 @@ class BedrijfsgegevensTest extends TestCase
         $html = (new OrderShipped($this->order()))->render();
         $this->assertStringContainsString(self::KVK, $html);
         $this->assertStringContainsString(self::BTW, $html);
+    }
+
+    public function test_command_zet_echte_gegevens_op_oude_facturen(): void
+    {
+        Storage::fake('local');
+        $invoice = InvoiceService::createForOrder($this->order());
+        $invoice->update(['kvk_number' => '12345678', 'btw_id' => 'NL123456789B01', 'company_address' => 'Straatnaam 1', 'company_city' => 'Amsterdam']);
+        Storage::disk('local')->put($invoice->pdf_path, 'oude pdf');
+
+        $this->artisan('invoices:refresh-company-data', ['--dry-run' => true])->assertSuccessful();
+        $this->assertSame('12345678', $invoice->fresh()->kvk_number);
+
+        $this->artisan('invoices:refresh-company-data')
+            ->expectsOutputToContain('1 factuur/facturen bijgewerkt')
+            ->assertSuccessful();
+
+        $invoice->refresh();
+        $this->assertSame(self::KVK, $invoice->kvk_number);
+        $this->assertSame(self::BTW, $invoice->btw_id);
+        $this->assertSame('Delfgauw', $invoice->company_city);
+        $this->assertStringStartsWith('%PDF', Storage::disk('local')->get($invoice->pdf_path));
+
+        // Tweede keer: niets meer te doen
+        $this->artisan('invoices:refresh-company-data')->expectsOutputToContain('0 factuur/facturen bijgewerkt');
     }
 }
