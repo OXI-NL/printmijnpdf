@@ -6,7 +6,7 @@
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; padding: 2rem;">
     <div style="max-width: 560px; margin: 0 auto; background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
         <div style="text-align: center; margin-bottom: 1.5rem;">
-            <span style="color: #dc2626; font-weight: 700; font-size: 20px;">🖨️ PrintMijnPDF</span>
+            <img src="{{ url('PMP_beeldmerk.png') }}" alt="" width="19" height="22" style="border: 0; height: 22px; width: auto; vertical-align: middle; margin-right: 6px;"><span style="color: #dc2626; font-weight: 700; font-size: 20px; vertical-align: middle;">PrintMijnPDF</span>
         </div>
 
         @if($isCustomerCopy)

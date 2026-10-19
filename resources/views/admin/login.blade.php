@@ -6,8 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Admin Login | PrintMijnPDF</title>
     <meta name="robots" content="noindex, nofollow">
-    <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -36,22 +35,8 @@
             text-align: center;
             margin-bottom: 2rem;
         }
-        .logo-icon {
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, #e63946 0%, #d62839 100%);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1rem;
-            box-shadow: 0 8px 24px rgba(230, 57, 70, 0.3);
-        }
-        .logo-icon svg {
-            width: 32px;
-            height: 32px;
-            color: white;
-        }
+        .logo-icon { height: 64px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+        .logo-icon img { display: block; height: 100%; width: auto; }
         .logo-text {
             font-size: 24px;
             font-weight: 700;
@@ -177,14 +162,7 @@
     <div class="login-container">
         <div class="login-card">
             <div class="logo">
-                <div class="logo-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="12" y1="18" x2="12" y2="12"></line>
-                        <line x1="9" y1="15" x2="15" y2="15"></line>
-                    </svg>
-                </div>
+                <div class="logo-icon"><img src="/PMP_beeldmerk.png" alt="" width="55" height="64"></div>
                 <div class="logo-text">Print<span>Mijn</span>PDF</div>
             </div>
 

@@ -34,8 +34,7 @@
     <meta name="twitter:description" content="Upload je PDF → professioneel geprint boekje, binnen 1 werkdag verzonden. Full colour drukwerkkwaliteit.">
     <meta name="twitter:image" content="https://printmijnpdf.nl/og-image.jpg">
 
-    <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon.png">
     <link rel="canonical" href="https://printmijnpdf.nl/">
 
     <!-- Google Analytics 4 -->
@@ -436,15 +435,9 @@
             text-decoration: none;
         }
         
-        .logo-icon {
-            width: 40px; height: 40px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 12px rgba(230, 57, 70, 0.25);
-        }
+        .logo-icon { height: 40px; display: flex; align-items: center; justify-content: center; }
         
-        .logo-icon svg { width: 22px; height: 22px; color: white; }
+        .logo-icon img { display: block; height: 100%; width: auto; }
         .logo-text { font-size: 20px; font-weight: 700; color: var(--text); }
         .logo-text span { color: var(--primary); }
         
@@ -1690,12 +1683,7 @@
     <!-- Header -->
     <header class="header">
         <a href="/" class="logo">
-            <div class="logo-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                </svg>
-            </div>
+            <div class="logo-icon" aria-hidden="true"><img src="/PMP_beeldmerk.png" alt="" width="34" height="40"></div>
             <span class="logo-text">Print<span>Mijn</span>PDF</span>
         </a>
         <a href="#" class="header-link" id="openContactModal">Hulp nodig?</a>

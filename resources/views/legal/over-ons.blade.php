@@ -14,7 +14,7 @@
                 '@type' => 'Organization',
                 'name' => 'PrintMijnPDF',
                 'url' => url('/'),
-                'logo' => url('favicon.png'),
+                'logo' => url('PMP_beeldmerk.png'),
                 'email' => 'info@printmijnpdf.nl',
                 'telephone' => '+31152192525',
                 'address' => [

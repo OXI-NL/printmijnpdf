@@ -22,7 +22,7 @@
                             <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                                 <tr>
                                     <td bgcolor="#ffffff" style="background: white; width: 50px; height: 50px; border-radius: 12px; text-align: center; vertical-align: middle;">
-                                        <span style="color: #e63946; font-size: 24px; font-weight: bold;">P</span>
+                                        <img src="{{ url('PMP_beeldmerk.png') }}" alt="PrintMijnPDF" width="31" height="36" style="display: block; margin: 0 auto; border: 0; height: 36px; width: auto;">
                                     </td>
                                     <td style="padding-left: 12px;">
                                         <span style="color: white; font-size: 22px; font-weight: 600; letter-spacing: -0.5px;">Print<span style="font-weight: 700;">Mijn</span>PDF</span>

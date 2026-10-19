@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bestelling bevestigd - PrintMijnPDF.nl</title>
-    <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -19,14 +18,8 @@
         }
         .container { max-width: 540px; margin: 0 auto; padding: 2.5rem 1.5rem; }
         .logo { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 2rem; }
-        .logo-icon {
-            width: 48px; height: 48px;
-            background: linear-gradient(135deg, #e63946 0%, #d62839 100%);
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 12px rgba(230, 57, 70, 0.3);
-        }
-        .logo-icon svg { width: 28px; height: 28px; color: white; }
+        .logo-icon { height: 48px; display: flex; align-items: center; justify-content: center; }
+        .logo-icon img { display: block; height: 100%; width: auto; }
         .logo-text { font-size: 26px; font-weight: 700; color: #1a1a2e; }
         .logo-text span { color: #e63946; }
         .card { background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06); text-align: center; }
@@ -103,14 +96,7 @@
 <body>
     <div class="container">
         <div class="logo">
-            <div class="logo-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="12" y1="18" x2="12" y2="12"></line>
-                    <line x1="9" y1="15" x2="15" y2="15"></line>
-                </svg>
-            </div>
+            <div class="logo-icon"><img src="/PMP_beeldmerk.png" alt="" width="41" height="48"></div>
             <div class="logo-text">Print<span>Mijn</span>PDF</div>
         </div>
 
