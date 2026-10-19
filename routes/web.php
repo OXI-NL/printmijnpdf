@@ -35,6 +35,11 @@ Route::view('/over-ons', 'legal.over-ons')->name('over-ons');
 Route::view('/privacy', 'legal.privacy')->name('privacy');
 Route::view('/leveringsvoorwaarden', 'legal.leveringsvoorwaarden')->name('leveringsvoorwaarden');
 
+// Reviewlink voor de QR-code op het kaartje in elk pakket. Tijdelijke 302,
+// zodat gedrukte kaartjes blijven werken als de Google-link ooit verandert.
+Route::get('/review', fn () => redirect()->away(config('seo.google_review'), 302)
+    ->header('X-Robots-Tag', 'noindex'))->name('review');
+
 // SEO Landingspagina's
 Route::prefix('/')->group(function () {
     Route::get('pdf-laten-printen', [LandingPageController::class, 'pdfLatenPrinten'])->name('landing.pdf');
