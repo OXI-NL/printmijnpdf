@@ -119,7 +119,8 @@
                             </p>
                             <a href="mailto:info@printmijnpdf.nl" style="color: #e63946; font-size: 14px; font-weight: 600; text-decoration: none;">info@printmijnpdf.nl</a>
                             <p style="color: #475569; font-size: 12px; margin: 20px 0 0;">
-                                &copy; {{ date('Y') }} PrintMijnPDF.nl &middot; Alle rechten voorbehouden
+                                &copy; {{ date('Y') }} PrintMijnPDF.nl &middot; Alle rechten voorbehouden<br>
+                                NIVO Druk & Multimedia B.V. · KvK {{ config('invoice.kvk_number') }} · BTW {{ config('invoice.btw_id') }}
                             </p>
                         </td>
                     </tr>

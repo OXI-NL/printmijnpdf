@@ -119,7 +119,8 @@
                             <span style="color: #94a3b8; font-size: 13px;"> · </span>
                             <a href="tel:0152192525" style="color: #e63946; font-size: 14px; font-weight: 600; text-decoration: none;">015-219 2525</a>
                             <p style="color: #475569; font-size: 12px; margin: 20px 0 0;">
-                                © {{ date('Y') }} PrintMijnPDF.nl · Alle rechten voorbehouden
+                                © {{ date('Y') }} PrintMijnPDF.nl · Alle rechten voorbehouden<br>
+                                NIVO Druk & Multimedia B.V. · KvK {{ config('invoice.kvk_number') }} · BTW {{ config('invoice.btw_id') }}
                             </p>
                         </td>
                     </tr>

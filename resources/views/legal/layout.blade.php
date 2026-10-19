@@ -53,7 +53,7 @@
     <footer>
         <div class="container">
             <p>
-                <a href="{{ url('/') }}">PrintMijnPDF</a> · Onderdeel van NIVO Druk & Multimedia B.V.<br>
+                <a href="{{ url('/') }}">PrintMijnPDF</a> · Onderdeel van NIVO Druk & Multimedia B.V. · KvK {{ config('invoice.kvk_number') }} · BTW {{ config('invoice.btw_id') }}<br>
                 <a href="{{ route('over-ons') }}">Over ons</a> · <a href="{{ route('privacy') }}">Privacy</a> · <a href="{{ route('leveringsvoorwaarden') }}">Leveringsvoorwaarden</a> ·
                 <a href="mailto:info@printmijnpdf.nl">info@printmijnpdf.nl</a> · <a href="tel:0152192525">015-219 2525</a>
             </p>

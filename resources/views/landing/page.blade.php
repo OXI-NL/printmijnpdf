@@ -630,6 +630,7 @@
             <p>
                 <a href="{{ url('/') }}">PrintMijnPDF</a> ·
                 Onderdeel van <a href="https://nivo.com" target="_blank" rel="noopener">NIVO Druk & Multimedia B.V.</a>
+                · KvK {{ config('invoice.kvk_number') }} · BTW {{ config('invoice.btw_id') }}
             </p>
             <p style="margin-top: 0.5rem;">
                 <a href="mailto:info@printmijnpdf.nl">info@printmijnpdf.nl</a> ·

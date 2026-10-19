@@ -29,6 +29,8 @@
                     'name' => 'NIVO Druk & Multimedia B.V.',
                     'url' => 'https://nivo.com',
                     'foundingDate' => '1980',
+                    'vatID' => config('invoice.btw_id'),
+                    'identifier' => ['@type' => 'PropertyValue', 'propertyID' => 'KvK', 'value' => config('invoice.kvk_number')],
                 ],
                 'sameAs' => config('seo.same_as', []),
             ],
@@ -61,6 +63,7 @@
     <h2>Contact</h2>
     <p>NIVO Druk & Multimedia B.V.<br>
         Exportweg 11, 2645 ED Delfgauw<br>
+        KvK {{ config('invoice.kvk_number') }} · BTW-id {{ config('invoice.btw_id') }}<br>
         <a href="mailto:info@printmijnpdf.nl">info@printmijnpdf.nl</a> · <a href="tel:0152192525">015-219 2525</a><br>
         <a href="https://nivo.com" target="_blank" rel="noopener">nivo.com</a></p>
 

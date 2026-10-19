@@ -230,7 +230,13 @@
         "parentOrganization": {
             "@type": "Organization",
             "name": "NIVO Druk & Multimedia B.V.",
-            "url": "https://nivo.com"
+            "url": "https://nivo.com",
+            "vatID": "{{ config('invoice.btw_id') }}",
+            "identifier": {
+                "@type": "PropertyValue",
+                "propertyID": "KvK",
+                "value": "{{ config('invoice.kvk_number') }}"
+            }
         }
     }
     </script>
@@ -2323,6 +2329,7 @@
 
         <div class="footer-bottom">
             © 2026 PrintMijnPDF.nl · Onderdeel van NIVO Druk & Multimedia B.V.<br>
+            KvK {{ config('invoice.kvk_number') }} · BTW {{ config('invoice.btw_id') }}<br>
             <a href="{{ route('over-ons') }}">Over ons</a> · <a href="{{ route('privacy') }}">Privacy</a> · <a href="{{ route('leveringsvoorwaarden') }}">Leveringsvoorwaarden</a>
         </div>
     </footer>

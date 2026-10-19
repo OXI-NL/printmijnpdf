@@ -314,7 +314,7 @@ class InvoiceService
 
         $pdf->SetFont('Arial', '', 7);
         $pdf->SetTextColor(120, 120, 120);
-        $pdf->Cell(0, 3.5, $invoice->company_name . '  |  KvK: ' . $invoice->kvk_number . '  |  BTW-id: ' . $invoice->btw_id . (config('invoice.iban') ? '  |  IBAN: ' . config('invoice.iban') : ''), 0, 1, 'C');
+        $pdf->Cell(0, 3.5, $invoice->company_name . ' is een handelsnaam van ' . config('invoice.legal_name') . '  |  KvK: ' . $invoice->kvk_number . '  |  BTW-id: ' . $invoice->btw_id . (config('invoice.iban') ? '  |  IBAN: ' . config('invoice.iban') : ''), 0, 1, 'C');
         $pdf->Cell(0, 3.5, 'Alle prijzen zijn inclusief 21% BTW. Betaling is reeds voldaan.', 0, 1, 'C');
 
         return $pdf->Output('S');
