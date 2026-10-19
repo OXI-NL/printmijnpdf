@@ -19,6 +19,10 @@ class BookletImpositionService
         'A5' => ['name' => 'SRA4', 'width' => 907.09, 'height' => 637.80],
     ];
 
+    /** Snijtekens: afstand tot het snijkader en lengte, in mm. */
+    public const CROP_MARK_OFFSET_MM = 3;
+    public const CROP_MARK_LENGTH_MM = 7;
+
     /**
      * Maak impositie voor een order
      * 
@@ -121,12 +125,11 @@ class BookletImpositionService
             $pdf->AddPage('L', [$sheet['height'], $sheet['width']]);
 
             [$left, $right] = $side;
-            if ($left <= $pageCount) {
-                $this->placePage($pdf, $left, $sheet, true, $bleedPt);
-            }
-            if ($right <= $pageCount) {
-                $this->placePage($pdf, $right, $sheet, false, $bleedPt);
-            }
+            $trims = [
+                'left' => $left <= $pageCount ? $this->placePage($pdf, $left, $sheet, true, $bleedPt) : null,
+                'right' => $right <= $pageCount ? $this->placePage($pdf, $right, $sheet, false, $bleedPt) : null,
+            ];
+            $this->drawCropMarks($pdf, $sheet, $trims);
         }
 
         if ($outputPath !== null) {
@@ -162,8 +165,10 @@ class BookletImpositionService
      * Plaats één pagina op 100% met de snijkant tegen de rug, verticaal
      * gecentreerd. Afloop blijft aan de buitenkanten staan; aan de rugkant
      * wordt afgeknipt zodat de pagina's elkaar niet overlappen.
+     *
+     * @return array{x: float, y: float, width: float, height: float} Snijkader op het vel (oorsprong linksonder)
      */
-    protected function placePage(Fpdi $pdf, int $pageNumber, array $sheet, bool $isLeft, float $bleedPt): void
+    protected function placePage(Fpdi $pdf, int $pageNumber, array $sheet, bool $isLeft, float $bleedPt): array
     {
         $half = $sheet['width'] / 2;
 
@@ -188,6 +193,53 @@ class BookletImpositionService
         $pdf->startClip($isLeft ? 0 : $half, 0, $half, $sheet['height']);
         $pdf->useTemplate($template, $x, $topDown, $size['width'] * $scale, $height);
         $pdf->endClip();
+
+        return ['x' => $trimX, 'y' => $trimY, 'width' => $trimWidth, 'height' => $trimHeight];
+    }
+
+    /**
+     * Snijtekens op de hoeken van het snijkader, op CROP_MARK_OFFSET_MM ervan
+     * af: horizontaal en verticaal aan de buitenkanten, verticaal (vouwlijn)
+     * boven en onder de rug. Een lege helft (aanvulpagina) krijgt de maat van
+     * de pagina ernaast, gespiegeld in de rug.
+     *
+     * @param array{left: ?array, right: ?array} $trims Snijkaders uit placePage()
+     */
+    protected function drawCropMarks(Fpdi $pdf, array $sheet, array $trims): void
+    {
+        $half = $sheet['width'] / 2;
+        $trims['left'] ??= $trims['right'] === null ? null : ['x' => $half - $trims['right']['width']] + $trims['right'];
+        $trims['right'] ??= $trims['left'] === null ? null : ['x' => $half] + $trims['left'];
+
+        $offset = self::CROP_MARK_OFFSET_MM * 72 / 25.4;
+        $length = self::CROP_MARK_LENGTH_MM * 72 / 25.4;
+
+        $pdf->SetDrawColor(0);
+        $pdf->SetLineWidth(0.25);
+
+        // FPDF tekent van boven naar beneden; $sheet['height'] - y zet om
+        $line = fn (float $x1, float $y1, float $x2, float $y2) =>
+            $pdf->Line($x1, $sheet['height'] - $y1, $x2, $sheet['height'] - $y2);
+
+        foreach ($trims as $side => $trim) {
+            if ($trim === null) {
+                continue;
+            }
+
+            $outerX = $side === 'left' ? $trim['x'] : $trim['x'] + $trim['width'];
+            $dir = $side === 'left' ? -1 : 1;
+            $top = $trim['y'] + $trim['height'];
+            $bottom = $trim['y'];
+
+            foreach ([$bottom, $top] as $y) {
+                $line($outerX + $dir * $offset, $y, $outerX + $dir * ($offset + $length), $y);
+            }
+            // Vouwlijn boven en onder de rug één keer, bij de linkerpagina
+            foreach ($side === 'left' ? [$outerX, $half] : [$outerX] as $x) {
+                $line($x, $top + $offset, $x, $top + $offset + $length);
+                $line($x, $bottom - $offset, $x, $bottom - $offset - $length);
+            }
+        }
     }
 
     /**

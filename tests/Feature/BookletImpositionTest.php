@@ -104,6 +104,29 @@ class BookletImpositionTest extends TestCase
         $this->assertStringContainsString('re W n', $reader->getPage(1)->getContentStream(), 'afloop aan de rugkant wordt afgeknipt');
     }
 
+    public function test_snijtekens_op_3_mm_van_het_snijkader_en_7_mm_lang(): void
+    {
+        $reader = $this->lees((new BookletImpositionService)->impose($this->maakPdf(8), 'A4'));
+        $content = $reader->getPage(1)->getContentStream();
+
+        preg_match_all('/([\d.]+) ([\d.]+) m ([\d.]+) ([\d.]+) l S/', $content, $m, PREG_SET_ORDER);
+        $this->assertCount(10, $m, '4 hoeken × 2 tekens + vouwlijn boven en onder de rug');
+
+        $mm = 72 / 25.4;
+        $spine = 1275.59 / 2;
+        $trimLeft = $spine - 595.28;
+        $trimTop = (907.09 + 841.89) / 2;
+
+        // FPDF schrijft y van onder; de horizontale linksboven loopt van 3 mm tot 10 mm links van het snijkader
+        $linksboven = array_values(array_filter($m, fn ($l) => abs((float) $l[2] - $trimTop) < 0.05 && (float) $l[1] < $trimLeft));
+        $this->assertCount(1, $linksboven);
+        $this->assertEqualsWithDelta($trimLeft - 3 * $mm, (float) $linksboven[0][1], 0.05);
+        $this->assertEqualsWithDelta($trimLeft - 10 * $mm, (float) $linksboven[0][3], 0.05);
+
+        $rug = array_filter($m, fn ($l) => abs((float) $l[1] - $spine) < 0.05 && abs((float) $l[3] - $spine) < 0.05);
+        $this->assertCount(2, $rug, 'vouwlijn boven en onder de rug');
+    }
+
     public function test_pdf_met_gecomprimeerde_xref_wordt_verwerkt(): void
     {
         // PDF 1.5 met xref stream, PNG-predictor en object streams: weigert de gratis FPDI-parser
