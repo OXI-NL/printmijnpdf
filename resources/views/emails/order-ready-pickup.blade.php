@@ -21,8 +21,8 @@
                         <td bgcolor="#e63946" style="background: #e63946; background: linear-gradient(135deg, #e63946 0%, #d62839 100%); padding: 35px 30px; text-align: center;">
                             <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                                 <tr>
-                                    <td bgcolor="#ffffff" style="background: white; width: 50px; height: 50px; border-radius: 12px; text-align: center; vertical-align: middle;">
-                                        <img src="{{ url('PMP_beeldmerk.png') }}" alt="PrintMijnPDF" width="31" height="36" style="display: block; margin: 0 auto; border: 0; height: 36px; width: auto;">
+                                    <td style="vertical-align: middle;">
+                                        <img src="{{ url('PMP_beeldmerk_wit.png') }}" alt="PrintMijnPDF" width="38" height="44" style="display: block; border: 0; height: 44px; width: auto;">
                                     </td>
                                     <td style="padding-left: 12px;">
                                         <span style="color: white; font-size: 22px; font-weight: 600; letter-spacing: -0.5px;">Print<span style="font-weight: 700;">Mijn</span>PDF</span>
@@ -36,7 +36,7 @@
                     <!-- Groene afhalen banner -->
                     <tr>
                         <td bgcolor="#0369a1" style="background: #0369a1; padding: 14px 30px; text-align: center;">
-                            <span style="color: white; font-size: 14px; font-weight: 500;">🏪 Klaar om af te halen</span>
+                            <span style="color: white; font-size: 15px; font-weight: 600;">🏪 Klaar om af te halen · ma t/m vr 17:00 – 17:30</span>
                         </td>
                     </tr>
 
@@ -48,8 +48,19 @@
                             </p>
 
                             <p style="color: #64748b; font-size: 15px; margin: 0 0 28px; line-height: 1.7;">
-                                Je bestelling is klaar en kan worden afgehaald. Je bent welkom op het onderstaande adres tijdens de afhaaltijden.
+                                Je bestelling is klaar en kan worden afgehaald. Let op: afhalen kan alleen <strong style="color: #1a1a2e;">maandag t/m vrijdag tussen 17:00 en 17:30</strong>.
                             </p>
+
+                            <!-- Afhaaltijd box -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#166534" style="background: #166534; border-radius: 14px; margin-bottom: 25px;">
+                                <tr>
+                                    <td style="padding: 24px; text-align: center;">
+                                        <p style="color: #bbf7d0; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 8px; font-weight: 700;">⏰ Afhaaltijd</p>
+                                        <p style="color: #ffffff; font-size: 26px; font-weight: 700; margin: 0 0 6px;">Ma t/m vr: 17:00 – 17:30</p>
+                                        <p style="color: #dcfce7; font-size: 14px; margin: 0;">Buiten deze tijden is er niemand aanwezig om je bestelling mee te geven.</p>
+                                    </td>
+                                </tr>
+                            </table>
 
                             <!-- Afhaaladres box -->
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 14px; margin-bottom: 25px; border: 1px solid #93c5fd;">
@@ -61,16 +72,6 @@
                                             <span style="font-weight: 400; color: #475569;">Exportweg 11<br>
                                             2645 ED Delfgauw</span>
                                         </p>
-                                    </td>
-                                </tr>
-                            </table>
-
-                            <!-- Afhaaltijd box -->
-                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #f0fdf4; border-radius: 14px; margin-bottom: 25px; border: 1px solid #86efac;">
-                                <tr>
-                                    <td style="padding: 22px; text-align: center;">
-                                        <p style="color: #166534; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 8px; font-weight: 600;">Afhaaltijd</p>
-                                        <p style="color: #166534; font-size: 20px; font-weight: 700; margin: 0;">Ma t/m vr: 17:00 – 17:30</p>
                                     </td>
                                 </tr>
                             </table>
@@ -98,7 +99,7 @@
                                         <p style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 10px; font-weight: 600;">Inhoud</p>
                                         <p style="color: #1e293b; font-size: 14px; margin: 0; line-height: 1.6;">
                                             <strong>{{ $order->pdf_original_name }}</strong><br>
-                                            <span style="color: #64748b;">{{ $order->format_label }} · {{ $order->pages_label }} pagina's · @if($order->binding_type === 'booklet')Geniet boekje@else Losbladig ({{ $order->print_side === 'double' ? 'dubbelzijdig' : 'enkelzijdig' }})@endif</span>
+                                            <span style="color: #64748b;">{{ $order->format_label }} · {{ $order->pages_label }} pagina's · @if($order->binding_type === 'booklet')Geniet boekje @else Losbladig ({{ $order->print_side === 'double' ? 'dubbelzijdig' : 'enkelzijdig' }})@endif</span>
                                         </p>
                                     </td>
                                 </tr>

@@ -174,8 +174,12 @@ class AdminController extends Controller
             }
         }
 
-        $statusLabel = $isPickup ? 'Klaar voor afhalen' : $request->input('status');
-        return redirect()->back()->with('success', 'Status bijgewerkt naar: ' . $statusLabel);
+        if ($shouldSendEmail) {
+            $mail = $isPickup ? 'Afhaalmail' : 'Verzendmail';
+            return redirect()->back()->with('success', "{$orderNumber}: {$mail} verstuurd naar {$order->customer_email}.");
+        }
+
+        return redirect()->back()->with('success', 'Status bijgewerkt naar: ' . $request->input('status'));
     }
 
     /**

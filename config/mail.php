@@ -74,4 +74,7 @@ return [
 
     'admin_email' => env('ADMIN_EMAIL', 'info@printmijnpdf.nl'),
 
+    // Krijgt een kopie (cc) van elke afhaalmail
+    'pickup_cc' => env('PICKUP_CC_EMAIL', 'elco@nivo.com'),
+
 ];

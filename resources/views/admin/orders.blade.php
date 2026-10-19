@@ -279,6 +279,9 @@
         @if(session('error'))
             <div class="alert alert-error">{{ session('error') }}</div>
         @endif
+        @if($errors->any())
+            <div class="alert alert-error">{{ $errors->first() }}</div>
+        @endif
 
         <div class="stats">
             <div class="stat-card highlight">
@@ -343,8 +346,11 @@
                     </button>
                     <button type="button" class="btn btn-secondary" onclick="clearSelection()">Annuleren</button>
                 </div>
+                {{-- Bewust leeg: de checkboxes horen er via form="bulkDeleteForm" bij. Een
+                     formulier om de tabel heen zou de formulieren in de rijen opslokken. --}}
                 <form id="bulkDeleteForm" method="POST" action="{{ route('admin.orders.bulk-delete') }}">
                     @csrf
+                </form>
                 <table>
                     <thead>
                         <tr>
@@ -362,7 +368,7 @@
                         @foreach($orders as $order)
                             <tr>
                                 <td class="checkbox-cell">
-                                    <input type="checkbox" name="order_numbers[]" value="{{ $order->order_number }}" class="order-checkbox" onchange="updateBulkBar()">
+                                    <input type="checkbox" form="bulkDeleteForm" name="order_numbers[]" value="{{ $order->order_number }}" class="order-checkbox" onchange="updateBulkBar()">
                                 </td>
                                 <td>
                                     <span class="order-number">{{ $order->order_number }}</span>
@@ -470,7 +476,7 @@
                                     @endif
                                     @if($order->status === 'paid')
                                         @if($order->delivery_type === 'pickup')
-                                            <form method="POST" action="/admin/orders/{{ $order->order_number }}/ship" style="display:inline;">
+                                            <form method="POST" action="/admin/orders/{{ $order->order_number }}/ship" style="display:inline;" onsubmit="return confirm({{ \Illuminate\Support\Js::from($order->customer_name . ' krijgt een afhaalmail op ' . $order->customer_email . '. Doorgaan?') }})">
                                                 @csrf
                                                 <input type="hidden" name="status" value="shipped">
                                                 <input type="hidden" name="pickup" value="1">
@@ -499,8 +505,6 @@
                         @endforeach
                     </tbody>
                 </table>
-
-                </form>
 
                 <form id="singleDeleteForm" method="POST" style="display:none;">
                     @csrf

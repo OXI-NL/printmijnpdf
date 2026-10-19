@@ -24,6 +24,7 @@ class OrderReadyForPickup extends Mailable
     {
         return new Envelope(
             subject: '🏪 Je bestelling ligt klaar! - ' . $this->order->order_number,
+            cc: [config('mail.pickup_cc')],
         );
     }
 

@@ -27,8 +27,8 @@
                             <!-- Logo -->
                             <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 0 auto;">
                                 <tr>
-                                    <td bgcolor="#ffffff" style="background: white; width: 50px; height: 50px; border-radius: 12px; text-align: center; vertical-align: middle;">
-                                        <img src="{{ url('PMP_beeldmerk.png') }}" alt="PrintMijnPDF" width="31" height="36" style="display: block; margin: 0 auto; border: 0; height: 36px; width: auto;">
+                                    <td style="vertical-align: middle;">
+                                        <img src="{{ url('PMP_beeldmerk_wit.png') }}" alt="PrintMijnPDF" width="38" height="44" style="display: block; border: 0; height: 44px; width: auto;">
                                     </td>
                                     <td style="padding-left: 12px;">
                                         <span style="color: white; font-size: 22px; font-weight: 600; letter-spacing: -0.5px;">Print<span style="font-weight: 700;">Mijn</span>PDF</span>
@@ -113,7 +113,7 @@
                                         <p style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 10px; font-weight: 600;">Inhoud</p>
                                         <p style="color: #1e293b; font-size: 14px; margin: 0; line-height: 1.6;">
                                             <strong>{{ $order->pdf_original_name }}</strong><br>
-                                            <span style="color: #64748b;">{{ $order->format_label }} · {{ $order->pages_label }} pagina's · @if($order->binding_type === 'booklet')Geniet boekje@else Losbladig ({{ $order->print_side === 'double' ? 'dubbelzijdig' : 'enkelzijdig' }})@endif</span>
+                                            <span style="color: #64748b;">{{ $order->format_label }} · {{ $order->pages_label }} pagina's · @if($order->binding_type === 'booklet')Geniet boekje @else Losbladig ({{ $order->print_side === 'double' ? 'dubbelzijdig' : 'enkelzijdig' }})@endif</span>
                                         </p>
                                     </td>
                                 </tr>
