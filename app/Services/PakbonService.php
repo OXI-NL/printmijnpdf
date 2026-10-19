@@ -31,7 +31,8 @@ class PakbonService
         // Titel
         $pdf->SetFont('Arial', 'B', 18);
         $pdf->SetTextColor(0, 0, 0);
-        $pdf->Cell(0, 12, 'PAKBON / AFLEVERBON', 0, 1, 'L');
+        $isPickup = $order->delivery_type === 'pickup';
+        $pdf->Cell(0, 12, $isPickup ? 'PAKBON / AFHAALBON' : 'PAKBON / AFLEVERBON', 0, 1, 'L');
 
         // Lijn
         $pdf->SetDrawColor(230, 57, 70);
@@ -67,25 +68,43 @@ class PakbonService
 
         $pdf->Ln(10);
 
-        // Afleveradres
-        $pdf->SetFont('Arial', 'B', 12);
-        $pdf->SetFillColor(245, 245, 245);
-        $pdf->Cell(0, 8, 'AFLEVERADRES', 0, 1, 'L', true);
-        $pdf->Ln(3);
+        if ($isPickup) {
+            // Afhalen: geen afleveradres, wel duidelijk dat de klant het komt halen
+            $pdf->SetFont('Arial', 'B', 14);
+            $pdf->SetFillColor(230, 57, 70);
+            $pdf->SetTextColor(255, 255, 255);
+            $pdf->Cell(0, 12, 'WORDT AFGEHAALD - NIET VERZENDEN', 0, 1, 'C', true);
+            $pdf->SetTextColor(0, 0, 0);
+            $pdf->Ln(5);
 
-        $pdf->SetFont('Arial', 'B', 11);
-        $pdf->Cell(0, 6, $order->customer_name, 0, 1);
-        $pdf->SetFont('Arial', '', 11);
-        $pdf->Cell(0, 6, $order->address_street . ' ' . $order->address_number . ($order->address_addition ? ' ' . $order->address_addition : ''), 0, 1);
-        $pdf->Cell(0, 6, $order->address_postcode . ' ' . $order->address_city, 0, 1);
-        $pdf->Cell(0, 6, 'Nederland', 0, 1);
+            $pdf->SetFont('Arial', 'B', 12);
+            $pdf->SetFillColor(245, 245, 245);
+            $pdf->Cell(0, 8, 'AFHALER', 0, 1, 'L', true);
+            $pdf->Ln(3);
+
+            $pdf->SetFont('Arial', 'B', 11);
+            $pdf->Cell(0, 6, self::text($order->customer_name), 0, 1);
+        } else {
+            // Afleveradres
+            $pdf->SetFont('Arial', 'B', 12);
+            $pdf->SetFillColor(245, 245, 245);
+            $pdf->Cell(0, 8, 'AFLEVERADRES', 0, 1, 'L', true);
+            $pdf->Ln(3);
+
+            $pdf->SetFont('Arial', 'B', 11);
+            $pdf->Cell(0, 6, self::text($order->customer_name), 0, 1);
+            $pdf->SetFont('Arial', '', 11);
+            $pdf->Cell(0, 6, self::text($order->address_street . ' ' . $order->address_number . ($order->address_addition ? ' ' . $order->address_addition : '')), 0, 1);
+            $pdf->Cell(0, 6, self::text($order->address_postcode . ' ' . $order->address_city), 0, 1);
+            $pdf->Cell(0, 6, 'Nederland', 0, 1);
+        }
 
         $pdf->Ln(5);
         $pdf->SetFont('Arial', '', 10);
         $pdf->SetTextColor(100, 100, 100);
-        $pdf->Cell(0, 5, 'E-mail: ' . $order->customer_email, 0, 1);
+        $pdf->Cell(0, 5, self::text('E-mail: ' . $order->customer_email), 0, 1);
         if ($order->customer_phone) {
-            $pdf->Cell(0, 5, 'Telefoon: ' . $order->customer_phone, 0, 1);
+            $pdf->Cell(0, 5, self::text('Telefoon: ' . $order->customer_phone), 0, 1);
         }
 
         $pdf->Ln(10);
@@ -112,14 +131,14 @@ class PakbonService
         $pdf->SetFillColor(255, 255, 255);
 
         $filename = $order->pdf_original_name;
-        if (strlen($filename) > 45) {
-            $filename = substr($filename, 0, 42) . '...';
+        if (mb_strlen($filename) > 45) {
+            $filename = mb_substr($filename, 0, 42) . '...';
         }
 
         $quantity = $order->quantity ?? 1;
 
-        $pdf->Cell(95, 8, $filename, 1, 0, 'L');
-        $pdf->Cell(35, 8, iconv('UTF-8', 'windows-1252//TRANSLIT', $order->format_short_label), 1, 0, 'C');
+        $pdf->Cell(95, 8, self::text($filename), 1, 0, 'L');
+        $pdf->Cell(35, 8, self::text($order->format_short_label), 1, 0, 'C');
         $pdf->Cell(20, 8, $order->blank_pages > 0 ? "{$order->page_count}+{$order->blank_pages}" : $order->page_count, 1, 0, 'C');
         $pdf->Cell(20, 8, $quantity, 1, 1, 'C');
 
@@ -159,6 +178,17 @@ class PakbonService
         $pdf->Cell(0, 5, 'Deze pakbon is automatisch gegenereerd op ' . now()->format('d-m-Y H:i'), 0, 1, 'C');
 
         return $pdf->Output('S');
+    }
+
+    /**
+     * FPDF's kernfonts kennen alleen windows-1252; zet UTF-8 om zodat
+     * namen als "Aléxia" niet als "AlÃ©xia" op de pakbon komen.
+     */
+    private static function text(?string $value): string
+    {
+        $converted = @iconv('UTF-8', 'windows-1252//TRANSLIT', (string) $value);
+
+        return $converted === false ? (string) $value : $converted;
     }
 
     /**
