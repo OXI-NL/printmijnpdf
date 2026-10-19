@@ -36,7 +36,7 @@
                     <!-- Groene afhalen banner -->
                     <tr>
                         <td bgcolor="#0369a1" style="background: #0369a1; padding: 14px 30px; text-align: center;">
-                            <span style="color: white; font-size: 15px; font-weight: 600;">🏪 Klaar om af te halen · ma t/m vr 17:00 – 17:30</span>
+                            <span style="color: white; font-size: 15px; font-weight: 600;">🏪 Klaar om af te halen</span>
                         </td>
                     </tr>
 
@@ -48,7 +48,7 @@
                             </p>
 
                             <p style="color: #64748b; font-size: 15px; margin: 0 0 28px; line-height: 1.7;">
-                                Je bestelling is klaar en kan worden afgehaald. Let op: afhalen kan alleen <strong style="color: #1a1a2e;">maandag t/m vrijdag tussen 17:00 en 17:30</strong>.
+                                Je bestelling is klaar en kan worden afgehaald op het adres hieronder.
                             </p>
 
                             <!-- Afhaaltijd box -->
