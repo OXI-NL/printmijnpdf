@@ -1388,7 +1388,7 @@
         .bleed-preview-caption { font-size: 12px; color: #78716c; }
         .bleed-preview figcaption { margin-top: 10px; font-size: 13px; line-height: 1.5; text-align: center; }
         /* ===== 3D-PROEFJE ===== */
-        .proof { margin-top: 14px; padding-top: 12px; border-top: 1px solid #c6f6d5; }
+        .proof { margin: 1rem 0; }
         .proof-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; }
         .proof-title { flex: 1; font-weight: 600; color: var(--text); }
         .proof-see { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; color: var(--text); }
@@ -1976,24 +1976,6 @@
                 </div>
                 <button class="pdf-change" id="pdfChange">Wijzigen</button>
             </div>
-
-            <!-- 3D-proefje: de eigen pagina's van de klant als magazine of losse vellen -->
-            <div class="proof" id="proof" hidden>
-                <div class="proof-bar">
-                    <span class="proof-title" id="proofTitle">Zo ziet je drukwerk eruit</span>
-                    <label class="proof-see"><input type="checkbox" id="proofSee"> Doorschijnen</label>
-                </div>
-                <div class="proof-stage" id="proofStage" tabindex="0" role="img" aria-roledescription="3D-proefje" aria-label="3D-proefje van je drukwerk. Sleep of gebruik de pijltjestoetsen om het te draaien.">
-                    <div class="proof-obj" id="proofObj"></div>
-                </div>
-                <div class="proof-bar">
-                    <button type="button" class="proof-btn" id="proofPrev" aria-label="Vorige">&larr;</button>
-                    <span class="proof-label" id="proofLabel" aria-live="polite"></span>
-                    <button type="button" class="proof-btn" id="proofNext" aria-label="Volgende">&rarr;</button>
-                    <button type="button" class="proof-btn" id="proofFlip">Omdraaien</button>
-                </div>
-                <p class="proof-hint" id="proofHint">Sleep om je drukwerk rond te draaien. Met <em>Doorschijnen</em> zie je de achterkant gespiegeld door het papier heen, zo kun je controleren of voor- en achterkant goed op elkaar vallen.</p>
-            </div>
         </div>
 
         <!-- Inline Notice (for >64 pages etc) -->
@@ -2085,6 +2067,24 @@
                 <div class="sub-option" id="optSingle" data-side="single" role="button" tabindex="0" aria-pressed="false">
                     <div class="title">Enkelzijdig</div>
                 </div>
+            </div>
+
+            <!-- 3D-proefje: de eigen pagina's van de klant als magazine of losse vellen -->
+            <div class="proof" id="proof" hidden>
+                <div class="proof-bar">
+                    <span class="proof-title" id="proofTitle">Zo ziet je drukwerk eruit</span>
+                    <label class="proof-see"><input type="checkbox" id="proofSee"> Doorschijnen</label>
+                </div>
+                <div class="proof-stage" id="proofStage" tabindex="0" role="img" aria-roledescription="3D-proefje" aria-label="3D-proefje van je drukwerk. Sleep of gebruik de pijltjestoetsen om het te draaien.">
+                    <div class="proof-obj" id="proofObj"></div>
+                </div>
+                <div class="proof-bar">
+                    <button type="button" class="proof-btn" id="proofPrev" aria-label="Vorige">&larr;</button>
+                    <span class="proof-label" id="proofLabel" aria-live="polite"></span>
+                    <button type="button" class="proof-btn" id="proofNext" aria-label="Volgende">&rarr;</button>
+                    <button type="button" class="proof-btn" id="proofFlip">Omdraaien</button>
+                </div>
+                <p class="proof-hint" id="proofHint">Sleep om je drukwerk rond te draaien. Met <em>Doorschijnen</em> zie je de achterkant gespiegeld door het papier heen, zo kun je controleren of voor- en achterkant goed op elkaar vallen.</p>
             </div>
 
             <div class="quantity-section">
