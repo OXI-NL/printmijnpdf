@@ -4,12 +4,14 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Pdf\Fpdi;
-use setasign\Fpdi\PdfReader\PageBoundaries;
+use App\Services\Concerns\ImposesPages;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class BookletImpositionService
 {
+    use ImposesPages;
+
     /**
      * Drukvellen in punten, liggend: twee pagina's naast elkaar rond de rug.
      * SRA3 (450 × 320 mm) voor A4-boekjes, SRA4 (320 × 225 mm) voor A5.
@@ -24,22 +26,14 @@ class BookletImpositionService
     public const CROP_MARK_LENGTH_MM = 7;
 
     /**
-     * Maak impositie voor een order
-     * 
+     * Maak de inslag voor een order: een geniet boekje in boekvolgorde,
+     * losbladig werk als cut & stack (CutStackImpositionService).
+     *
      * @param Order $order
      * @return array ['success' => bool, 'path' => string|null, 'message' => string]
      */
     public function createImposition(Order $order): array
     {
-        // Alleen voor boekjes
-        if ($order->binding_type !== 'booklet') {
-            return [
-                'success' => false,
-                'path' => null,
-                'message' => 'Order is geen boekje'
-            ];
-        }
-
         // Check of input PDF bestaat
         $inputPath = Storage::disk('local')->path($order->pdf_path);
         if (!file_exists($inputPath)) {
@@ -57,12 +51,12 @@ class BookletImpositionService
         try {
             $bleedPt = $order->has_bleed ? (float) $order->bleed_mm * 72 / 25.4 : 0.0;
             Storage::disk('local')->makeDirectory('pdfs/imposed');
-            $this->impose(
-                $inputPath,
-                self::sheetFor($order),
-                $bleedPt,
-                Storage::disk('local')->path($relativePath)
-            );
+            $outputPath = Storage::disk('local')->path($relativePath);
+            if ($order->binding_type === 'booklet') {
+                $this->impose($inputPath, self::sheetFor($order), $bleedPt, $outputPath, $order->order_number);
+            } else {
+                (new CutStackImpositionService)->impose($inputPath, $order->print_side === 'double', $bleedPt, $outputPath, $order->order_number);
+            }
         } catch (\Throwable $e) {
             Log::error("Imposition failed for order {$order->order_number}: " . $e->getMessage());
             return [
@@ -107,29 +101,39 @@ class BookletImpositionService
      *
      * @param float $bleedPt Afloop rondom in punten, gebruikt als de PDF geen TrimBox heeft
      * @param string|null $outputPath Schrijf naar dit bestand; zonder pad komt de PDF als string terug
+     * @param string $orderNumber Komt in de opdrachtregel onder de snijtekens
      */
-    public function impose(string $inputPath, string $format, float $bleedPt = 0.0, ?string $outputPath = null): string
+    public function impose(string $inputPath, string $format, float $bleedPt = 0.0, ?string $outputPath = null, string $orderNumber = ''): string
     {
         $sheet = self::SHEETS[$format];
 
         $pdf = new Fpdi('P', 'pt');
         $pdf->SetAutoPageBreak(false);
         $pdf->SetCreator('PrintMijnPDF');
+        $pdf->SetFont('Helvetica', '', self::SLUG_FONT_SIZE);
         $pageCount = $pdf->setSourceFile($inputPath);
 
         if ($pageCount === 0) {
             throw new \RuntimeException('PDF heeft geen pagina\'s');
         }
 
-        foreach (self::sheetLayout($pageCount) as $side) {
+        $layout = self::sheetLayout($pageCount);
+
+        foreach ($layout as $i => $side) {
             $pdf->AddPage('L', [$sheet['height'], $sheet['width']]);
 
             [$left, $right] = $side;
-            $trims = [
+            $trims = self::mirrorBlankHalf($sheet, [
                 'left' => $left <= $pageCount ? $this->placePage($pdf, $left, $sheet, true, $bleedPt) : null,
                 'right' => $right <= $pageCount ? $this->placePage($pdf, $right, $sheet, false, $bleedPt) : null,
-            ];
+            ]);
             $this->drawCropMarks($pdf, $sheet, $trims);
+
+            if ($trims['left'] !== null) {
+                $this->drawSlug($pdf, $sheet['height'], $trims['left'], self::slugText(
+                    $orderNumber, 'Geniete brochure', true, intdiv($i, 2) + 1, intdiv(count($layout), 2), $i % 2 === 0
+                ));
+            }
         }
 
         if ($outputPath !== null) {
@@ -198,18 +202,31 @@ class BookletImpositionService
     }
 
     /**
-     * Snijtekens op de hoeken van het snijkader, op CROP_MARK_OFFSET_MM ervan
-     * af: horizontaal en verticaal aan de buitenkanten, verticaal (vouwlijn)
-     * boven en onder de rug. Een lege helft (aanvulpagina) krijgt de maat van
-     * de pagina ernaast, gespiegeld in de rug.
+     * Een lege helft (aanvulpagina) krijgt de maat van de pagina ernaast,
+     * gespiegeld in de rug.
      *
      * @param array{left: ?array, right: ?array} $trims Snijkaders uit placePage()
+     * @return array{left: ?array, right: ?array}
      */
-    protected function drawCropMarks(Fpdi $pdf, array $sheet, array $trims): void
+    protected static function mirrorBlankHalf(array $sheet, array $trims): array
     {
         $half = $sheet['width'] / 2;
         $trims['left'] ??= $trims['right'] === null ? null : ['x' => $half - $trims['right']['width']] + $trims['right'];
         $trims['right'] ??= $trims['left'] === null ? null : ['x' => $half] + $trims['left'];
+
+        return $trims;
+    }
+
+    /**
+     * Snijtekens op de hoeken van het snijkader, op CROP_MARK_OFFSET_MM ervan
+     * af: horizontaal en verticaal aan de buitenkanten, verticaal (vouwlijn)
+     * boven en onder de rug.
+     *
+     * @param array{left: ?array, right: ?array} $trims Snijkaders, lege helft al gespiegeld
+     */
+    protected function drawCropMarks(Fpdi $pdf, array $sheet, array $trims): void
+    {
+        $half = $sheet['width'] / 2;
 
         $offset = self::CROP_MARK_OFFSET_MM * 72 / 25.4;
         $length = self::CROP_MARK_LENGTH_MM * 72 / 25.4;
@@ -240,42 +257,6 @@ class BookletImpositionService
                 $line($x, $bottom - $offset, $x, $bottom - $offset - $length);
             }
         }
-    }
-
-    /**
-     * Importeer een pagina inclusief afloop en bepaal waar het snijkader in
-     * de template ligt (x/y vanaf linksonder, in punten).
-     *
-     * @return array{0: string, 1: array{x: float, y: float, width: float, height: float}}
-     */
-    protected function importWithTrim(Fpdi $pdf, int $pageNumber, float $bleedPt): array
-    {
-        // BleedBox valt terug op CropBox en MediaBox; snijtekens in de slug vallen zo buiten beeld
-        $template = $pdf->importPage($pageNumber, PageBoundaries::BLEED_BOX);
-        $size = $pdf->getTemplateSize($template);
-        $page = $pdf->getImportedPageInfo($pageNumber, PageBoundaries::BLEED_BOX);
-
-        // Expliciete TrimBox (niet-gedraaid): exact snijkader binnen de geïmporteerde box
-        if ($page['trim'] !== null && $page['rotation'] === 0) {
-            return [$template, [
-                'x' => $page['trim']->getLlx() - $page['box']->getLlx(),
-                'y' => $page['trim']->getLly() - $page['box']->getLly(),
-                'width' => $page['trim']->getWidth(),
-                'height' => $page['trim']->getHeight(),
-            ]];
-        }
-
-        // Geen TrimBox maar wel afloop opgegeven: snijkader ligt die afstand naar binnen
-        if ($bleedPt > 0 && $size['width'] > 2 * $bleedPt && $size['height'] > 2 * $bleedPt) {
-            return [$template, [
-                'x' => $bleedPt,
-                'y' => $bleedPt,
-                'width' => $size['width'] - 2 * $bleedPt,
-                'height' => $size['height'] - 2 * $bleedPt,
-            ]];
-        }
-
-        return [$template, ['x' => 0.0, 'y' => 0.0, 'width' => $size['width'], 'height' => $size['height']]];
     }
 
     /**

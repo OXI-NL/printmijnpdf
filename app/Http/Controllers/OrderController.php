@@ -354,8 +354,8 @@ class OrderController extends Controller
                 // gezet voordat deze webhook binnenkwam. De atomaire claim op
                 // paid_processed_at zorgt dat dit precies één keer gebeurt.
                 if ($order->status !== 'cancelled' && $this->claimPaidProcessing($order)) {
-                    // Maak impositie voor boekjes
-                    $this->createBookletImposition($order);
+                    // Maak de inslag (boekje of cut & stack)
+                    $this->createImposition($order);
 
                     // Stuur bevestigingsmail
                     $this->sendConfirmationEmail($order);
@@ -599,15 +599,10 @@ class OrderController extends Controller
     }
 
     /**
-     * Maak boekje impositie (saddle stitch) voor betaalde orders
+     * Maak de inslag voor betaalde orders: boekje (saddle stitch) of cut & stack
      */
-    protected function createBookletImposition(Order $order)
+    protected function createImposition(Order $order)
     {
-        // Alleen voor boekjes
-        if ($order->binding_type !== 'booklet') {
-            return;
-        }
-
         try {
             $impositionService = new BookletImpositionService();
             $result = $impositionService->createImposition($order);

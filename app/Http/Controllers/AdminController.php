@@ -45,16 +45,11 @@ class AdminController extends Controller
     }
 
     /**
-     * Download de geïmponeerde PDF (drukklaar voor boekje)
+     * Download de inslag (drukklaar): boekje of cut & stack
      */
     public function downloadImposedPdf(string $orderNumber)
     {
         $order = Order::where('order_number', $orderNumber)->firstOrFail();
-
-        // Check of het een boekje is
-        if ($order->binding_type !== 'booklet') {
-            return redirect()->back()->with('error', 'Impositie alleen beschikbaar voor boekjes');
-        }
 
         try {
             $impositionService = new BookletImpositionService();
@@ -90,10 +85,6 @@ class AdminController extends Controller
     public function generateImposition(string $orderNumber)
     {
         $order = Order::where('order_number', $orderNumber)->firstOrFail();
-
-        if ($order->binding_type !== 'booklet') {
-            return redirect()->back()->with('error', 'Impositie alleen beschikbaar voor boekjes');
-        }
 
         $impositionService = new BookletImpositionService();
         

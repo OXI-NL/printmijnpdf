@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Order;
 use App\Pdf\ExtendedPdfParser;
 use App\Services\BookletImpositionService;
+use App\Services\CutStackImpositionService;
 use FPDF;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -125,6 +126,58 @@ class BookletImpositionTest extends TestCase
 
         $rug = array_filter($m, fn ($l) => abs((float) $l[1] - $spine) < 0.05 && abs((float) $l[3] - $spine) < 0.05);
         $this->assertCount(2, $rug, 'vouwlijn boven en onder de rug');
+    }
+
+    public function test_opdrachtregel_4_mm_onder_het_snijkader(): void
+    {
+        $reader = $this->lees((new BookletImpositionService)->impose($this->maakPdf(8), 'A4', 0.0, null, 'PMP-261019-684E'));
+
+        $this->assertStringContainsString('(PMP-261019-684E | Geniete brochure | 4/4 | vel 1/2 voorkant) Tj', $reader->getPage(1)->getContentStream());
+        $content = $reader->getPage(4)->getContentStream();
+        $this->assertStringContainsString('(PMP-261019-684E | Geniete brochure | 4/4 | vel 2/2 achterkant) Tj', $content);
+
+        // Bovenkant van de hoofdletters (basislijn + 0,718 × 6 pt) op 4 mm onder de onderkant van de pagina
+        preg_match('/BT ([\d.]+) ([\d.]+) Td \(PMP/', $content, $m);
+        $trimBottom = (907.09 - 841.89) / 2;
+        $this->assertEqualsWithDelta($trimBottom - 4 * 72 / 25.4, (float) $m[2] + 0.718 * 6, 0.05);
+    }
+
+    public function test_losbladig_wordt_cut_and_stack(): void
+    {
+        $reader = $this->lees((new CutStackImpositionService)->impose($this->maakPdf(7), true, 0.0, null, 'PMP-LOS'));
+
+        $this->assertSame(4, $reader->getPageCount(), '7 pagina\'s = 4 bladen, 2-op → 2 vellen, voor en achter');
+        [$width, $height] = $reader->getPage(1)->getWidthAndHeight();
+        $this->assertEqualsWithDelta(1275.59, $width, 0.1, 'liggend SRA3');
+        $this->assertEqualsWithDelta(907.09, $height, 0.1);
+        $this->assertStringContainsString('(PMP-LOS | Losbladig | 4/4 | vel 2/2 achterkant) Tj', $reader->getPage(4)->getContentStream());
+
+        $enkel = $this->lees((new CutStackImpositionService)->impose($this->maakPdf(7), false, 0.0, null, 'PMP-LOS'));
+        $this->assertSame(4, $enkel->getPageCount(), '7 pagina\'s 2-op → 4 vellen');
+        $this->assertStringContainsString('(PMP-LOS | Losbladig | 4/0 | vel 1/4) Tj', $enkel->getPage(1)->getContentStream());
+    }
+
+    public function test_inslag_voor_losbladige_order(): void
+    {
+        Storage::disk('local')->put('pdfs/los.pdf', file_get_contents($this->maakPdf(5, 148, 210)));
+
+        Order::create([
+            'order_number' => 'PMP-LOSBLADIG', 'status' => 'paid',
+            'pdf_original_name' => 'los.pdf', 'pdf_stored_name' => 'los.pdf', 'pdf_path' => 'pdfs/los.pdf',
+            'page_count' => 5, 'format' => 'A5', 'binding_type' => 'loose', 'print_side' => 'single', 'quantity' => 1,
+            'price_startup' => 0, 'price_pages' => 0, 'price_binding' => 0, 'price_shipping' => 0, 'price_total' => 0,
+            'customer_name' => 'Test', 'customer_email' => 'test@example.com',
+            'address_street' => 'Straat', 'address_number' => '1', 'address_postcode' => '1234AB', 'address_city' => 'Delft',
+            'delivery_type' => 'shipping',
+        ]);
+
+        $this->withSession(['admin_authenticated' => true])
+            ->get('/admin/orders/PMP-LOSBLADIG/imposed')
+            ->assertOk();
+
+        $reader = $this->lees(Storage::disk('local')->get('pdfs/imposed/los_imposed.pdf'));
+        $this->assertSame(2, $reader->getPageCount(), '5 pagina\'s A5 4-op → 2 vellen');
+        $this->assertStringContainsString('(PMP-LOSBLADIG | Losbladig | 4/0 | vel 1/2) Tj', $reader->getPage(1)->getContentStream());
     }
 
     public function test_pdf_met_gecomprimeerde_xref_wordt_verwerkt(): void

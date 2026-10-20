@@ -426,7 +426,7 @@
                                             PDF
                                         </a>
                                     @endif
-                                    @if($order->binding_type === 'booklet' && $order->status !== 'pending' && $order->status !== 'cancelled')
+                                    @if($order->status !== 'pending' && $order->status !== 'cancelled')
                                         <a href="/admin/orders/{{ $order->order_number }}/imposed" class="btn btn-primary" title="Download inslag PDF (drukklaar)">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
