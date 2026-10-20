@@ -1387,6 +1387,37 @@
         .bleed-preview canvas { display: block; max-width: 100%; box-shadow: 0 1px 4px rgba(0,0,0,.18); background: #fff; }
         .bleed-preview-caption { font-size: 12px; color: #78716c; }
         .bleed-preview figcaption { margin-top: 10px; font-size: 13px; line-height: 1.5; text-align: center; }
+        /* ===== 3D-PROEFJE ===== */
+        .proof { margin-top: 14px; padding-top: 12px; border-top: 1px solid #c6f6d5; }
+        .proof-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; }
+        .proof-title { flex: 1; font-weight: 600; color: var(--text); }
+        .proof-see { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; color: var(--text); }
+        .proof-see input { width: 16px; height: 16px; accent-color: var(--primary); }
+        .proof-stage { position: relative; height: 300px; margin: 10px 0; perspective: 1200px; display: flex; align-items: center; justify-content: center; background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; overflow: hidden; }
+        .proof-stage:active { cursor: grabbing; }
+        .proof-stage:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+        .proof-obj { position: relative; transform-style: preserve-3d; transition: transform .6s; }
+        .proof-obj.dragging, .proof-obj.dragging .proof-leaf { transition: none; }
+        .proof-leaf { position: absolute; inset: 0; transform-style: preserve-3d; transform-origin: left center; transition: transform .8s cubic-bezier(.4,.1,.2,1); }
+        .proof-leaf.single { transform-origin: center; }
+        .proof-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: #fdfdfb; outline: 0.5px solid #b9b9b4; overflow: hidden; }
+        .proof-face.back { transform: rotateY(180deg); }
+        .proof-face img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; -webkit-user-drag: none; }
+        .proof-face img:not([src]) { visibility: hidden; }
+        .proof-face .see { opacity: 0; transform: scaleX(-1); mix-blend-mode: multiply; transition: opacity .3s; }
+        .proof-obj.see-through .proof-face .see[src] { opacity: .4; }
+        .proof-obj.booklet .proof-face::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to right, rgba(0,0,0,.22), rgba(0,0,0,.05) 8%, transparent 16%); }
+        .proof-obj.booklet .proof-face.back::after { background: linear-gradient(to left, rgba(0,0,0,.22), rgba(0,0,0,.05) 8%, transparent 16%); }
+        .proof-spine { position: absolute; left: 0; top: 0; height: 100%; transform-origin: left center; transform: rotateY(-90deg); background: #ecebe6; border-radius: 4px; outline: 0.5px solid #b9b9b4; }
+        .proof-staple { position: absolute; left: 50%; width: 2px; height: 22px; margin-left: -1px; background: #8a8a85; border-radius: 1px; }
+        .proof-staple.top { top: 22%; } .proof-staple.bottom { bottom: 22%; }
+        .proof-btn { min-width: 40px; height: 36px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: var(--text); font-size: 14px; cursor: pointer; }
+        .proof-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+        .proof-btn:disabled { opacity: .4; cursor: default; }
+        .proof-label { flex: 1; text-align: center; color: var(--text); min-width: 140px; }
+        .proof-hint { margin: 8px 0 0; font-size: 13px; line-height: 1.5; color: var(--text-muted); }
+        @media (max-width: 640px) { .proof-stage { height: 260px; } }
+        @media (prefers-reduced-motion: reduce) { .proof-obj, .proof-leaf, .proof-face .see { transition: none; } }
         .pay-hint { display: none; font-size: 13px; color: #92400e; text-align: center; margin: 0 0 10px; }
         .pay-hint.visible { display: block; }
         
@@ -1944,6 +1975,24 @@
                     <p class="pdf-meta" id="pdfMeta"></p>
                 </div>
                 <button class="pdf-change" id="pdfChange">Wijzigen</button>
+            </div>
+
+            <!-- 3D-proefje: de eigen pagina's van de klant als magazine of losse vellen -->
+            <div class="proof" id="proof" hidden>
+                <div class="proof-bar">
+                    <span class="proof-title" id="proofTitle">Zo ziet je drukwerk eruit</span>
+                    <label class="proof-see"><input type="checkbox" id="proofSee"> Doorschijnen</label>
+                </div>
+                <div class="proof-stage" id="proofStage" tabindex="0" role="img" aria-roledescription="3D-proefje" aria-label="3D-proefje van je drukwerk. Sleep of gebruik de pijltjestoetsen om het te draaien.">
+                    <div class="proof-obj" id="proofObj"></div>
+                </div>
+                <div class="proof-bar">
+                    <button type="button" class="proof-btn" id="proofPrev" aria-label="Vorige">&larr;</button>
+                    <span class="proof-label" id="proofLabel" aria-live="polite"></span>
+                    <button type="button" class="proof-btn" id="proofNext" aria-label="Volgende">&rarr;</button>
+                    <button type="button" class="proof-btn" id="proofFlip">Omdraaien</button>
+                </div>
+                <p class="proof-hint" id="proofHint">Sleep om je drukwerk rond te draaien. Met <em>Doorschijnen</em> zie je de achterkant gespiegeld door het papier heen, zo kun je controleren of voor- en achterkant goed op elkaar vallen.</p>
             </div>
         </div>
 
@@ -2572,6 +2621,7 @@
                 setupBleedNotice(file, data);
 
                 showUploadSuccess(file, data);
+                setupProof(file, data);
 
             } catch (error) {
                 clearInterval(progressInterval);
@@ -2859,6 +2909,253 @@
             };
         }
 
+        // ===== 3D-PROEFJE =====
+        // De eigen pagina's van de klant, als geniet magazine of als losse vellen.
+        // Pagina's worden pas getekend als ze in beeld (bijna) komen.
+
+        const proof = document.getElementById('proof');
+        const proofStage = document.getElementById('proofStage');
+        const proofObj = document.getElementById('proofObj');
+        const proofLabel = document.getElementById('proofLabel');
+        const proofPrev = document.getElementById('proofPrev');
+        const proofNext = document.getElementById('proofNext');
+        const proofFlip = document.getElementById('proofFlip');
+        const proofSee = document.getElementById('proofSee');
+
+        const PROOF_GAP = 1.3; // px tussen de bladen van een magazine
+        let proofToken = 0;
+        let proofDoc = null;      // Promise<PDFDocumentProxy>
+        let proofTrim = null;     // snijmaat in mm {w, h}
+        let proofSize = { w: 150, h: 212 };
+        let proofUrls = new Map(); // paginanummer -> Promise<objectURL>
+        let proofQueue = Promise.resolve();
+        const proofView = { mode: 'booklet', idx: 0, rx: -14, ry: -28, turned: false, leaves: 0, pages: 0 };
+
+        function resetProof() {
+            proofToken++;
+            proof.hidden = true;
+            proofObj.innerHTML = '';
+            if (proofDoc) proofDoc.then(doc => doc.destroy()).catch(() => {});
+            proofDoc = null;
+            proofUrls.forEach(p => p.then(url => url && URL.revokeObjectURL(url)).catch(() => {}));
+            proofUrls = new Map();
+            proofQueue = Promise.resolve();
+            proofSee.checked = false;
+            proofObj.classList.remove('see-through');
+            Object.assign(proofView, { idx: 0, rx: -14, ry: -28, turned: false });
+        }
+
+        async function setupProof(file, data) {
+            resetProof();
+            const token = proofToken;
+            proofTrim = data.width_mm && data.height_mm ? { w: data.width_mm, h: data.height_mm } : null;
+            try {
+                const pdfjsLib = await loadPdfJs();
+                proofDoc = pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+                const doc = await proofDoc;
+                if (token !== proofToken) return;
+                const vp = (await doc.getPage(1)).getViewport({ scale: 1 });
+                const t = proofTrimPt(vp.width, vp.height);
+                // Passend in het vak: staand ongeveer 150 × 212, liggend maximaal 230 breed
+                const s = Math.min(230 / t.w, 212 / t.h);
+                proofSize = { w: Math.round(t.w * s), h: Math.round(t.h * s) };
+                proof.hidden = false;
+                buildProof();
+            } catch (e) {
+                // Zonder proefje werkt het bestellen gewoon
+                console.warn('3D-proefje niet gelukt:', e);
+                if (token === proofToken) proof.hidden = true;
+            }
+        }
+
+        /** Snijmaat in punten, gedraaid zoals pdf.js de pagina toont */
+        function proofTrimPt(vw, vh) {
+            if (!proofTrim) return { w: vw, h: vh };
+            const PT_PER_MM = 72 / 25.4;
+            let w = proofTrim.w * PT_PER_MM, h = proofTrim.h * PT_PER_MM;
+            if ((vw > vh) !== (w > h)) [w, h] = [h, w];
+            return { w: Math.min(w, vw), h: Math.min(h, vh) };
+        }
+
+        /** Pagina n als plaatje, zonder afloop (het midden op snijmaat) */
+        function proofPageUrl(n) {
+            if (!proofUrls.has(n)) {
+                const token = proofToken;
+                const job = proofQueue.then(async () => {
+                    if (token !== proofToken) return null;
+                    const page = await (await proofDoc).getPage(n);
+                    const vp = page.getViewport({ scale: 1 });
+                    const t = proofTrimPt(vp.width, vp.height);
+                    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                    const scale = proofSize.w * dpr / t.w;
+                    const canvas = await renderPdfRegion(page, scale,
+                        (vp.width - t.w) / 2 * scale, (vp.height - t.h) / 2 * scale,
+                        t.w * scale, t.h * scale);
+                    page.cleanup();
+                    const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.85));
+                    return blob ? URL.createObjectURL(blob) : null;
+                });
+                proofQueue = job.catch(() => {});
+                proofUrls.set(n, job);
+            }
+            return proofUrls.get(n);
+        }
+
+        function proofLoad(pages) {
+            const token = proofToken;
+            pages.filter(n => n >= 1 && n <= pageCount).forEach(n => {
+                proofPageUrl(n).then(url => {
+                    if (!url || token !== proofToken) return;
+                    proofObj.querySelectorAll(`img[data-p="${n}"]`).forEach(img => img.src = url);
+                }).catch(e => console.warn('Pagina voor proefje niet gelukt:', e));
+            });
+        }
+
+        /** Zijde van een blad: pagina `own`, met de achterkant `other` gespiegeld eronder */
+        function proofFace(own, other, back) {
+            const img = n => n >= 1 && n <= pageCount ? `<img alt="" data-p="${n}">` : '';
+            const see = other >= 1 && other <= pageCount ? `<img alt="" class="see" data-p="${other}">` : '';
+            return `<div class="proof-face${back ? ' back' : ''}">${img(own)}${see}</div>`;
+        }
+
+        function buildProof() {
+            if (proof.hidden) return;
+            const v = proofView;
+            v.mode = bindingType === 'booklet' ? 'booklet' : 'loose';
+            v.pages = v.mode === 'booklet' ? Math.ceil(pageCount / 4) * 4 : pageCount;
+            const duplex = v.mode === 'booklet' || printSide === 'double';
+            v.leaves = v.mode === 'booklet' ? v.pages / 2 : (duplex ? Math.ceil(pageCount / 2) : pageCount);
+            v.idx = 0;
+            v.turned = false;
+
+            proofObj.style.width = proofSize.w + 'px';
+            proofObj.style.height = proofSize.h + 'px';
+            proofObj.classList.toggle('booklet', v.mode === 'booklet');
+            proofObj.innerHTML = '';
+
+            if (v.mode === 'booklet') {
+                const spine = document.createElement('div');
+                spine.className = 'proof-spine';
+                spine.style.width = (v.leaves * PROOF_GAP) + 'px';
+                spine.innerHTML = '<div class="proof-staple top"></div><div class="proof-staple bottom"></div>';
+                proofObj.appendChild(spine);
+                for (let i = 0; i < v.leaves; i++) {
+                    const leaf = document.createElement('div');
+                    leaf.className = 'proof-leaf';
+                    leaf.innerHTML = proofFace(2 * i + 1, 2 * i + 2) + proofFace(2 * i + 2, 2 * i + 1, true);
+                    proofObj.appendChild(leaf);
+                }
+            } else {
+                const leaf = document.createElement('div');
+                leaf.className = 'proof-leaf single';
+                proofObj.appendChild(leaf);
+            }
+            proofFlip.hidden = v.mode === 'booklet';
+            document.getElementById('proofTitle').textContent = v.mode === 'booklet'
+                ? 'Zo ziet je magazine eruit' : 'Zo zien je vellen eruit';
+            updateProof();
+        }
+
+        /** Paginanummers op vel s van losse pagina's: [voorkant, achterkant] */
+        function proofSheet(s) {
+            return printSide === 'double' ? [2 * s + 1, 2 * s + 2] : [s + 1, 0];
+        }
+
+        function updateProof() {
+            const v = proofView;
+            const { w } = proofSize;
+            if (v.mode === 'booklet') {
+                const L = v.leaves;
+                const open = v.idx > 0 && v.idx < L;
+                // Licht gewaaierde bladen; bij veel bladen kleiner zodat het niet uitwaaiert
+                const fan = open ? Math.min(2.2, 30 / L) : Math.min(0.35, 6 / L);
+                proofObj.querySelectorAll('.proof-leaf').forEach((leaf, i) => {
+                    let angle, z;
+                    if (i < v.idx) { // links (omgeslagen), bovenste blad is i = idx - 1
+                        angle = -180 + (i + 1) * fan;
+                        z = i * PROOF_GAP;
+                    } else {         // rechts, bovenste blad is i = idx
+                        angle = -(L - i) * fan;
+                        z = (L - 1 - i) * PROOF_GAP;
+                    }
+                    leaf.style.transform = `translateZ(${z}px) rotateY(${angle}deg)`;
+                });
+                const shift = v.idx === 0 ? 0 : (v.idx === L ? w : w / 2);
+                proofObj.style.transform = `rotateX(${v.rx}deg) rotateY(${v.ry}deg) translateX(${shift}px)`;
+
+                const left = 2 * v.idx, right = 2 * v.idx + 1;
+                const blank = n => n > pageCount ? ' (leeg)' : '';
+                proofLabel.textContent = v.idx === 0 ? 'Voorkant'
+                    : v.idx === L ? 'Achterkant'
+                    : `Pagina ${left}${blank(left)} en ${right}${blank(right)} van ${v.pages}`;
+                // Zichtbare en eerstvolgende pagina's, plus voor- en achterkant
+                proofLoad([1, v.pages, left - 2, left - 1, left, right, right + 1, right + 2]);
+                proofNext.disabled = v.idx >= L;
+            } else {
+                const leaf = proofObj.querySelector('.proof-leaf');
+                const [front, back] = proofSheet(v.idx);
+                if (leaf.dataset.sheet !== String(v.idx)) {
+                    leaf.dataset.sheet = v.idx;
+                    leaf.innerHTML = proofFace(front, back) + proofFace(back, front, true);
+                }
+                proofObj.style.transform = `rotateX(${v.rx}deg) rotateY(${v.ry + (v.turned ? 180 : 0)}deg)`;
+                const side = printSide === 'double'
+                    ? ` · ${v.turned ? 'achterkant' : 'voorkant'}`
+                    : (v.turned ? ' · achterkant (onbedrukt)' : '');
+                proofLabel.textContent = `Vel ${v.idx + 1} van ${v.leaves}${side}`;
+                const [nf, nb] = proofSheet(v.idx + 1);
+                proofLoad([front, back, nf, nb]);
+                proofNext.disabled = v.idx >= v.leaves - 1;
+            }
+            proofPrev.disabled = v.idx <= 0;
+            proofSee.disabled = v.mode === 'loose' && printSide === 'single';
+        }
+
+        proofPrev.addEventListener('click', () => {
+            proofView.idx = Math.max(0, proofView.idx - 1);
+            proofView.turned = false;
+            updateProof();
+        });
+        proofNext.addEventListener('click', () => {
+            const max = proofView.mode === 'booklet' ? proofView.leaves : proofView.leaves - 1;
+            proofView.idx = Math.min(max, proofView.idx + 1);
+            proofView.turned = false;
+            updateProof();
+        });
+        proofFlip.addEventListener('click', () => {
+            proofView.turned = !proofView.turned;
+            updateProof();
+        });
+        proofSee.addEventListener('change', () => proofObj.classList.toggle('see-through', proofSee.checked));
+
+        // Draaien door te slepen (muis en touch) of met de pijltjestoetsen
+        let proofDrag = null;
+        proofStage.addEventListener('pointerdown', e => {
+            proofDrag = { x: e.clientX, y: e.clientY, rx: proofView.rx, ry: proofView.ry };
+            proofObj.classList.add('dragging');
+            proofStage.setPointerCapture(e.pointerId);
+        });
+        proofStage.addEventListener('pointermove', e => {
+            if (!proofDrag) return;
+            proofView.ry = proofDrag.ry + (e.clientX - proofDrag.x) * 0.6;
+            proofView.rx = Math.max(-80, Math.min(80, proofDrag.rx - (e.clientY - proofDrag.y) * 0.4));
+            updateProof();
+        });
+        const proofDragEnd = () => {
+            proofDrag = null;
+            proofObj.classList.remove('dragging');
+        };
+        proofStage.addEventListener('pointerup', proofDragEnd);
+        proofStage.addEventListener('pointercancel', proofDragEnd);
+        proofStage.addEventListener('keydown', e => {
+            const step = { ArrowLeft: [0, -20], ArrowRight: [0, 20], ArrowUp: [15, 0], ArrowDown: [-15, 0] }[e.key];
+            if (!step) return;
+            e.preventDefault();
+            proofView.rx = Math.max(-80, Math.min(80, proofView.rx + step[0]));
+            proofView.ry += step[1];
+            updateProof();
+        });
+
         function resetUpload() {
             dropzone.classList.remove('uploading', 'processing');
             dropzone.style.display = 'block';
@@ -2870,6 +3167,7 @@
             hasBleed = false;
             bleedFixable = false;
             resetBleedNotice();
+            resetProof();
             blankPagesAccepted = false;
             closeBlankPagesModal();
 
@@ -3165,6 +3463,7 @@
             updatePriceDisplay();
             checkBlankPages();
             PMP_Analytics.trackFinishing('booklet', quantity);
+            buildProof();
         });
 
         optLoose.addEventListener('click', () => {
@@ -3175,18 +3474,21 @@
             if (bookletAvailable()) hideInlineNotice();
             updatePriceDisplay();
             PMP_Analytics.trackFinishing('loose', quantity);
+            buildProof();
         });
 
         optDouble.addEventListener('click', () => {
             printSide = 'double';
             optDouble.classList.add('selected');
             optSingle.classList.remove('selected');
+            buildProof();
         });
 
         optSingle.addEventListener('click', () => {
             printSide = 'single';
             optSingle.classList.add('selected');
             optDouble.classList.remove('selected');
+            buildProof();
         });
 
         deliveryShipping.addEventListener('click', () => {
