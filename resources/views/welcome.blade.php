@@ -35,6 +35,7 @@
     <meta name="twitter:image" content="https://printmijnpdf.nl/og-image.jpg">
 
     <link rel="icon" type="image/png" sizes="96x96" href="/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="canonical" href="https://printmijnpdf.nl/">
 
     <!-- Google Analytics 4 -->

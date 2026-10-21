@@ -9,6 +9,7 @@
     <meta name="keywords" content="{{ $meta['keywords'] ?? '' }}">
     <link rel="canonical" href="{{ $meta['canonical'] }}">
     <link rel="icon" type="image/png" sizes="96x96" href="/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 
     <!-- Open Graph -->
     <meta property="og:title" content="{{ $meta['title'] }}">
