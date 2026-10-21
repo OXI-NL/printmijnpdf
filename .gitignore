@@ -9,3 +9,9 @@
 !/storage/framework/sessions/.gitkeep
 .phpunit.result.cache
 /database/*.sqlite
+
+# macOS Finder-metadata
+.DS_Store
+
+# Geuploade klant-PDF's en proefbestanden (Laravel 11+ standaard-schijf)
+/storage/app/private/
