@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\Order;
-use FPDF;
+use App\Pdf\Fpdi;
+use Illuminate\Support\Facades\Storage;
+use setasign\Fpdi\PdfReader\PageBoundaries;
 
 class PakbonService
 {
@@ -12,9 +14,11 @@ class PakbonService
      */
     public static function generate(Order $order): string
     {
-        $pdf = new FPDF('P', 'mm', 'A4');
+        $pdf = new Fpdi('P', 'mm', 'A4');
         $pdf->AddPage();
         $pdf->SetMargins(20, 20, 20);
+
+        self::thumbnail($pdf, $order);
 
         // Logo: beeldmerk + woordmerk "Print<Mijn>PDF", zoals in de siteheader
         $logoHeight = 14;
@@ -184,6 +188,41 @@ class PakbonService
         $pdf->Cell(0, 5, 'Deze pakbon is automatisch gegenereerd op ' . now()->format('d-m-Y H:i'), 0, 1, 'C');
 
         return $pdf->Output('S');
+    }
+
+    /**
+     * Eerste pagina van de klant-PDF rechtsboven, ter herkenning bij het inpakken.
+     * Vector-import via FPDI; lukt dat niet, dan blijft de pakbon gewoon zonder.
+     */
+    private static function thumbnail(Fpdi $pdf, Order $order): void
+    {
+        $maxW = 45;
+        $maxH = 44;
+        $right = 190;
+        $top = 20;
+
+        try {
+            if (!$order->pdf_path || !Storage::disk('local')->exists($order->pdf_path)) {
+                return;
+            }
+
+            $pdf->setSourceFile(Storage::disk('local')->path($order->pdf_path));
+            // TrimBox: alleen het eindformaat, zonder afloop en snijtekens
+            $tpl = $pdf->importPage(1, PageBoundaries::TRIM_BOX);
+            $size = $pdf->getTemplateSize($tpl);
+            $scale = min($maxW / $size['width'], $maxH / $size['height']);
+            $w = $size['width'] * $scale;
+            $h = $size['height'] * $scale;
+            $x = $right - $w;
+
+            $pdf->useTemplate($tpl, $x, $top, $w, $h);
+        } catch (\Throwable $e) {
+            return;
+        }
+
+        $pdf->SetDrawColor(180, 180, 180);
+        $pdf->SetLineWidth(0.2);
+        $pdf->Rect($x, $top, $w, $h);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Order;
 use App\Services\PakbonService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /** De pakbon toont afhalen duidelijk en schrijft namen met accenten goed */
@@ -66,6 +67,31 @@ class PakbonTest extends TestCase
         $this->assertStringContainsString('AFLEVERADRES', $text);
         $this->assertStringContainsString('Zaagmolenweg', $text);
         $this->assertStringNotContainsString('AFGEHAALD', $text);
+    }
+
+    public function test_eerste_pagina_staat_als_thumbnail_op_de_pakbon(): void
+    {
+        Storage::fake('local');
+        $source = new \FPDF('P', 'mm', 'A4');
+        $source->AddPage();
+        $source->SetFont('Arial', 'B', 40);
+        $source->Cell(0, 20, 'OMSLAG');
+        Storage::disk('local')->put('pdfs/stored.pdf', $source->Output('S'));
+
+        $pdf = PakbonService::generate($this->order('shipping'));
+
+        $this->assertMatchesRegularExpression('#/Subtype\s*/Form#', $pdf);
+        $this->assertStringContainsString('OMSLAG', $this->pdfText($this->order('shipping')));
+    }
+
+    public function test_zonder_klant_pdf_komt_er_gewoon_een_pakbon(): void
+    {
+        Storage::fake('local');
+
+        $pdf = PakbonService::generate($this->order('shipping'));
+
+        $this->assertStringStartsWith('%PDF', $pdf);
+        $this->assertDoesNotMatchRegularExpression('#/Subtype\s*/Form#', $pdf);
     }
 
     public function test_naam_met_accent_wordt_als_windows1252_geschreven(): void
