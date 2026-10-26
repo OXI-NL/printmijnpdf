@@ -204,7 +204,7 @@
         "@@context": "https://schema.org",
         "@type": "PrintingService",
         "name": "PrintMijnPDF",
-        "description": "Online printservice van drukkerij NIVO in Delfgauw (bij Delft). Upload je PDF en ontvang een geprint boekje of losse pagina's, binnen 1 werkdag verzonden met PostNL, of haal het de volgende werkdag gratis af (werkdagen 17:00-17:30).",
+        "description": "Online printservice van drukkerij NIVO print | design | web in Delfgauw (bij Delft). Upload je PDF en ontvang een geprint boekje of losse pagina's, binnen 1 werkdag verzonden met PostNL, of haal het de volgende werkdag gratis af (werkdagen 17:00-17:30).",
         "url": "https://printmijnpdf.nl",
         "telephone": "+31152192525",
         "email": "info@printmijnpdf.nl",
@@ -353,7 +353,7 @@
                 "name": "Kan ik mijn bestelling afhalen?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Ja! Afhalen is gratis en kan vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO, Exportweg 11, 2645ED Delfgauw. Heb je je bestelling dezelfde dag nog nodig? Bel ons dan even op 015-219 2525, dan kijken we wat er mogelijk is."
+                    "text": "Ja! Afhalen is gratis en kan vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO print | design | web, Exportweg 11, 2645ED Delfgauw. Heb je je bestelling dezelfde dag nog nodig? Bel ons dan even op 015-219 2525, dan kijken we wat er mogelijk is."
                 }
             },
             {
@@ -2127,14 +2127,14 @@
                     <div class="delivery-radio"></div>
                     <div class="delivery-content">
                         <div class="delivery-title">Zelf afhalen in Delfgauw</div>
-                        <div class="delivery-subtitle">Bij NIVO, elke werkdag 17:00–17:30</div>
+                        <div class="delivery-subtitle">Bij NIVO print | design | web, elke werkdag 17:00–17:30</div>
                     </div>
                     <div class="delivery-price">Gratis</div>
                 </label>
             </div>
 
             <div class="pickup-info" id="pickupInfo">
-                📍 <strong>NIVO</strong>, Exportweg 11, 2645ED Delfgauw<br>
+                📍 <strong>NIVO print | design | web</strong>, Exportweg 11, 2645ED Delfgauw<br>
                 Je ontvangt een mail zodra je bestelling klaarligt.
             </div>
 
@@ -2306,7 +2306,7 @@
         
         <details>
             <summary>Kan ik mijn bestelling afhalen?</summary>
-            <p>Ja! Afhalen is gratis en kan vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO, Exportweg 11, 2645ED Delfgauw. Heb je je bestelling dezelfde dag nog nodig? Bel ons dan even op <a href="tel:0152192525">015-219 2525</a>, dan kijken we wat er mogelijk is.</p>
+            <p>Ja! Afhalen is gratis en kan vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO print | design | web, Exportweg 11, 2645ED Delfgauw. Heb je je bestelling dezelfde dag nog nodig? Bel ons dan even op <a href="tel:0152192525">015-219 2525</a>, dan kijken we wat er mogelijk is.</p>
         </details>
         
         <details>
@@ -2351,7 +2351,7 @@
             </div>
             <div class="footer-col">
                 <h3>Afhalen</h3>
-                <p>NIVO</p>
+                <p>NIVO print | design | web</p>
                 <p>Exportweg 11</p>
                 <p>2645ED Delfgauw</p>
                 <p>Ma–vr 17:00–17:30</p>
@@ -2372,7 +2372,7 @@
         <div class="nivo-badge">
             <span class="nivo-label">Geproduceerd door</span>
             <a href="https://nivo.com" target="_blank" rel="noopener" class="nivo-link">
-                <strong>NIVO</strong> Druk & Multimedia
+                <strong>NIVO</strong> print | design | web
             </a>
             <span class="nivo-tagline">Professionele drukkerij sinds 1980</span>
         </div>

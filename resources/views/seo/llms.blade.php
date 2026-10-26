@@ -48,7 +48,7 @@ Voorbeelden:
 ## Pagina's
 
 - [Home en bestellen](https://printmijnpdf.nl/)
-- [Over ons: drukkerij NIVO sinds 1980]({{ route('over-ons') }})
+- [Over ons: drukkerij NIVO print | design | web sinds 1980]({{ route('over-ons') }})
 @foreach($pages as $page)
 - [{{ $page['label'] }}]({{ $page['url'] }})
 @endforeach

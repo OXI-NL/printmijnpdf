@@ -125,7 +125,7 @@
                                 <tr>
                                     <td style="padding: 14px 16px;">
                                         @if($order->delivery_type === 'pickup')
-                                            <span style="color: #0369a1; font-size: 14px; font-weight: 600;">Afhalen bij NIVO</span><br>
+                                            <span style="color: #0369a1; font-size: 14px; font-weight: 600;">Afhalen bij NIVO print | design | web</span><br>
                                             <span style="color: #0369a1; font-size: 13px;">Exportweg 11, 2645ED Delfgauw</span>
                                         @else
                                             <span style="color: #854d0e; font-size: 14px; font-weight: 600;">Verzenden via PostNL</span><br>

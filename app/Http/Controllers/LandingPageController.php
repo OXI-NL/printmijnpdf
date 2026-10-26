@@ -118,7 +118,7 @@ class LandingPageController extends Controller
                 'sections' => [
                     [
                         'title' => 'Waarom je scriptie bij ons printen?',
-                        'text' => 'Wij zijn geen online print-app, maar een echte drukkerij. NIVO Druk & Multimedia bestaat al sinds 1980 en print dagelijks voor bedrijven, overheden en onderwijsinstellingen. Die kwaliteit krijg jij nu ook voor je scriptie — tegen een studentvriendelijke prijs.',
+                        'text' => 'Wij zijn geen online print-app, maar een echte drukkerij. NIVO print | design | web bestaat al sinds 1980 en print dagelijks voor bedrijven, overheden en onderwijsinstellingen. Die kwaliteit krijg jij nu ook voor je scriptie — tegen een studentvriendelijke prijs.',
                     ],
                     [
                         'title' => 'Hoe werkt het?',
@@ -459,7 +459,7 @@ class LandingPageController extends Controller
                 [
                     'icon' => 'shield',
                     'title' => 'Betrouwbare partner',
-                    'text' => 'Onderdeel van NIVO Druk & Multimedia, 35+ jaar ervaring.',
+                    'text' => 'Onderdeel van NIVO print | design | web, 35+ jaar ervaring.',
                 ],
                 [
                     'icon' => 'phone',
@@ -481,7 +481,7 @@ class LandingPageController extends Controller
                     ],
                     [
                         'title' => 'Grotere projecten',
-                        'text' => 'Voor uitgebreider drukwerk (brochures, flyers, gebonden boeken) kun je terecht bij onze moederorganisatie NIVO. Wij verbinden je graag door.',
+                        'text' => 'Voor uitgebreider drukwerk (brochures, flyers, gebonden boeken) kun je terecht bij onze moederorganisatie NIVO print | design | web. Wij verbinden je graag door.',
                     ],
                 ],
             ],
@@ -748,13 +748,13 @@ class LandingPageController extends Controller
                     ],
                     [
                         'title' => 'Geprint door een echte drukkerij',
-                        'text' => 'PrintMijnPDF is onderdeel van NIVO Druk & Multimedia, een professionele drukkerij sinds 1980. Je document wordt dus niet op een kantoorprinter geprint, maar op drukwerkmachines met de kleurkwaliteit die je kent van tijdschriften en brochures.',
+                        'text' => 'PrintMijnPDF is onderdeel van NIVO print | design | web, een professionele drukkerij sinds 1980. Je document wordt dus niet op een kantoorprinter geprint, maar op drukwerkmachines met de kleurkwaliteit die je kent van tijdschriften en brochures.',
                     ],
                 ],
             ],
             'faq' => [
                 ['question' => 'Kan ik mijn PDF enkelzijdig laten printen?', 'answer' => 'Ja, bij losse pagina\'s kies je zelf enkel- of dubbelzijdig. Een geniet boekje is altijd dubbelzijdig.'],
-                ['question' => 'Kan ik mijn bestelling ophalen?', 'answer' => 'Ja, afhalen is gratis en kan vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO, Exportweg 11 in Delfgauw.'],
+                ['question' => 'Kan ik mijn bestelling ophalen?', 'answer' => 'Ja, afhalen is gratis en kan vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO print | design | web, Exportweg 11 in Delfgauw.'],
                 ['question' => 'Hoe betaal ik?', 'answer' => 'Je betaalt veilig met iDEAL via Mollie. Pas na de betaling gaat je bestelling in productie.'],
                 ['question' => 'Kan ik meerdere exemplaren bestellen?', 'answer' => 'Ja. Je kiest het aantal exemplaren bij het bestellen en ziet direct de totaalprijs.'],
             ],
@@ -859,7 +859,7 @@ class LandingPageController extends Controller
                     [
                         'title' => 'Hoe snel is het klaar?',
                         'list' => [
-                            'Afhalen: gratis, vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO, Exportweg 11, 2645 ED Delfgauw.',
+                            'Afhalen: gratis, vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO print | design | web, Exportweg 11, 2645 ED Delfgauw.',
                             'Zelfde dag: niet standaard. Bel 015-219 2525 voordat je bestelt, dan kijken we samen wat er mogelijk is.',
                             'Bezorgen: bestel je vóór 11:00 op een werkdag, dan versturen we tot 50 exemplaren dezelfde dag en bezorgt PostNL het binnen 2 werkdagen. Grotere oplagen gaan de volgende werkdag de deur uit.',
                         ],
@@ -886,7 +886,7 @@ class LandingPageController extends Controller
             ],
             'faq' => [
                 ['question' => 'Kan ik mijn PDF vandaag nog laten printen?', 'answer' => 'Standaard haal je je bestelling de volgende werkdag op. Heb je het dezelfde dag nodig? Bel dan 015-219 2525, dan kijken we wat er mogelijk is.'],
-                ['question' => 'Waar kan ik mijn drukwerk afhalen?', 'answer' => 'Bij NIVO Druk & Multimedia, Exportweg 11, 2645 ED Delfgauw (gemeente Pijnacker-Nootdorp, naast Delft). Op werkdagen tussen 17:00 en 17:30.'],
+                ['question' => 'Waar kan ik mijn drukwerk afhalen?', 'answer' => 'Bij NIVO print | design | web, Exportweg 11, 2645 ED Delfgauw (gemeente Pijnacker-Nootdorp, naast Delft). Op werkdagen tussen 17:00 en 17:30.'],
                 ['question' => 'Kost spoed extra?', 'answer' => 'Nee. Afhalen is gratis en er is geen spoedtoeslag; je betaalt startkosten, de pagina\'s en eventueel het nieten.'],
                 ['question' => 'Ik woon niet in de buurt van Delft, hoe snel kan het dan?', 'answer' => 'Dan versturen we met PostNL. Bestel je vóór 11:00 op een werkdag, dan gaat je pakket (tot 50 exemplaren) dezelfde dag de deur uit en bezorgt PostNL het binnen 2 werkdagen.'],
             ],
@@ -1028,7 +1028,7 @@ class LandingPageController extends Controller
                 ['question' => 'Hoe snel kan een liturgie klaar zijn?', 'answer' => 'Bestel je op een werkdag, dan kun je de boekjes de volgende werkdag tussen 17:00 en 17:30 gratis afhalen in Delfgauw. Laat je ze bezorgen, dan versturen we binnen 1 werkdag en bezorgt PostNL binnen 2 werkdagen. Is het nog sneller nodig? Bel 015-219 2525, dan kijken we wat er kan.'],
                 ['question' => 'Hoeveel exemplaren kan ik bestellen?', 'answer' => 'Online bestel je 1 tot 100 exemplaren. Verwacht je meer gasten, mail dan naar info@printmijnpdf.nl of bel 015-219 2525, dan maken we het via de drukkerij.'],
                 ['question' => 'Wat kost een liturgie?', 'answer' => 'Dat zie je direct na het uploaden van je PDF. De prijs bestaat uit € 10,00 startkosten, een prijs per pagina en het nieten. Afhalen is gratis.'],
-                ['question' => 'Waar kan ik de liturgie afhalen?', 'answer' => 'Bij NIVO Druk & Multimedia, Exportweg 11, 2645 ED Delfgauw, naast Delft. Op werkdagen tussen 17:00 en 17:30. Je krijgt een mail zodra de boekjes klaarliggen.'],
+                ['question' => 'Waar kan ik de liturgie afhalen?', 'answer' => 'Bij NIVO print | design | web, Exportweg 11, 2645 ED Delfgauw, naast Delft. Op werkdagen tussen 17:00 en 17:30. Je krijgt een mail zodra de boekjes klaarliggen.'],
             ],
             'slug' => 'liturgie-uitvaart-printen',
         ]);
@@ -1184,16 +1184,16 @@ class LandingPageController extends Controller
             'benefits' => [
                 ['icon' => 'clock', 'title' => 'Morgen afhalen', 'text' => 'Vanaf de volgende werkdag, tussen 17:00 en 17:30.'],
                 ['icon' => 'euro', 'title' => 'Afhalen is gratis', 'text' => 'Geen verzendkosten en geen spoedtoeslag.'],
-                ['icon' => 'briefcase', 'title' => 'Echte drukkerij', 'text' => 'NIVO Druk & Multimedia, sinds 1980 in de regio.'],
+                ['icon' => 'briefcase', 'title' => 'Echte drukkerij', 'text' => 'NIVO print | design | web, sinds 1980 in de regio.'],
                 ['icon' => 'phone', 'title' => 'Vandaag nodig?', 'text' => 'Bel 015-219 2525, dan kijken we wat er kan.'],
             ],
             'content' => [
-                'intro' => 'PrintMijnPDF is de online printservice van drukkerij NIVO in Delfgauw, gemeente Pijnacker-Nootdorp, direct naast Delft. Woon of werk je in Delft, Den Haag, Rijswijk, Zoetermeer, Pijnacker, Nootdorp, het Westland of Rotterdam? Dan bestel je online en haal je je drukwerk de volgende werkdag gratis op.',
+                'intro' => 'PrintMijnPDF is de online printservice van drukkerij NIVO print | design | web in Delfgauw, gemeente Pijnacker-Nootdorp, direct naast Delft. Woon of werk je in Delft, Den Haag, Rijswijk, Zoetermeer, Pijnacker, Nootdorp, het Westland of Rotterdam? Dan bestel je online en haal je je drukwerk de volgende werkdag gratis op.',
                 'sections' => [
                     [
                         'title' => 'Afhaaladres',
                         'list' => [
-                            'NIVO Druk & Multimedia, Exportweg 11, 2645 ED Delfgauw.',
+                            'NIVO print | design | web, Exportweg 11, 2645 ED Delfgauw.',
                             'Afhalen op werkdagen tussen 17:00 en 17:30, vanaf de werkdag na je bestelling.',
                             'Je krijgt een mail zodra je bestelling klaarligt.',
                         ],
@@ -1209,7 +1209,7 @@ class LandingPageController extends Controller
                 ],
             ],
             'faq' => [
-                ['question' => 'Waar kan ik in Delft een PDF laten printen?', 'answer' => 'Bestel online bij PrintMijnPDF en haal je drukwerk de volgende werkdag gratis op bij drukkerij NIVO, Exportweg 11 in Delfgauw, vlak bij Delft. Afhalen kan op werkdagen tussen 17:00 en 17:30.'],
+                ['question' => 'Waar kan ik in Delft een PDF laten printen?', 'answer' => 'Bestel online bij PrintMijnPDF en haal je drukwerk de volgende werkdag gratis op bij drukkerij NIVO print | design | web, Exportweg 11 in Delfgauw, vlak bij Delft. Afhalen kan op werkdagen tussen 17:00 en 17:30.'],
                 ['question' => 'Kan ik mijn drukwerk dezelfde dag ophalen?', 'answer' => 'Standaard haal je het de volgende werkdag op. Heb je het dezelfde dag nodig, bel dan voor je bestelt naar 015-219 2525, dan kijken we wat er mogelijk is.'],
                 ['question' => 'Kan ik ook langskomen zonder online te bestellen?', 'answer' => 'Bestellen gaat via de website, zodat je bestand direct gecontroleerd wordt en de prijs vastligt. Daarna haal je het op in Delfgauw.'],
                 ['question' => 'Vanuit welke plaatsen haal je het makkelijk op?', 'answer' => 'Delfgauw ligt naast Delft, Pijnacker en Nootdorp, en op korte afstand van Den Haag, Rijswijk, Zoetermeer en Rotterdam.'],

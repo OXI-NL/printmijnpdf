@@ -22,7 +22,7 @@
     <h2>In het kort</h2>
     <ul>
         <li>We versturen je bestelling binnen 1 werkdag met PostNL. Daarna bezorgt PostNL binnen 2 werkdagen; op de bezorging zelf hebben wij geen invloed.</li>
-        <li>Afhalen kan gratis bij NIVO in Delfgauw, elke werkdag tussen 17:00 en 17:30.</li>
+        <li>Afhalen kan gratis bij NIVO print | design | web in Delfgauw, elke werkdag tussen 17:00 en 17:30.</li>
         <li>Is je bestelling nog niet geprint? Dan kun je kosteloos annuleren via <a href="mailto:info@printmijnpdf.nl">info@printmijnpdf.nl</a>.</li>
         <li>Niet tevreden over de printkwaliteit? Neem contact met ons op, dan lossen we het op.</li>
     </ul>

@@ -1,7 +1,7 @@
 @extends('legal.layout')
 
 @section('title', 'Over ons: de drukkerij achter PrintMijnPDF')
-@section('description', 'PrintMijnPDF is de online printservice van NIVO Druk & Multimedia, een drukkerij in Delfgauw (bij Delft) sinds 1980. Echte drukwerkkwaliteit, vanaf 1 exemplaar.')
+@section('description', 'PrintMijnPDF is de online printservice van NIVO print | design | web, een drukkerij in Delfgauw (bij Delft) sinds 1980. Echte drukwerkkwaliteit, vanaf 1 exemplaar.')
 
 @section('schema')
     @php
@@ -41,7 +41,7 @@
 
 @section('content')
     <h1>Over PrintMijnPDF</h1>
-    <p class="lead">PrintMijnPDF is geen print-app maar een echte drukkerij. Achter de website zit NIVO Druk & Multimedia, sinds 1980 gevestigd in Delfgauw, vlak bij Delft.</p>
+    <p class="lead">PrintMijnPDF is geen print-app maar een echte drukkerij. Achter de website zit NIVO print | design | web, sinds 1980 gevestigd in Delfgauw, vlak bij Delft.</p>
 
     <h2>Waarom we PrintMijnPDF zijn begonnen</h2>
     <p>Bij een drukkerij denk je al snel aan grote oplages en offertes. Maar veel mensen hebben juist een paar exemplaren nodig: een scriptie, een reader, een liturgie of een handleiding. Met PrintMijnPDF bestel je die in een paar minuten, vanaf 1 exemplaar, met dezelfde drukwerkkwaliteit als onze zakelijke klanten krijgen.</p>
@@ -58,7 +58,7 @@
     <p>We versturen je bestelling binnen 1 werkdag met PostNL, dat binnen 2 werkdagen bezorgt. Woon je in de buurt? Dan haal je het de volgende werkdag gratis op aan de Exportweg 11 in Delfgauw, tussen 17:00 en 17:30.</p>
 
     <h2>Lid van KVGO</h2>
-    <p>NIVO is lid van KVGO, de brancheorganisatie voor de grafimedia. Op onze bestellingen zijn de <a href="{{ route('leveringsvoorwaarden') }}">leveringsvoorwaarden van de grafimediabranche</a> van toepassing.</p>
+    <p>NIVO print | design | web is lid van KVGO, de brancheorganisatie voor de grafimedia. Op onze bestellingen zijn de <a href="{{ route('leveringsvoorwaarden') }}">leveringsvoorwaarden van de grafimediabranche</a> van toepassing.</p>
 
     <h2>Contact</h2>
     <p>NIVO Druk & Multimedia B.V.<br>

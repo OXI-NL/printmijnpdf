@@ -58,6 +58,7 @@
                                         <p style="color: #bbf7d0; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 8px; font-weight: 700;">⏰ Afhaaltijd</p>
                                         <p style="color: #ffffff; font-size: 26px; font-weight: 700; margin: 0 0 6px;">Ma t/m vr: 17:00 – 17:30</p>
                                         <p style="color: #dcfce7; font-size: 14px; margin: 0;">Buiten deze tijden is er niemand aanwezig om je bestelling mee te geven.</p>
+                                        <p style="color: #dcfce7; font-size: 14px; margin: 12px 0 0; line-height: 1.6;">Lukt dat niet? Bel dan even met NIVO print | design | web op <a href="tel:0152192525" style="color: #ffffff; font-weight: 700; text-decoration: none; white-space: nowrap;">015 219 25 25</a>, dan maken we een andere afspraak.</p>
                                     </td>
                                 </tr>
                             </table>
@@ -68,7 +69,7 @@
                                     <td style="padding: 22px;">
                                         <p style="color: #0369a1; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 12px; font-weight: 600;">Afhaaladres</p>
                                         <p style="color: #1e293b; font-size: 15px; margin: 0; line-height: 1.7; font-weight: 500;">
-                                            NIVO Druk & Multimedia<br>
+                                            NIVO print | design | web<br>
                                             <span style="font-weight: 400; color: #475569;">Exportweg 11<br>
                                             2645 ED Delfgauw</span>
                                         </p>
@@ -117,7 +118,7 @@
                             </p>
                             <a href="mailto:info@printmijnpdf.nl" style="color: #e63946; font-size: 14px; font-weight: 600; text-decoration: none;">info@printmijnpdf.nl</a>
                             <span style="color: #94a3b8; font-size: 13px;"> · </span>
-                            <a href="tel:0152192525" style="color: #e63946; font-size: 14px; font-weight: 600; text-decoration: none;">015-219 2525</a>
+                            <a href="tel:0152192525" style="color: #e63946; font-size: 14px; font-weight: 600; text-decoration: none;">015 219 25 25</a>
                             <p style="color: #475569; font-size: 12px; margin: 20px 0 0;">
                                 © {{ date('Y') }} PrintMijnPDF.nl · Alle rechten voorbehouden<br>
                                 NIVO Druk & Multimedia B.V. · KvK {{ config('invoice.kvk_number') }} · BTW {{ config('invoice.btw_id') }}
