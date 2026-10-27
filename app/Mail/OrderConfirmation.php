@@ -3,12 +3,14 @@
 namespace App\Mail;
 
 use App\Models\Order;
+use App\Services\OrderThumbnailService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Storage;
 
 class OrderConfirmation extends Mailable
 {
@@ -39,8 +41,12 @@ class OrderConfirmation extends Mailable
      */
     public function content(): Content
     {
+        $thumbnail = OrderThumbnailService::existingPath($this->order);
+
         return new Content(
             view: 'emails.order-confirmation',
+            // Absoluut pad: de view embedt het bestand inline (CID), zonder externe URL
+            with: ['thumbnailPath' => $thumbnail ? Storage::disk('local')->path($thumbnail) : null],
         );
     }
 

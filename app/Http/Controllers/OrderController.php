@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Rules\SafeEmail;
 use App\Services\BookletImpositionService;
 use App\Services\MirroredBleedService;
+use App\Services\OrderThumbnailService;
 use App\Services\PdfFormatValidator;
 use App\Services\PdfPageCounter;
 use Illuminate\Http\Request;
@@ -266,6 +267,9 @@ class OrderController extends Controller
                 'landing_page' => $request->input('attribution_landing_page'),
                 'referrer' => $this->sanitizeReferrer($request->input('attribution_referrer')),
             ]);
+
+            // Pagina 1 als PNG uit de browser, voor de bevestigingsmail (optioneel)
+            OrderThumbnailService::store($order, $request->file('pdf_thumbnail'));
 
             // Maak Mollie betaling
             $payment = Mollie::api()->payments->create([

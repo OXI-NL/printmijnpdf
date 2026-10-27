@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Services\BookletImpositionService;
 use App\Services\InvoiceService;
 use App\Services\MonthlyInvoiceSummaryService;
+use App\Services\OrderThumbnailService;
 use App\Services\PakbonService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -187,6 +188,7 @@ class AdminController extends Controller
         if ($order->pdf_imposed_path && Storage::disk('local')->exists($order->pdf_imposed_path)) {
             Storage::disk('local')->delete($order->pdf_imposed_path);
         }
+        OrderThumbnailService::delete($order);
 
         $order->delete();
 
@@ -212,6 +214,7 @@ class AdminController extends Controller
             if ($order->pdf_imposed_path && Storage::disk('local')->exists($order->pdf_imposed_path)) {
                 Storage::disk('local')->delete($order->pdf_imposed_path);
             }
+            OrderThumbnailService::delete($order);
             $order->delete();
         }
 

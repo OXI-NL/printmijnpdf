@@ -2423,6 +2423,7 @@
         let hasBleed = false;
         let bleedMM = 0;
         let bleedFixable = false;
+        let orderThumbnail = null; // PNG van pagina 1 voor de bevestigingsmail
         let bindingType = 'booklet';
         let printSide = 'double';
         let deliveryType = null; // 'shipping' of 'pickup'; de klant kiest zelf
@@ -2620,6 +2621,7 @@
                 bleedMM = data.bleed_mm || 0;
                 bleedFixable = !hasBleed && data.bleed_fixable === true;
                 setupBleedNotice(file, data);
+                renderOrderThumbnail(file);
 
                 showUploadSuccess(file, data);
                 setupProof(file, data);
@@ -2876,6 +2878,35 @@
             } catch (e) {
                 // Zonder voorbeeld werken de keuzes gewoon; de uitleg staat in de tekst
                 console.warn('Voorbeeld afloop niet gelukt:', e);
+            }
+        }
+
+        let thumbnailToken = 0;
+        /**
+         * Pagina 1 op eindformaat (zonder afloop) als kleine PNG voor de bevestigingsmail.
+         * De server kan zelf geen PDF rasteren; lukt het hier niet, dan komt de mail zonder.
+         */
+        async function renderOrderThumbnail(file) {
+            const token = ++thumbnailToken;
+            orderThumbnail = null;
+            const PT_PER_MM = 72 / 25.4;
+            const widthPx = 240;
+
+            try {
+                const pdfjsLib = await loadPdfJs();
+                const doc = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+                const page = await doc.getPage(1);
+                const base = page.getViewport({ scale: 1 });
+                const bleed = hasBleed ? bleedMM * PT_PER_MM : 0;
+                const trimW = base.width - 2 * bleed, trimH = base.height - 2 * bleed;
+                const scale = widthPx / trimW;
+                const canvas = await renderPdfRegion(page, scale, bleed * scale, bleed * scale, trimW * scale, trimH * scale);
+                doc.destroy();
+
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                if (token === thumbnailToken) orderThumbnail = blob;
+            } catch (e) {
+                console.warn('Thumbnail voor de mail niet gelukt:', e);
             }
         }
 
@@ -3167,6 +3198,8 @@
             bookletAllowed = true;
             hasBleed = false;
             bleedFixable = false;
+            orderThumbnail = null;
+            thumbnailToken++;
             resetBleedNotice();
             resetProof();
             blankPagesAccepted = false;
@@ -3393,6 +3426,7 @@
             formData.append('addition', document.getElementById('addition').value);
             formData.append('postcode', document.getElementById('postcode').value);
             formData.append('city', document.getElementById('city').value);
+            if (orderThumbnail) formData.append('pdf_thumbnail', orderThumbnail, 'thumbnail.png');
 
             PMP_Attribution.appendToForm(formData);
 

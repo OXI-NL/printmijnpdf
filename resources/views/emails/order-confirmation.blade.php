@@ -68,6 +68,12 @@
                                         <p style="color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 6px; font-weight: 600;">Bestelnummer</p>
                                         <p style="color: #e63946; font-size: 22px; font-weight: 700; margin: 0; font-family: 'SF Mono', Monaco, 'Courier New', monospace; letter-spacing: 0.5px;">{{ $order->order_number }}</p>
                                     </td>
+                                    @if($thumbnailPath && isset($message))
+                                    <!-- Pagina 1 ter herkenning, net als op de pakbon -->
+                                    <td width="84" style="padding: 14px 18px 14px 0; text-align: right; vertical-align: middle;">
+                                        <img src="{{ $message->embed($thumbnailPath) }}" alt="Pagina 1 van je document" width="84" style="display: block; width: 84px; height: auto; border: 1px solid #e2e8f0; border-radius: 4px; margin-left: auto;">
+                                    </td>
+                                    @endif
                                 </tr>
                             </table>
 
