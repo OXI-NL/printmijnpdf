@@ -23,7 +23,7 @@ class PricingTest extends TestCase
             'pricing.binding_extra' => 250,
             'pricing.shipping' => 675,
             'pricing.promo_codes' => [
-                'PMPNIEUW' => [
+                'PMPWINTER' => [
                     'discount_percent' => 25,
                     'applies_to' => ['pages', 'startup', 'binding'],
                     'active' => true,
@@ -102,7 +102,7 @@ class PricingTest extends TestCase
 
     public function test_promotiecode_geeft_korting_op_druk_start_en_afwerking(): void
     {
-        $p = Order::calculatePrice(100, 'A4', 'booklet', 'shipping', 1, 'PMPNIEUW');
+        $p = Order::calculatePrice(100, 'A4', 'booklet', 'shipping', 1, 'PMPWINTER');
 
         // 25% over pages(1500) + startup(1000) + binding(500) = 375 + 250 + 125
         $this->assertSame(750, $p['discount']);
@@ -111,8 +111,8 @@ class PricingTest extends TestCase
 
     public function test_promotiecode_geeft_geen_korting_op_verzendkosten(): void
     {
-        $zonder = Order::calculatePrice(100, 'A4', 'booklet', 'pickup', 1, 'PMPNIEUW');
-        $met = Order::calculatePrice(100, 'A4', 'booklet', 'shipping', 1, 'PMPNIEUW');
+        $zonder = Order::calculatePrice(100, 'A4', 'booklet', 'pickup', 1, 'PMPWINTER');
+        $met = Order::calculatePrice(100, 'A4', 'booklet', 'shipping', 1, 'PMPWINTER');
 
         $this->assertSame($zonder['discount'], $met['discount']);
     }
@@ -131,9 +131,17 @@ class PricingTest extends TestCase
         $this->assertSame(0, $p['discount']);
     }
 
+    public function test_introductiecode_is_vervangen_door_eindejaarsactie(): void
+    {
+        $promoCodes = (require base_path('config/pricing.php'))['promo_codes'];
+
+        $this->assertTrue($promoCodes['PMPWINTER']['active']);
+        $this->assertFalse($promoCodes['PMPNIEUW']['active']);
+    }
+
     public function test_totaal_is_altijd_de_som_van_de_onderdelen(): void
     {
-        foreach ([[1,'A4','booklet','shipping',1,null], [250,'A5','loose','pickup',7,'PMPNIEUW']] as $args) {
+        foreach ([[1,'A4','booklet','shipping',1,null], [250,'A5','loose','pickup',7,'PMPWINTER']] as $args) {
             $p = Order::calculatePrice(...$args);
             $this->assertSame(
                 $p['startup'] + $p['pages'] + $p['binding'] + $p['shipping'] - $p['discount'],
@@ -144,7 +152,7 @@ class PricingTest extends TestCase
 
     public function test_alle_bedragen_zijn_hele_centen(): void
     {
-        $p = Order::calculatePrice(33, 'A4', 'booklet', 'shipping', 3, 'PMPNIEUW');
+        $p = Order::calculatePrice(33, 'A4', 'booklet', 'shipping', 3, 'PMPWINTER');
 
         foreach ($p as $key => $value) {
             $this->assertIsInt($value, "{$key} moet een geheel aantal centen zijn");

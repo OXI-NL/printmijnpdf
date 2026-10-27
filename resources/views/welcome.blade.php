@@ -1826,9 +1826,9 @@
         <p class="subtext">Blader door je bestand zoals het bedoeld is,<br>haarscherp geprint in full colour.</p>
 
         <div class="promo-banner">
-            <div class="promo-banner-title">Introductieaanbieding</div>
+            <div class="promo-banner-title">Eindejaarsactie</div>
             <div class="promo-banner-text">
-                Gebruik code <strong>PMP NIEUW</strong> en ontvang 25% korting<br>
+                Gebruik code <strong>PMP WINTER</strong> en ontvang 25% korting<br>
                 op afdrukken, startkosten en afwerking
             </div>
         </div>
@@ -2411,7 +2411,7 @@
         const MAX_QUANTITY = {{ (int) config('pricing.max_quantity') }};
 
         const PROMO_CODES = {
-            'PMPNIEUW': { discountPercent: 25, appliesTo: ['pages', 'startup', 'binding'] }
+            'PMPWINTER': { discountPercent: 25, appliesTo: ['pages', 'startup', 'binding'] }
         };
 
         // State

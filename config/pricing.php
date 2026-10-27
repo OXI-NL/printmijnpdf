@@ -26,10 +26,15 @@ return [
 
     // Actieve promotiecodes
     'promo_codes' => [
-        'PMPNIEUW' => [
+        'PMPWINTER' => [ // Eindejaarsactie
             'discount_percent' => 25,
             'applies_to' => ['pages', 'startup', 'binding'], // afdruk, startkosten, afwerking
             'active' => true,
+        ],
+        'PMPNIEUW' => [ // Introductieaanbieding (27 maart t/m 27 oktober 2026)
+            'discount_percent' => 25,
+            'applies_to' => ['pages', 'startup', 'binding'],
+            'active' => false,
         ],
     ],
 ];
