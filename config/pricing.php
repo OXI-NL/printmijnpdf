@@ -27,7 +27,7 @@ return [
     // Actieve promotiecodes
     'promo_codes' => [
         'PMPWINTER' => [ // Eindejaarsactie
-            'discount_percent' => 25,
+            'discount_percent' => 15,
             'applies_to' => ['pages', 'startup', 'binding'], // afdruk, startkosten, afwerking
             'active' => true,
         ],

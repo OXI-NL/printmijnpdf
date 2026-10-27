@@ -24,7 +24,7 @@ class PricingTest extends TestCase
             'pricing.shipping' => 675,
             'pricing.promo_codes' => [
                 'PMPWINTER' => [
-                    'discount_percent' => 25,
+                    'discount_percent' => 15,
                     'applies_to' => ['pages', 'startup', 'binding'],
                     'active' => true,
                 ],
@@ -104,9 +104,9 @@ class PricingTest extends TestCase
     {
         $p = Order::calculatePrice(100, 'A4', 'booklet', 'shipping', 1, 'PMPWINTER');
 
-        // 25% over pages(1500) + startup(1000) + binding(500) = 375 + 250 + 125
-        $this->assertSame(750, $p['discount']);
-        $this->assertSame(3675 - 750, $p['total']);
+        // 15% over pages(1500) + startup(1000) + binding(500) = 225 + 150 + 75
+        $this->assertSame(450, $p['discount']);
+        $this->assertSame(3675 - 450, $p['total']);
     }
 
     public function test_promotiecode_geeft_geen_korting_op_verzendkosten(): void
@@ -136,6 +136,7 @@ class PricingTest extends TestCase
         $promoCodes = (require base_path('config/pricing.php'))['promo_codes'];
 
         $this->assertTrue($promoCodes['PMPWINTER']['active']);
+        $this->assertSame(15, $promoCodes['PMPWINTER']['discount_percent']);
         $this->assertFalse($promoCodes['PMPNIEUW']['active']);
     }
 

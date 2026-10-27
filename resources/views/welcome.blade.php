@@ -1828,7 +1828,7 @@
         <div class="promo-banner">
             <div class="promo-banner-title">Eindejaarsactie</div>
             <div class="promo-banner-text">
-                Gebruik code <strong>PMP WINTER</strong> en ontvang 25% korting<br>
+                Gebruik code <strong>PMP WINTER</strong> en ontvang 15% korting<br>
                 op afdrukken, startkosten en afwerking
             </div>
         </div>
@@ -2156,7 +2156,7 @@
                     <span id="priceStartupValue">€10,00</span>
                 </div>
                 <div class="price-row discount" id="priceDiscountRow" style="display: none;">
-                    <span id="priceDiscountLabel">Korting (25%)</span>
+                    <span id="priceDiscountLabel">Korting (15%)</span>
                     <span id="priceDiscountValue">-€0,00</span>
                 </div>
                 <div class="price-row total">
@@ -2411,7 +2411,7 @@
         const MAX_QUANTITY = {{ (int) config('pricing.max_quantity') }};
 
         const PROMO_CODES = {
-            'PMPWINTER': { discountPercent: 25, appliesTo: ['pages', 'startup', 'binding'] }
+            'PMPWINTER': { discountPercent: 15, appliesTo: ['pages', 'startup', 'binding'] }
         };
 
         // State
