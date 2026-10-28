@@ -101,8 +101,10 @@ class PakbonTest extends TestCase
 
         $text = $this->pdfText($order);
 
-        $this->assertStringContainsString("(10\xD7)", $text);
         $this->assertStringContainsString('EXEMPLAREN', $text);
+        // Het getal zelf in een grote letter (tabelcel "10" staat op 10 pt)
+        preg_match_all('#BT /F\d+ (\d+\.\d+) Tf ET[^(]*?\(10\) Tj#s', $text, $m);
+        $this->assertGreaterThanOrEqual(60, max(array_map('floatval', $m[1])));
     }
 
     public function test_bestandsnaam_eindigt_op_oplage(): void

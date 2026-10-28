@@ -240,7 +240,7 @@ class PakbonService
         $baseline = 54;  // net boven de titel "PAKBON / ..."
         $maxSize = 105;  // pt; houdt ruimte vrij voor het label erboven
 
-        $label = $quantity . chr(0xD7); // "10×" in windows-1252
+        $label = (string) $quantity;
         $pdf->SetFont('Arial', 'B', 100);
         $size = min($maxSize, 100 * ($right - $left) / $pdf->GetStringWidth($label));
         $pdf->SetFont('Arial', 'B', $size);
