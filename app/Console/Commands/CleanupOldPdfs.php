@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Order;
+use App\Services\OrderThumbnailService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -42,6 +43,12 @@ class CleanupOldPdfs extends Command
             try {
                 // Check of bestand bestaat
                 if (Storage::disk('local')->exists($order->pdf_path)) {
+                    // Eerst thumbnail en inslag: het thumbnail-pad hangt af van pdf_path
+                    OrderThumbnailService::delete($order);
+                    if ($order->pdf_imposed_path && Storage::disk('local')->exists($order->pdf_imposed_path)) {
+                        Storage::disk('local')->delete($order->pdf_imposed_path);
+                    }
+
                     // Verwijder het bestand
                     Storage::disk('local')->delete($order->pdf_path);
                     
@@ -49,6 +56,7 @@ class CleanupOldPdfs extends Command
                     $order->update([
                         'pdf_path' => null,
                         'pdf_stored_name' => null,
+                        'pdf_imposed_path' => null,
                     ]);
                     
                     $deleted++;

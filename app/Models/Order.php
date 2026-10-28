@@ -47,6 +47,7 @@ class Order extends Model
         'delivery_type',
         'track_trace',
         'shipped_at',
+        'archived_at',
         'paid_at',
         'paid_processed_at',
         'payment_failed_mailed_at',
@@ -72,6 +73,7 @@ class Order extends Model
         'paid_processed_at' => 'datetime',
         'payment_failed_mailed_at' => 'datetime',
         'shipped_at' => 'datetime',
+        'archived_at' => 'datetime',
     ];
 
     /**

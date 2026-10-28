@@ -82,6 +82,8 @@ Route::prefix('admin')->middleware(\App\Http\Middleware\AdminAuth::class)->group
     Route::post('/orders/{orderNumber}/ship', [AdminController::class, 'updateStatus'])->name('admin.order.ship');
     Route::delete('/orders/{orderNumber}', [AdminController::class, 'destroy'])->name('admin.order.delete');
     Route::post('/orders/bulk-delete', [AdminController::class, 'bulkDestroy'])->name('admin.orders.bulk-delete');
+    Route::post('/orders/bulk-archive', [AdminController::class, 'bulkArchive'])->name('admin.orders.bulk-archive');
+    Route::post('/orders/bulk-unarchive', [AdminController::class, 'bulkUnarchive'])->name('admin.orders.bulk-unarchive');
 
     // Facturatie
     Route::post('/orders/{orderNumber}/invoice', [AdminController::class, 'createInvoice'])->name('admin.order.invoice.create');

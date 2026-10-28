@@ -23,10 +23,18 @@ class AdminController extends Controller
      */
     public function orders(Request $request)
     {
-        $orders = Order::orderBy('created_at', 'desc')
-            ->paginate(20);
+        $archive = $request->boolean('archief');
 
-        return view('admin.orders', compact('orders'));
+        $orders = Order::query()
+            ->when($archive, fn ($q) => $q->whereNotNull('archived_at'), fn ($q) => $q->whereNull('archived_at'))
+            ->orderBy('created_at', 'desc')
+            ->paginate(20)
+            ->withQueryString();
+
+        $activeCount = Order::whereNull('archived_at')->count();
+        $archivedCount = Order::whereNotNull('archived_at')->count();
+
+        return view('admin.orders', compact('orders', 'archive', 'activeCount', 'archivedCount'));
     }
 
     /**
@@ -181,15 +189,7 @@ class AdminController extends Controller
     {
         $order = Order::where('order_number', $orderNumber)->firstOrFail();
 
-        // Verwijder bijbehorende bestanden
-        if ($order->pdf_path && Storage::disk('local')->exists($order->pdf_path)) {
-            Storage::disk('local')->delete($order->pdf_path);
-        }
-        if ($order->pdf_imposed_path && Storage::disk('local')->exists($order->pdf_imposed_path)) {
-            Storage::disk('local')->delete($order->pdf_imposed_path);
-        }
-        OrderThumbnailService::delete($order);
-
+        $this->deleteFiles($order);
         $order->delete();
 
         return redirect()->back()->with('success', "Bestelling {$orderNumber} verwijderd.");
@@ -208,18 +208,72 @@ class AdminController extends Controller
         $orders = Order::whereIn('order_number', $request->input('order_numbers'))->get();
 
         foreach ($orders as $order) {
-            if ($order->pdf_path && Storage::disk('local')->exists($order->pdf_path)) {
-                Storage::disk('local')->delete($order->pdf_path);
-            }
-            if ($order->pdf_imposed_path && Storage::disk('local')->exists($order->pdf_imposed_path)) {
-                Storage::disk('local')->delete($order->pdf_imposed_path);
-            }
-            OrderThumbnailService::delete($order);
+            $this->deleteFiles($order);
             $order->delete();
         }
 
         $count = $orders->count();
         return redirect()->back()->with('success', "{$count} bestelling(en) verwijderd.");
+    }
+
+    /**
+     * Archiveer meerdere bestellingen: de order (en factuur) blijft bewaard voor de
+     * fiscale bewaarplicht, de PDF, inslag en thumbnail gaan weg zoals de privacyverklaring belooft.
+     */
+    public function bulkArchive(Request $request)
+    {
+        $request->validate([
+            'order_numbers' => 'required|array|min:1',
+            'order_numbers.*' => 'string',
+        ]);
+
+        $orders = Order::whereIn('order_number', $request->input('order_numbers'))
+            ->whereNull('archived_at')
+            ->get();
+
+        foreach ($orders as $order) {
+            $this->deleteFiles($order);
+            $order->update([
+                'pdf_path' => null,
+                'pdf_stored_name' => null,
+                'pdf_imposed_path' => null,
+                'archived_at' => now(),
+            ]);
+        }
+
+        $count = $orders->count();
+        return redirect()->back()->with('success', "{$count} bestelling(en) gearchiveerd. De PDF's zijn verwijderd, de ordergegevens blijven bewaard.");
+    }
+
+    /**
+     * Zet gearchiveerde bestellingen terug in het overzicht (zonder PDF)
+     */
+    public function bulkUnarchive(Request $request)
+    {
+        $request->validate([
+            'order_numbers' => 'required|array|min:1',
+            'order_numbers.*' => 'string',
+        ]);
+
+        $count = Order::whereIn('order_number', $request->input('order_numbers'))
+            ->whereNotNull('archived_at')
+            ->update(['archived_at' => null]);
+
+        return redirect()->back()->with('success', "{$count} bestelling(en) teruggezet uit het archief.");
+    }
+
+    /**
+     * Verwijder de bestanden van een order: originele PDF, inslag en thumbnail
+     */
+    private function deleteFiles(Order $order): void
+    {
+        if ($order->pdf_path && Storage::disk('local')->exists($order->pdf_path)) {
+            Storage::disk('local')->delete($order->pdf_path);
+        }
+        if ($order->pdf_imposed_path && Storage::disk('local')->exists($order->pdf_imposed_path)) {
+            Storage::disk('local')->delete($order->pdf_imposed_path);
+        }
+        OrderThumbnailService::delete($order);
     }
 
     /**

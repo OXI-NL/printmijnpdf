@@ -84,7 +84,7 @@ class AdminShipTest extends TestCase
             $this->assertLessThanOrEqual(1, $depth, 'Genest <form> gevonden');
         }
         $this->assertSame(0, $depth);
-        $this->assertStringContainsString('form="bulkDeleteForm"', $html);
+        $this->assertStringContainsString('form="bulkForm"', $html);
     }
 
     /** "boekje@else" zonder spatie werd door Blade niet als directive gezien */

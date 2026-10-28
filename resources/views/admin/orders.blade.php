@@ -100,6 +100,7 @@
         }
         .customer-name { font-weight: 500; }
         .customer-email { font-size: 13px; color: #6c757d; }
+        td.customer { white-space: normal; min-width: 200px; max-width: 240px; overflow-wrap: anywhere; }
         .file-info { font-size: 13px; white-space: normal; }
         .file-name { 
             max-width: 200px; 
@@ -149,7 +150,32 @@
             border: 1px solid #dc3545;
         }
         .btn-danger-outline:hover { background: #dc3545; color: white; }
-        .actions { display: flex; gap: 6px; white-space: nowrap; }
+        /* Acties in rijen van drie, zodat de tabel ook op een 15-inch scherm past */
+        .actions-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            width: 250px;
+        }
+        .actions-grid form { display: contents; }
+        /* Vangnet: past de tabel toch niet, dan horizontaal scrollen in plaats van wegvallen */
+        .table-wrap { overflow-x: auto; }
+        .tabs { display: flex; gap: 4px; }
+        .tabs a {
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #495057;
+            text-decoration: none;
+        }
+        .tabs a:hover { background: #f8f9fa; }
+        .tabs a.active { background: #e63946; color: white; }
+        .btn-archive {
+            background: #495057;
+            color: white;
+        }
+        .btn-archive:hover { background: #343a40; }
         .btn {
             display: inline-flex;
             align-items: center;
@@ -249,7 +275,6 @@
         @media (max-width: 1024px) {
             .container { padding: 1rem; }
             th, td { padding: 0.75rem; }
-            .actions { flex-direction: column; }
         }
     </style>
 </head>
@@ -287,7 +312,7 @@
         <div class="stats">
             <div class="stat-card highlight">
                 <div class="label">Totaal bestellingen</div>
-                <div class="value">{{ $orders->total() }}</div>
+                <div class="value">{{ $activeCount + $archivedCount }}</div>
             </div>
             <div class="stat-card">
                 <div class="label">Betaald (wacht op print)</div>
@@ -333,12 +358,26 @@
 
         <div class="card">
             <div class="card-header">
-                <h2>Alle bestellingen</h2>
+                <h2>{{ $archive ? 'Archief' : 'Bestellingen' }}</h2>
+                <nav class="tabs">
+                    <a href="{{ route('admin.orders') }}" class="{{ $archive ? '' : 'active' }}">Actief ({{ $activeCount }})</a>
+                    <a href="{{ route('admin.orders', ['archief' => 1]) }}" class="{{ $archive ? 'active' : '' }}">Archief ({{ $archivedCount }})</a>
+                </nav>
             </div>
 
             @if($orders->count() > 0)
                 <div class="bulk-bar" id="bulkBar">
                     <span><span class="count" id="selectedCount">0</span> geselecteerd</span>
+                    @if($archive)
+                        <button type="button" class="btn btn-secondary" onclick="confirmBulkUnarchive()">Terugzetten</button>
+                    @else
+                        <button type="button" class="btn btn-archive" onclick="confirmBulkArchive()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+                                <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>
+                            </svg>
+                            Archiveren
+                        </button>
+                    @endif
                     <button type="button" class="btn btn-danger" onclick="confirmBulkDelete()">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
                             <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -347,11 +386,13 @@
                     </button>
                     <button type="button" class="btn btn-secondary" onclick="clearSelection()">Annuleren</button>
                 </div>
-                {{-- Bewust leeg: de checkboxes horen er via form="bulkDeleteForm" bij. Een
-                     formulier om de tabel heen zou de formulieren in de rijen opslokken. --}}
-                <form id="bulkDeleteForm" method="POST" action="{{ route('admin.orders.bulk-delete') }}">
+                {{-- Bewust leeg: de checkboxes horen er via form="bulkForm" bij. Een
+                     formulier om de tabel heen zou de formulieren in de rijen opslokken.
+                     De knop in de balk kiest de actie (verwijderen, archiveren, terugzetten). --}}
+                <form id="bulkForm" method="POST" action="{{ route('admin.orders.bulk-delete') }}">
                     @csrf
                 </form>
+                <div class="table-wrap">
                 <table>
                     <thead>
                         <tr>
@@ -369,12 +410,12 @@
                         @foreach($orders as $order)
                             <tr>
                                 <td class="checkbox-cell">
-                                    <input type="checkbox" form="bulkDeleteForm" name="order_numbers[]" value="{{ $order->order_number }}" class="order-checkbox" onchange="updateBulkBar()">
+                                    <input type="checkbox" form="bulkForm" name="order_numbers[]" value="{{ $order->order_number }}" class="order-checkbox" onchange="updateBulkBar()">
                                 </td>
                                 <td>
                                     <span class="order-number">{{ $order->order_number }}</span>
                                 </td>
-                                <td>
+                                <td class="customer">
                                     <div class="customer-name">{{ $order->customer_name }}</div>
                                     <div class="customer-email">{{ $order->customer_email }}</div>
                                     @if($order->utm_source || $order->gclid || $order->fbclid)
@@ -416,7 +457,8 @@
                                     {{ $order->created_at->format('d-m-Y') }}<br>
                                     <small>{{ $order->created_at->format('H:i') }}</small>
                                 </td>
-                                <td class="actions">
+                                <td>
+                                    <div class="actions-grid">
                                     @if($order->pdf_path)
                                         <a href="/admin/orders/{{ $order->order_number }}/pdf" class="btn btn-secondary" title="Download originele PDF">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -427,7 +469,7 @@
                                             PDF
                                         </a>
                                     @endif
-                                    @if($order->status !== 'pending' && $order->status !== 'cancelled')
+                                    @if($order->pdf_path && $order->status !== 'pending' && $order->status !== 'cancelled')
                                         <a href="/admin/orders/{{ $order->order_number }}/imposed" class="btn btn-primary" title="Download inslag PDF (drukklaar)">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
@@ -475,9 +517,9 @@
                                             </button>
                                         @endif
                                     @endif
-                                    @if($order->status === 'paid')
+                                    @if($order->status === 'paid' && !$order->archived_at)
                                         @if($order->delivery_type === 'pickup')
-                                            <form method="POST" action="/admin/orders/{{ $order->order_number }}/ship" style="display:inline;" onsubmit="return confirm({{ \Illuminate\Support\Js::from($order->customer_name . ' krijgt een afhaalmail op ' . $order->customer_email . '. Doorgaan?') }})">
+                                            <form method="POST" action="/admin/orders/{{ $order->order_number }}/ship" onsubmit="return confirm({{ \Illuminate\Support\Js::from($order->customer_name . ' krijgt een afhaalmail op ' . $order->customer_email . '. Doorgaan?') }})">
                                                 @csrf
                                                 <input type="hidden" name="status" value="shipped">
                                                 <input type="hidden" name="pickup" value="1">
@@ -501,11 +543,13 @@
                                             </button>
                                         @endif
                                     @endif
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
+                </div>
 
                 <form id="singleDeleteForm" method="POST" style="display:none;">
                     @csrf
@@ -548,8 +592,13 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                         <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                     </svg>
-                    <h3>Nog geen bestellingen</h3>
-                    <p>Zodra er bestellingen binnenkomen, verschijnen ze hier.</p>
+                    @if($archive)
+                        <h3>Het archief is leeg</h3>
+                        <p>Gearchiveerde bestellingen verschijnen hier, zonder PDF.</p>
+                    @else
+                        <h3>Geen actieve bestellingen</h3>
+                        <p>Zodra er bestellingen binnenkomen, verschijnen ze hier.</p>
+                    @endif
                 </div>
             @endif
         </div>
@@ -646,12 +695,26 @@
             updateBulkBar();
         }
 
-        function confirmBulkDelete() {
+        function submitBulk(action, question) {
             const checked = document.querySelectorAll('.order-checkbox:checked');
             if (checked.length === 0) return;
-            if (confirm('Weet je zeker dat je ' + checked.length + ' bestelling(en) wilt verwijderen?')) {
-                document.getElementById('bulkDeleteForm').submit();
+            if (confirm(question.replace('{n}', checked.length))) {
+                const form = document.getElementById('bulkForm');
+                form.action = action;
+                form.submit();
             }
+        }
+
+        function confirmBulkDelete() {
+            submitBulk(@json(route('admin.orders.bulk-delete')), 'Weet je zeker dat je {n} bestelling(en) wilt verwijderen? Dit kan niet ongedaan worden gemaakt.');
+        }
+
+        function confirmBulkArchive() {
+            submitBulk(@json(route('admin.orders.bulk-archive')), '{n} bestelling(en) archiveren? De ordergegevens en facturen blijven bewaard, de PDF\'s worden verwijderd.');
+        }
+
+        function confirmBulkUnarchive() {
+            submitBulk(@json(route('admin.orders.bulk-unarchive')), '{n} bestelling(en) terugzetten uit het archief? De PDF komt niet terug.');
         }
     </script>
 </body>
