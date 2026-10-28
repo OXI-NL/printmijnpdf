@@ -272,7 +272,7 @@
         }
         .modal [hidden] { display: none !important; }
         .modal.wide { max-width: 520px; max-height: 92vh; overflow-y: auto; }
-        .modal .choice { display: flex; gap: 8px; }
+        .modal .choice { display: flex; flex-wrap: wrap; gap: 8px; }
         .modal .choice label {
             flex: 1;
             display: flex;
@@ -291,7 +291,8 @@
         .sandbox-badge { font-size: 11px; background: #fff3cd; color: #856404; border-radius: 4px; padding: 2px 6px; vertical-align: middle; }
         .label-frame { width: 100%; height: max(320px, 48vh); border: 1px solid #dee2e6; border-radius: 8px; margin: 0.75rem 0; }
         .label-tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-        .label-tools a { font-size: 13px; color: #495057; }
+        .label-tools a, .manual-link { font-size: 13px; color: #495057; }
+        .modal input[readonly] { background: #f8f9fa; color: #495057; }
         .modal-actions { display: flex; gap: 10px; margin-top: 1.5rem; }
         .modal-actions .btn { flex: 1; justify-content: center; }
         @media (max-width: 1024px) {
@@ -667,10 +668,11 @@
                 @csrf
                 <input type="hidden" name="status" value="shipped">
 
-                <div class="form-group">
+                <div class="form-group" id="trackTraceGroup">
                     <label for="track_trace" id="trackTraceLabel">Track & Trace code (optioneel)</label>
                     <input type="text" id="track_trace" name="track_trace" placeholder="3S...">
                 </div>
+                <a href="#" class="manual-link" id="manualLink" onclick="showManualTrackTrace(); return false;" hidden>Code handmatig invullen</a>
 
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeShipModal()">Annuleren</button>
@@ -702,9 +704,25 @@
                 document.getElementById('labelPreview').hidden = true;
                 document.getElementById('labelButton').hidden = false;
                 document.getElementById('shipModalBox').classList.remove('wide');
+                setTrackTrace(order.postnl ? 'hidden' : 'manual');
                 setShipSubmit(order.postnl ? 'Zonder label verzenden' : 'Verzenden');
             }
             document.getElementById('shipModal').classList.add('active');
+        }
+
+        // PostNL vult de code zelf in; handmatig alleen bij buitenland of een storing
+        function setTrackTrace(mode) {
+            const input = document.getElementById('track_trace');
+            document.getElementById('trackTraceGroup').hidden = mode === 'hidden';
+            document.getElementById('manualLink').hidden = mode === 'manual' || !shipOrder.postnl;
+            document.getElementById('trackTraceLabel').textContent =
+                mode === 'auto' ? 'Track & Trace (automatisch van PostNL)' : 'Track & Trace code (optioneel)';
+            input.readOnly = mode === 'auto';
+        }
+
+        function showManualTrackTrace() {
+            setTrackTrace('manual');
+            document.getElementById('track_trace').focus();
         }
 
         function showLabel(url, barcode) {
@@ -715,6 +733,7 @@
             document.getElementById('labelButton').hidden = true;
             document.getElementById('shipModalBox').classList.add('wide');
             document.getElementById('track_trace').value = barcode || '';
+            setTrackTrace('auto');
             setShipSubmit('Bevestig verzending & mail klant');
         }
 

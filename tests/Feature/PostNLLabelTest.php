@@ -91,7 +91,7 @@ class PostNLLabelTest extends TestCase
                 && $request['Customer']['CustomerCode'] === 'HCBM'
                 && $request['Customer']['CustomerNumber'] === '9121183'
                 && $request['Message']['Printertype'] === 'GraphicFile|PDF'
-                && $shipment['ProductCodeDelivery'] === '2928'
+                && $shipment['ProductCodeDelivery'] === '2948'
                 && $shipment['Reference'] === $order->order_number
                 && $shipment['Addresses'][0]['Zipcode'] === '1234AB'
                 && $shipment['Addresses'][0]['HouseNrExt'] === 'B';
@@ -102,14 +102,32 @@ class PostNLLabelTest extends TestCase
             ->assertHeader('Content-Type', 'application/pdf');
     }
 
-    public function test_pakket_gebruikt_pakketcode(): void
+    public function test_bevestigen_zonder_ingevulde_code_gebruikt_labelcode(): void
     {
+        \Illuminate\Support\Facades\Mail::fake();
         $this->fakePostNL();
         $order = $this->order();
+        $this->admin()->postJson("/admin/orders/{$order->order_number}/label", ['product' => 'brievenbuspakje'])->assertOk();
 
-        $this->admin()->postJson("/admin/orders/{$order->order_number}/label", ['product' => 'pakket'])->assertOk();
+        $this->admin()->post("/admin/orders/{$order->order_number}/ship", ['status' => 'shipped', 'track_trace' => ''])
+            ->assertSessionHas('success');
 
-        Http::assertSent(fn (Request $request) => $request['Shipments'][0]['ProductCodeDelivery'] === '3085');
+        $order->refresh();
+        $this->assertSame('shipped', $order->status);
+        $this->assertSame('3SHCBM123456789', $order->track_trace);
+        \Illuminate\Support\Facades\Mail::assertSent(\App\Mail\OrderShipped::class);
+    }
+
+    public function test_productcodes_per_verzendvorm(): void
+    {
+        foreach (['pakket' => '3085', 'brievenbuspakje_24' => '2928'] as $product => $code) {
+            $this->fakePostNL();
+            $order = $this->order();
+
+            $this->admin()->postJson("/admin/orders/{$order->order_number}/label", ['product' => $product])->assertOk();
+
+            Http::assertSent(fn (Request $request) => $request['Shipments'][0]['ProductCodeDelivery'] === $code);
+        }
     }
 
     public function test_tweede_label_alleen_na_bevestiging(): void

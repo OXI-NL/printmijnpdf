@@ -204,6 +204,9 @@ class AdminController extends Controller
             $data['shipped_at'] = now();
             if (!$isPickup && $request->input('track_trace')) {
                 $data['track_trace'] = $request->input('track_trace');
+            } elseif (!$isPickup && $order->postnl_barcode) {
+                // Leeg veld terwijl er een PostNL-label is: dan geldt de code van dat label
+                $data['track_trace'] = $order->postnl_barcode;
             }
             $shouldSendEmail = true;
         }

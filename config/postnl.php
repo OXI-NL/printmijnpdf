@@ -25,9 +25,11 @@ return [
         'city' => 'Delfgauw',
     ],
 
-    // Verzendvormen in het verzendvenster; de eerste is de standaard
+    // Verzendvormen in het verzendvenster; de eerste is de standaard.
+    // Brievenbuspakje+ 48 uur past bij "PostNL bezorgt binnen 2 werkdagen" op de site.
     'products' => [
-        'brievenbuspakje' => ['code' => '2928', 'label' => 'Brievenbuspakje', 'weight' => 500],
+        'brievenbuspakje' => ['code' => '2948', 'label' => 'Brievenbuspakje 48 uur', 'weight' => 500],
+        'brievenbuspakje_24' => ['code' => '2928', 'label' => 'Brievenbuspakje 24 uur', 'weight' => 500],
         'pakket' => ['code' => '3085', 'label' => 'Pakket', 'weight' => 1000],
     ],
 ];
