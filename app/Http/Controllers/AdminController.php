@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\InvoiceMail;
+use App\Models\CreditNote;
 use App\Models\Invoice;
 use App\Models\Order;
 use App\Services\BookletImpositionService;
@@ -27,6 +28,7 @@ class AdminController extends Controller
         $archive = $request->boolean('archief');
 
         $orders = Order::query()
+            ->with('creditNotes')
             ->when($archive, fn ($q) => $q->whereNotNull('archived_at'), fn ($q) => $q->whereNull('archived_at'))
             ->orderBy('created_at', 'desc')
             ->paginate(20)
@@ -402,6 +404,20 @@ class AdminController extends Controller
         $filename = 'Factuur_' . $invoice->invoice_number . '.pdf';
 
         return Storage::disk('local')->download($invoice->pdf_path, $filename);
+    }
+
+    /**
+     * Download creditnota PDF
+     */
+    public function downloadCreditNote(string $creditNumber)
+    {
+        $creditNote = CreditNote::where('credit_number', $creditNumber)->firstOrFail();
+
+        if (!$creditNote->pdf_path || !Storage::disk('local')->exists($creditNote->pdf_path)) {
+            abort(404, 'Creditnota PDF niet gevonden');
+        }
+
+        return Storage::disk('local')->download($creditNote->pdf_path, 'Creditnota_' . $creditNote->credit_number . '.pdf');
     }
 
     /**

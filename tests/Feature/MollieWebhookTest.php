@@ -5,10 +5,12 @@ namespace Tests\Feature;
 use App\Mail\AdminOrderNotification;
 use App\Mail\OrderConfirmation;
 use App\Mail\PaymentFailed;
+use App\Models\CreditNote;
 use App\Models\Order;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Mockery;
 use Mollie\Api\MollieApiClient;
 use Mollie\Laravel\Facades\Mollie;
@@ -57,8 +59,8 @@ class MollieWebhookTest extends TestCase
         ], $overrides));
     }
 
-    /** Mockt Mollie zodat payments->get() een betaling met de gegeven status teruggeeft. */
-    private function mockMollie(?int $orderId, string $status): void
+    /** Mockt Mollie zodat payments->get() een betaling met de gegeven status (en terugbetalingen) teruggeeft. */
+    private function mockMollie(?int $orderId, string $status, array $refunds = []): void
     {
         $payment = Mockery::mock();
         $payment->metadata = $orderId === null ? null : (object) ['order_id' => $orderId];
@@ -66,6 +68,8 @@ class MollieWebhookTest extends TestCase
         $payment->shouldReceive('isCanceled')->andReturn($status === 'canceled');
         $payment->shouldReceive('isExpired')->andReturn($status === 'expired');
         $payment->shouldReceive('isFailed')->andReturn($status === 'failed');
+        $payment->shouldReceive('hasRefunds')->andReturn($refunds !== []);
+        $payment->shouldReceive('refunds')->andReturn($refunds);
 
         $endpoint = Mockery::mock();
         $endpoint->shouldReceive('get')->andReturn($payment);
@@ -222,5 +226,88 @@ class MollieWebhookTest extends TestCase
         $this->get('/bestelling/'.$order->order_number);
 
         Mail::assertNothingSent();
+    }
+
+    private function refund(string $id, string $value, string $status = 'pending'): object
+    {
+        return (object) [
+            'id' => $id,
+            'status' => $status,
+            'amount' => (object) ['value' => $value, 'currency' => 'EUR'],
+            'createdAt' => '2026-10-28T14:00:00+00:00',
+            'description' => 'Drukfout vorige levering',
+        ];
+    }
+
+    public function test_terugbetaling_maakt_creditnota_en_order_loopt_door(): void
+    {
+        Storage::fake('local');
+        $order = $this->order(['status' => 'paid', 'paid_at' => now(), 'paid_processed_at' => now()]);
+        $this->mockMollie($order->id, 'paid', [$this->refund('re_1', '19.75')]);
+
+        $this->post('/webhook/mollie', ['id' => 'tr_test123'])->assertOk();
+
+        $order->refresh();
+        $this->assertSame('paid', $order->status, 'terugbetaald betekent niet: niet verzenden');
+        $creditNote = $order->creditNotes()->sole();
+        $this->assertSame('C-PMP-261028-0001', $creditNote->credit_number);
+        $this->assertSame(1975, $creditNote->amount_incl_btw);
+        $this->assertSame(1632, $creditNote->amount_excl_btw);
+        $this->assertSame(343, $creditNote->amount_btw);
+        $this->assertSame(1975, $order->refunded_amount);
+        Storage::disk('local')->assertExists($creditNote->pdf_path);
+        Mail::assertNothingSent();
+    }
+
+    public function test_herhaalde_webhook_maakt_geen_tweede_creditnota(): void
+    {
+        Storage::fake('local');
+        $order = $this->order(['status' => 'shipped', 'paid_at' => now(), 'paid_processed_at' => now()]);
+        $this->mockMollie($order->id, 'paid', [$this->refund('re_1', '5.00')]);
+
+        $this->post('/webhook/mollie', ['id' => 'tr_test123'])->assertOk();
+        $this->post('/webhook/mollie', ['id' => 'tr_test123'])->assertOk();
+
+        $this->assertSame(1, CreditNote::count());
+    }
+
+    public function test_tweede_gedeeltelijke_terugbetaling_krijgt_volgend_nummer(): void
+    {
+        Storage::fake('local');
+        $order = $this->order(['status' => 'paid', 'paid_at' => now(), 'paid_processed_at' => now()]);
+        $this->mockMollie($order->id, 'paid', [$this->refund('re_1', '6.75'), $this->refund('re_2', '3.00', 'refunded')]);
+
+        $this->post('/webhook/mollie', ['id' => 'tr_test123'])->assertOk();
+
+        $this->assertSame(['C-PMP-261028-0001', 'C-PMP-261028-0002'], CreditNote::orderBy('id')->pluck('credit_number')->all());
+        $this->assertSame(975, $order->refresh()->refunded_amount);
+    }
+
+    public function test_mislukte_of_wachtende_terugbetaling_telt_niet(): void
+    {
+        Storage::fake('local');
+        $order = $this->order(['status' => 'paid', 'paid_at' => now(), 'paid_processed_at' => now()]);
+        $this->mockMollie($order->id, 'paid', [
+            $this->refund('re_q', '5.00', 'queued'),
+            $this->refund('re_f', '5.00', 'failed'),
+            $this->refund('re_c', '5.00', 'canceled'),
+        ]);
+
+        $this->post('/webhook/mollie', ['id' => 'tr_test123'])->assertOk();
+
+        $this->assertSame(0, CreditNote::count());
+    }
+
+    public function test_sync_commando_maakt_ontbrekende_creditnotas(): void
+    {
+        Storage::fake('local');
+        $order = $this->order(['status' => 'shipped', 'paid_at' => now()->subWeek(), 'paid_processed_at' => now()]);
+        $this->mockMollie($order->id, 'paid', [$this->refund('re_1', '19.75')]);
+
+        $this->artisan('mollie:sync-refunds', ['--order' => $order->order_number])->assertSuccessful();
+        $this->artisan('mollie:sync-refunds')->assertSuccessful();
+
+        $this->assertSame(1, CreditNote::count());
+        $this->assertSame('shipped', $order->refresh()->status);
     }
 }

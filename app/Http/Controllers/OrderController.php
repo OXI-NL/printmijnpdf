@@ -9,6 +9,7 @@ use App\Mail\PaymentFailed;
 use App\Models\Order;
 use App\Rules\SafeEmail;
 use App\Services\BookletImpositionService;
+use App\Services\CreditNoteService;
 use App\Services\MirroredBleedService;
 use App\Services\OrderThumbnailService;
 use App\Services\PdfFormatValidator;
@@ -374,6 +375,12 @@ class OrderController extends Controller
                     $this->sendPaymentFailedEmail($order);
                     Log::info("Order {$order->order_number} payment failed/cancelled/expired");
                 }
+            }
+
+            // Mollie roept dezelfde webhook aan bij een terugbetaling; de betaling
+            // blijft dan 'paid'. Creditnota maken, de order zelf loopt gewoon door.
+            if ($order->isPaid()) {
+                CreditNoteService::syncRefunds($order, $payment);
             }
 
             return response('OK');

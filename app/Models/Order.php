@@ -90,6 +90,20 @@ class Order extends Model
     }
 
     /**
+     * Creditnota's: één per Mollie-terugbetaling. Los van de status, want een
+     * terugbetaalde order kan nog steeds gedrukt en verzonden worden.
+     */
+    public function creditNotes()
+    {
+        return $this->hasMany(\App\Models\CreditNote::class);
+    }
+
+    public function getRefundedAmountAttribute(): int
+    {
+        return (int) $this->creditNotes->sum('amount_incl_btw');
+    }
+
+    /**
      * Genereer een uniek ordernummer
      */
     public static function generateOrderNumber(): string

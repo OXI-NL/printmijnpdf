@@ -124,6 +124,7 @@
         .status.delivered { background: #e2e3e5; color: #383d41; }
         .status.cancelled { background: #f8d7da; color: #721c24; }
         .status.pending { background: #ffeeba; color: #856404; }
+        .refund-badge { display: inline-block; margin-top: 4px; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #f8d7da; color: #721c24; }
         .checkbox-cell { width: 40px; text-align: center; overflow: visible; text-overflow: clip; }
         .checkbox-cell input[type="checkbox"] {
             width: 18px; height: 18px; cursor: pointer; accent-color: #e63946;
@@ -347,7 +348,7 @@
             </div>
             <div class="stat-card">
                 <div class="label">Omzet totaal</div>
-                <div class="value">€ {{ number_format(\App\Models\Order::where('status', '!=', 'cancelled')->sum('price_total') / 100, 2, ',', '.') }}</div>
+                <div class="value">€ {{ number_format((\App\Models\Order::whereIn('status', ['paid', 'processing', 'shipped', 'delivered'])->sum('price_total') - \App\Models\CreditNote::sum('amount_incl_btw')) / 100, 2, ',', '.') }}</div>
             </div>
         </div>
 
@@ -475,6 +476,9 @@
                                             @default {{ $order->status }}
                                         @endswitch
                                     </span>
+                                    @if($order->creditNotes->isNotEmpty())
+                                        <br><span class="refund-badge" title="{{ $order->creditNotes->pluck('credit_number')->join(', ') }}">Terugbetaald € {{ number_format($order->refunded_amount / 100, 2, ',', '.') }}</span>
+                                    @endif
                                 </td>
                                 <td class="date">
                                     {{ $order->created_at->format('d-m-Y') }}<br>
@@ -540,6 +544,16 @@
                                             </button>
                                         @endif
                                     @endif
+                                    @foreach($order->creditNotes as $creditNote)
+                                        <a href="/admin/credit-notes/{{ $creditNote->credit_number }}" class="btn btn-secondary" target="_blank" title="Download creditnota {{ $creditNote->credit_number }} ({{ $creditNote->formatted_total }})">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                                <polyline points="14 2 14 8 20 8"/>
+                                                <line x1="9" y1="15" x2="15" y2="15"/>
+                                            </svg>
+                                            Creditnota
+                                        </a>
+                                    @endforeach
                                     @if($order->status === 'paid' && !$order->archived_at)
                                         @if($order->delivery_type === 'pickup')
                                             <form method="POST" action="/admin/orders/{{ $order->order_number }}/ship" onsubmit="return confirm({{ \Illuminate\Support\Js::from($order->customer_name . ' krijgt een afhaalmail op ' . $order->customer_email . '. Doorgaan?') }})">

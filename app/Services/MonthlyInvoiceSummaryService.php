@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\CreditNote;
 use App\Models\Invoice;
 use App\Models\Order;
 use Illuminate\Support\Facades\Log;
@@ -28,6 +29,14 @@ class MonthlyInvoiceSummaryService
             ->whereMonth('paid_at', $month)
             ->orderBy('paid_at')
             ->with('invoice')
+            ->get();
+
+        // Terugbetalingen tellen in de maand van de creditnota, niet die van de order
+        $creditNotes = CreditNote::whereYear('credit_date', $year)
+            ->whereMonth('credit_date', $month)
+            ->orderBy('credit_date')
+            ->orderBy('id')
+            ->with('order.invoice')
             ->get();
 
         $monthName = self::dutchMonth($month);
@@ -58,6 +67,15 @@ class MonthlyInvoiceSummaryService
         $pdf->Line(15, $pdf->GetY(), 282, $pdf->GetY());
         $pdf->Ln(6);
 
+        // Kolombreedtes (totaal = 267mm voor landscape A4 met 15mm marges)
+        $w = [28, 28, 45, 28, 25, 25, 23, 23, 22, 20];
+
+        $totalExcl = 0;
+        $totalBtw = 0;
+        $totalIncl = 0;
+        $totalMollie = 0;
+        $totalNet = 0;
+
         if ($orders->isEmpty()) {
             $pdf->SetFont('Arial', 'I', 12);
             $pdf->SetTextColor(100, 100, 100);
@@ -67,9 +85,6 @@ class MonthlyInvoiceSummaryService
             $pdf->SetFont('Arial', 'B', 8);
             $pdf->SetFillColor(230, 57, 70);
             $pdf->SetTextColor(255, 255, 255);
-
-            // Kolombreedtes (totaal = 267mm voor landscape A4 met 15mm marges)
-            $w = [28, 28, 45, 28, 25, 25, 23, 23, 22, 20];
 
             $pdf->Cell($w[0], 7, 'Bestelnr', 1, 0, 'L', true);
             $pdf->Cell($w[1], 7, 'Factuurnr', 1, 0, 'L', true);
@@ -86,12 +101,6 @@ class MonthlyInvoiceSummaryService
             $pdf->SetFont('Arial', '', 8);
             $pdf->SetTextColor(0, 0, 0);
             $fill = false;
-
-            $totalExcl = 0;
-            $totalBtw = 0;
-            $totalIncl = 0;
-            $totalMollie = 0;
-            $totalNet = 0;
 
             foreach ($orders as $order) {
                 $pdf->SetFillColor($fill ? 245 : 255, $fill ? 245 : 255, $fill ? 245 : 255);
@@ -121,7 +130,7 @@ class MonthlyInvoiceSummaryService
                     }
                 }
 
-                $customerName = $order->customer_name;
+                $customerName = self::text($order->customer_name);
                 if (strlen($customerName) > 25) {
                     $customerName = substr($customerName, 0, 22) . '...';
                 }
@@ -161,7 +170,6 @@ class MonthlyInvoiceSummaryService
             $pdf->SetFillColor(230, 230, 230);
 
             $countLabel = $orders->count() . ' bestelling' . ($orders->count() !== 1 ? 'en' : '');
-            $invoicedCount = $orders->filter(fn($o) => $o->invoice)->count();
 
             $pdf->Cell($w[0] + $w[1] + $w[2], 8, "TOTAAL ({$countLabel})", 1, 0, 'L', true);
             $pdf->Cell($w[3], 8, self::formatCents($totalExcl), 1, 0, 'R', true);
@@ -170,9 +178,70 @@ class MonthlyInvoiceSummaryService
             $pdf->Cell($w[6], 8, self::formatCents($totalMollie), 1, 0, 'R', true);
             $pdf->Cell($w[7], 8, self::formatCents($totalNet), 1, 0, 'R', true);
             $pdf->Cell($w[8] + $w[9], 8, '', 1, 1, 'C', true);
+        }
 
-            // === SAMENVATTING ===
-            $pdf->Ln(10);
+        // === TERUGBETALINGEN (CREDITNOTA'S) ===
+        $creditExcl = (int) $creditNotes->sum('amount_excl_btw');
+        $creditBtw = (int) $creditNotes->sum('amount_btw');
+        $creditIncl = (int) $creditNotes->sum('amount_incl_btw');
+
+        if ($creditNotes->isNotEmpty()) {
+            $pdf->Ln(8);
+            $pdf->SetFont('Arial', 'B', 11);
+            $pdf->SetTextColor(0, 0, 0);
+            $pdf->Cell(0, 8, "TERUGBETALINGEN (CREDITNOTA'S)", 0, 1, 'L');
+
+            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->SetFillColor(230, 57, 70);
+            $pdf->SetTextColor(255, 255, 255);
+            $pdf->Cell($w[0], 7, 'Bestelnr', 1, 0, 'L', true);
+            $pdf->Cell($w[1] + 8, 7, 'Creditnotanr', 1, 0, 'L', true);
+            $pdf->Cell($w[2] - 8, 7, 'Klant', 1, 0, 'L', true);
+            $pdf->Cell($w[3], 7, 'Excl. BTW', 1, 0, 'R', true);
+            $pdf->Cell($w[4], 7, 'BTW 21%', 1, 0, 'R', true);
+            $pdf->Cell($w[5], 7, 'Incl. BTW', 1, 0, 'R', true);
+            $pdf->Cell($w[6] + $w[7], 7, 'Betreft factuur', 1, 0, 'C', true);
+            $pdf->Cell($w[8] + $w[9], 7, 'Teruggestort op', 1, 1, 'C', true);
+
+            $pdf->SetFont('Arial', '', 8);
+            $pdf->SetTextColor(0, 0, 0);
+            $fill = false;
+            foreach ($creditNotes as $creditNote) {
+                $pdf->SetFillColor($fill ? 245 : 255, $fill ? 245 : 255, $fill ? 245 : 255);
+                $customerName = self::text($creditNote->order->customer_name);
+                if (strlen($customerName) > 20) {
+                    $customerName = substr($customerName, 0, 17) . '...';
+                }
+
+                $pdf->Cell($w[0], 6, $creditNote->order->order_number, 1, 0, 'L', $fill);
+                $pdf->Cell($w[1] + 8, 6, $creditNote->credit_number, 1, 0, 'L', $fill);
+                $pdf->Cell($w[2] - 8, 6, $customerName, 1, 0, 'L', $fill);
+                $pdf->Cell($w[3], 6, self::formatCents(-$creditNote->amount_excl_btw), 1, 0, 'R', $fill);
+                $pdf->Cell($w[4], 6, self::formatCents(-$creditNote->amount_btw), 1, 0, 'R', $fill);
+                $pdf->Cell($w[5], 6, self::formatCents(-$creditNote->amount_incl_btw), 1, 0, 'R', $fill);
+                $pdf->Cell($w[6] + $w[7], 6, $creditNote->order->invoice?->invoice_number ?? '-', 1, 0, 'C', $fill);
+                $pdf->Cell($w[8] + $w[9], 6, $creditNote->credit_date->format('d-m'), 1, 1, 'C', $fill);
+                $fill = !$fill;
+            }
+
+            $pdf->SetFont('Arial', 'B', 9);
+            $pdf->SetFillColor(230, 230, 230);
+            $pdf->Cell($w[0] + $w[1] + $w[2], 8, 'TOTAAL TERUGBETAALD', 1, 0, 'L', true);
+            $pdf->Cell($w[3], 8, self::formatCents(-$creditExcl), 1, 0, 'R', true);
+            $pdf->Cell($w[4], 8, self::formatCents(-$creditBtw), 1, 0, 'R', true);
+            $pdf->Cell($w[5], 8, self::formatCents(-$creditIncl), 1, 0, 'R', true);
+            $pdf->Cell($w[6] + $w[7] + $w[8] + $w[9], 8, '', 1, 1, 'C', true);
+        }
+
+        if ($orders->isNotEmpty() || $creditNotes->isNotEmpty()) {
+            $invoicedCount = $orders->filter(fn($o) => $o->invoice)->count();
+
+            // === SAMENVATTING === (blijft heel; anders naar een nieuwe pagina)
+            if ($pdf->GetY() + 110 > $pdf->GetPageHeight() - 25) {
+                $pdf->AddPage();
+            } else {
+                $pdf->Ln(10);
+            }
             $pdf->SetFont('Arial', 'B', 11);
             $pdf->SetTextColor(0, 0, 0);
             $pdf->Cell(0, 8, 'SAMENVATTING ' . strtoupper($periodLabel), 0, 1, 'L');
@@ -197,20 +266,35 @@ class MonthlyInvoiceSummaryService
 
             $pdf->Ln(3);
 
+            if ($creditNotes->isNotEmpty()) {
+                $pdf->SetFont('Arial', '', 10);
+                $pdf->Cell($labelW, 7, 'Bestellingen excl. BTW:', 0, 0);
+                $pdf->SetFont('Arial', 'B', 10);
+                $pdf->Cell($valW, 7, self::formatCents($totalExcl), 0, 1);
+
+                $pdf->SetFont('Arial', '', 10);
+                $pdf->Cell($labelW, 7, "Creditnota's excl. BTW:", 0, 0);
+                $pdf->SetFont('Arial', 'B', 10);
+                $pdf->SetTextColor(220, 53, 69);
+                $pdf->Cell($valW, 7, self::formatCents(-$creditExcl), 0, 1);
+                $pdf->SetTextColor(0, 0, 0);
+            }
+
+            // Netto: bestellingen min terugbetalingen van deze maand
             $pdf->SetFont('Arial', '', 10);
             $pdf->Cell($labelW, 7, 'Omzet excl. BTW:', 0, 0);
             $pdf->SetFont('Arial', 'B', 10);
-            $pdf->Cell($valW, 7, self::formatCents($totalExcl), 0, 1);
+            $pdf->Cell($valW, 7, self::formatCents($totalExcl - $creditExcl), 0, 1);
 
             $pdf->SetFont('Arial', '', 10);
             $pdf->Cell($labelW, 7, 'Af te dragen BTW (21%):', 0, 0);
             $pdf->SetFont('Arial', 'B', 10);
-            $pdf->Cell($valW, 7, self::formatCents($totalBtw), 0, 1);
+            $pdf->Cell($valW, 7, self::formatCents($totalBtw - $creditBtw), 0, 1);
 
             $pdf->SetFont('Arial', '', 10);
             $pdf->Cell($labelW, 7, 'Totaal incl. BTW:', 0, 0);
             $pdf->SetFont('Arial', 'B', 10);
-            $pdf->Cell($valW, 7, self::formatCents($totalIncl), 0, 1);
+            $pdf->Cell($valW, 7, self::formatCents($totalIncl - $creditIncl), 0, 1);
 
             $pdf->Ln(3);
             $pdf->SetDrawColor(200, 200, 200);
@@ -228,10 +312,11 @@ class MonthlyInvoiceSummaryService
             $pdf->Cell($labelW, 7, 'Netto ontvangen:', 0, 0);
             $pdf->SetFont('Arial', 'B', 10);
             $pdf->SetTextColor(40, 167, 69);
-            $pdf->Cell($valW, 7, self::formatCents($totalNet), 0, 1);
+            $pdf->Cell($valW, 7, self::formatCents($totalNet - $creditIncl), 0, 1);
         }
 
-        // === FOOTER ===
+        // === FOOTER === (binnen de pagina-eindemarge, dus zonder automatische pagina-overgang)
+        $pdf->SetAutoPageBreak(false);
         $pdf->SetY(-20);
         $pdf->SetFont('Arial', 'I', 8);
         $pdf->SetTextColor(150, 150, 150);
@@ -266,6 +351,14 @@ class MonthlyInvoiceSummaryService
     /**
      * Formatteer centen naar euro
      */
+    /** FPDF's kernfonts kennen alleen windows-1252 */
+    private static function text(?string $value): string
+    {
+        $converted = @iconv('UTF-8', 'windows-1252//TRANSLIT', (string) $value);
+
+        return $converted === false ? (string) $value : $converted;
+    }
+
     private static function formatCents(int $cents): string
     {
         return chr(128) . ' ' . number_format($cents / 100, 2, ',', '.');
