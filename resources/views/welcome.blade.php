@@ -1915,13 +1915,10 @@
             </div>
             <div class="trust-badge">
                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M5 18H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.19M15 6h2.81A2 2 0 0 1 20 8v8a2 2 0 0 1-2 2h-2"></path>
-                    <path d="M12 2v20"></path>
-                    <path d="M5 12h14"></path>
-                    <circle cx="5" cy="18" r="2"></circle>
-                    <circle cx="19" cy="18" r="2"></circle>
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
                 </svg>
-                <span>Binnen 1 werkdag verzonden</span>
+                <span>Gratis afhalen in Delfgauw</span>
             </div>
             <div class="trust-badge">
                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1945,8 +1942,8 @@
             </div>
             <div class="proof-divider"></div>
             <div class="proof-item">
-                <span class="proof-number">3 dagen</span>
-                <span class="proof-label">gem. levertijd</span>
+                <span class="proof-number">vóór 11:00</span>
+                <span class="proof-label">vandaag verzonden</span>
             </div>
         </div>
     </section>
