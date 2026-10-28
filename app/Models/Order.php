@@ -171,6 +171,14 @@ class Order extends Model
             : str_replace(' × ', '×', $this->trim_size_label);
     }
 
+    /**
+     * Oplage achteraan bestandsnamen, zodat de drukker het aantal direct ziet: "10x"
+     */
+    public function getQuantityTagAttribute(): string
+    {
+        return ($this->quantity ?? 1) . 'x';
+    }
+
     public function getTrimSizeLabelAttribute(): ?string
     {
         if ($this->trim_width_mm === null || $this->trim_height_mm === null) {

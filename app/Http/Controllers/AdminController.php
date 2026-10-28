@@ -51,7 +51,7 @@ class AdminController extends Controller
             abort(404, 'PDF niet gevonden');
         }
 
-        $filename = $order->order_number . '_' . $order->pdf_original_name;
+        $filename = $order->order_number . '_' . pathinfo($order->pdf_original_name, PATHINFO_FILENAME) . '_' . $order->quantity_tag . '.pdf';
         
         return Storage::disk('local')->download($order->pdf_path, $filename);
     }
@@ -80,7 +80,7 @@ class AdminController extends Controller
                 return redirect()->back()->with('error', 'Geïmponeerde PDF niet gevonden');
             }
 
-            $filename = $order->order_number . '_INSLAG_' . pathinfo($order->pdf_original_name, PATHINFO_FILENAME) . '.pdf';
+            $filename = $order->order_number . '_INSLAG_' . pathinfo($order->pdf_original_name, PATHINFO_FILENAME) . '_' . $order->quantity_tag . '.pdf';
 
             return response()->download($imposedPath, $filename, [
                 'Content-Type' => 'application/pdf',

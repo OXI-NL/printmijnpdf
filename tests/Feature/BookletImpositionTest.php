@@ -164,7 +164,7 @@ class BookletImpositionTest extends TestCase
         Order::create([
             'order_number' => 'PMP-LOSBLADIG', 'status' => 'paid',
             'pdf_original_name' => 'los.pdf', 'pdf_stored_name' => 'los.pdf', 'pdf_path' => 'pdfs/los.pdf',
-            'page_count' => 5, 'format' => 'A5', 'binding_type' => 'loose', 'print_side' => 'single', 'quantity' => 1,
+            'page_count' => 5, 'format' => 'A5', 'binding_type' => 'loose', 'print_side' => 'single', 'quantity' => 10,
             'price_startup' => 0, 'price_pages' => 0, 'price_binding' => 0, 'price_shipping' => 0, 'price_total' => 0,
             'customer_name' => 'Test', 'customer_email' => 'test@example.com',
             'address_street' => 'Straat', 'address_number' => '1', 'address_postcode' => '1234AB', 'address_city' => 'Delft',
@@ -173,7 +173,13 @@ class BookletImpositionTest extends TestCase
 
         $this->withSession(['admin_authenticated' => true])
             ->get('/admin/orders/PMP-LOSBLADIG/imposed')
-            ->assertOk();
+            ->assertOk()
+            ->assertDownload('PMP-LOSBLADIG_INSLAG_los_10x.pdf');
+
+        $this->withSession(['admin_authenticated' => true])
+            ->get('/admin/orders/PMP-LOSBLADIG/pdf')
+            ->assertOk()
+            ->assertDownload('PMP-LOSBLADIG_los_10x.pdf');
 
         $reader = $this->lees(Storage::disk('local')->get('pdfs/imposed/los_imposed.pdf'));
         $this->assertSame(2, $reader->getPageCount(), '5 pagina\'s A5 4-op → 2 vellen');

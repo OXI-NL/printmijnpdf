@@ -18,7 +18,8 @@ class PakbonService
         $pdf->AddPage();
         $pdf->SetMargins(20, 20, 20);
 
-        self::thumbnail($pdf, $order);
+        $thumbLeft = self::thumbnail($pdf, $order);
+        self::quantityBadge($pdf, $order->quantity ?? 1, ($thumbLeft ?? 190) - 5);
 
         // Logo: beeldmerk + woordmerk "Print<Mijn>PDF", zoals in de siteheader
         $logoHeight = 14;
@@ -193,8 +194,9 @@ class PakbonService
     /**
      * Eerste pagina van de klant-PDF rechtsboven, ter herkenning bij het inpakken.
      * Vector-import via FPDI; lukt dat niet, dan blijft de pakbon gewoon zonder.
+     * Geeft de linkerrand van de thumbnail terug, of null zonder thumbnail.
      */
-    private static function thumbnail(Fpdi $pdf, Order $order): void
+    private static function thumbnail(Fpdi $pdf, Order $order): ?float
     {
         $maxW = 45;
         $maxH = 44;
@@ -203,7 +205,7 @@ class PakbonService
 
         try {
             if (!$order->pdf_path || !Storage::disk('local')->exists($order->pdf_path)) {
-                return;
+                return null;
             }
 
             $pdf->setSourceFile(Storage::disk('local')->path($order->pdf_path));
@@ -217,12 +219,40 @@ class PakbonService
 
             $pdf->useTemplate($tpl, $x, $top, $w, $h);
         } catch (\Throwable $e) {
-            return;
+            return null;
         }
 
         $pdf->SetDrawColor(180, 180, 180);
         $pdf->SetLineWidth(0.2);
         $pdf->Rect($x, $top, $w, $h);
+
+        return $x;
+    }
+
+    /**
+     * Oplage in grote cijfers links van de thumbnail, zodat er bij het inpakken
+     * niet te weinig (of te veel) exemplaren in de doos gaan. Schaalt mee met het
+     * aantal cijfers: tussen het logo en de thumbnail, boven de titel.
+     */
+    private static function quantityBadge(Fpdi $pdf, int $quantity, float $right): void
+    {
+        $left = 90;      // rechts van logo en contactregels
+        $baseline = 54;  // net boven de titel "PAKBON / ..."
+        $maxSize = 105;  // pt; houdt ruimte vrij voor het label erboven
+
+        $label = $quantity . chr(0xD7); // "10×" in windows-1252
+        $pdf->SetFont('Arial', 'B', 100);
+        $size = min($maxSize, 100 * ($right - $left) / $pdf->GetStringWidth($label));
+        $pdf->SetFont('Arial', 'B', $size);
+        $pdf->SetTextColor(230, 57, 70);
+        $pdf->Text($right - $pdf->GetStringWidth($label), $baseline, $label);
+
+        // Kapitaalhoogte van Arial is ~0,716 em
+        $capTop = $baseline - $size * 0.3528 * 0.716;
+        $pdf->SetFont('Arial', 'B', 9);
+        $pdf->SetTextColor(100, 100, 100);
+        $caption = $quantity === 1 ? 'EXEMPLAAR' : 'EXEMPLAREN';
+        $pdf->Text($right - $pdf->GetStringWidth($caption), $capTop - 2.5, $caption);
     }
 
     /**
@@ -241,6 +271,6 @@ class PakbonService
      */
     public static function filename(Order $order): string
     {
-        return 'Pakbon_' . $order->order_number . '.pdf';
+        return 'Pakbon_' . $order->order_number . '_' . $order->quantity_tag . '.pdf';
     }
 }

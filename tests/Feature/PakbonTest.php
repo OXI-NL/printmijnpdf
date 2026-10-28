@@ -94,6 +94,25 @@ class PakbonTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('#/Subtype\s*/Form#', $pdf);
     }
 
+    public function test_oplage_staat_groot_op_de_pakbon(): void
+    {
+        $order = $this->order('shipping');
+        $order->update(['quantity' => 10]);
+
+        $text = $this->pdfText($order);
+
+        $this->assertStringContainsString("(10\xD7)", $text);
+        $this->assertStringContainsString('EXEMPLAREN', $text);
+    }
+
+    public function test_bestandsnaam_eindigt_op_oplage(): void
+    {
+        $order = $this->order('shipping');
+        $order->update(['quantity' => 5]);
+
+        $this->assertSame('Pakbon_'.$order->order_number.'_5x.pdf', PakbonService::filename($order));
+    }
+
     public function test_naam_met_accent_wordt_als_windows1252_geschreven(): void
     {
         $text = $this->pdfText($this->order('pickup'));
