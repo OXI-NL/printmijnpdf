@@ -46,6 +46,10 @@ class Order extends Model
         'address_country',
         'delivery_type',
         'track_trace',
+        'postnl_barcode',
+        'postnl_product',
+        'postnl_label_path',
+        'postnl_label_created_at',
         'shipped_at',
         'archived_at',
         'paid_at',
@@ -73,6 +77,7 @@ class Order extends Model
         'paid_processed_at' => 'datetime',
         'payment_failed_mailed_at' => 'datetime',
         'shipped_at' => 'datetime',
+        'postnl_label_created_at' => 'datetime',
         'archived_at' => 'datetime',
     ];
 

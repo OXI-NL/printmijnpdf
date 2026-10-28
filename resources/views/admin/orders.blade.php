@@ -270,6 +270,28 @@
             outline: none;
             border-color: #e63946;
         }
+        .modal [hidden] { display: none !important; }
+        .modal.wide { max-width: 520px; max-height: 92vh; overflow-y: auto; }
+        .modal .choice { display: flex; gap: 8px; }
+        .modal .choice label {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+            padding: 10px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .modal .choice input { width: auto; }
+        .modal .choice label:has(input:checked) { border-color: #e63946; }
+        .postnl-section { border-bottom: 1px solid #e9ecef; padding-bottom: 1rem; margin-bottom: 1rem; }
+        .postnl-section .btn, .label-tools .btn { font-size: 14px; padding: 10px 14px; }
+        .sandbox-badge { font-size: 11px; background: #fff3cd; color: #856404; border-radius: 4px; padding: 2px 6px; vertical-align: middle; }
+        .label-frame { width: 100%; height: max(320px, 48vh); border: 1px solid #dee2e6; border-radius: 8px; margin: 0.75rem 0; }
+        .label-tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .label-tools a { font-size: 13px; color: #495057; }
         .modal-actions { display: flex; gap: 10px; margin-top: 1.5rem; }
         .modal-actions .btn { flex: 1; justify-content: center; }
         @media (max-width: 1024px) {
@@ -532,7 +554,14 @@
                                                 </button>
                                             </form>
                                         @else
-                                            <button type="button" class="btn btn-success" onclick="openShipModal('{{ $order->order_number }}')" title="Markeer als verzonden">
+                                            @php $postnl = $postnlEnabled && \App\Services\PostNLService::supports($order); @endphp
+                                            <button type="button" class="btn btn-success" data-ship="{{ $order->order_number }}" onclick="openShipModal({{ \Illuminate\Support\Js::from([
+                                                'orderNumber' => $order->order_number,
+                                                'postnl' => $postnl,
+                                                'product' => $order->postnl_product ?? \App\Services\PostNLService::defaultProduct($order),
+                                                'barcode' => $order->postnl_barcode,
+                                                'labelUrl' => $postnl && $order->postnl_label_path ? route('admin.order.label', $order->order_number) : null,
+                                            ]) }})" title="{{ $postnl ? 'Label maken en verzenden' : 'Markeer als verzonden' }}">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <rect x="1" y="3" width="15" height="13"/>
                                                     <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
@@ -606,24 +635,50 @@
 
     <!-- Verzend Modal -->
     <div class="modal-overlay" id="shipModal">
-        <div class="modal">
-            <h3>📦 Bestelling verzenden</h3>
+        <div class="modal" id="shipModalBox">
+            <h3>📦 Bestelling verzenden <span id="shipOrderNumber" style="color:#6c757d;font-weight:400;font-size:0.9rem;"></span></h3>
+
+            {{-- Label via PostNL; buitenland of een PostNL-storing: code hieronder handmatig invullen --}}
+            <div class="postnl-section" id="postnlSection" hidden>
+                <div class="form-group">
+                    <label>Verzendvorm
+                        @if(config('postnl.sandbox'))<span class="sandbox-badge" title="Testlabels: niet gebruiken voor echte zendingen">SANDBOX</span>@endif
+                    </label>
+                    <div class="choice">
+                        @foreach(config('postnl.products') as $key => $product)
+                            <label><input type="radio" name="postnl_product" value="{{ $key }}"> {{ $product['label'] }}</label>
+                        @endforeach
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" id="labelButton" onclick="createLabel()">Label maken via PostNL</button>
+                <div class="alert alert-error" id="labelError" style="margin:0.75rem 0 0;" hidden></div>
+
+                <div id="labelPreview" hidden>
+                    <iframe class="label-frame" id="labelFrame" title="PostNL-label"></iframe>
+                    <div class="label-tools">
+                        <button type="button" class="btn btn-primary" onclick="printLabel()">🖨️ Printen</button>
+                        <a id="labelOpen" href="#" target="_blank">Openen in nieuw tabblad</a>
+                        <button type="button" class="btn btn-secondary" style="margin-left:auto;" onclick="createLabel(true)">Nieuw label maken</button>
+                    </div>
+                </div>
+            </div>
+
             <form id="shipForm" method="POST">
                 @csrf
                 <input type="hidden" name="status" value="shipped">
-                
+
                 <div class="form-group">
-                    <label for="track_trace">Track & Trace code (optioneel)</label>
+                    <label for="track_trace" id="trackTraceLabel">Track & Trace code (optioneel)</label>
                     <input type="text" id="track_trace" name="track_trace" placeholder="3S...">
                 </div>
-                
+
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeShipModal()">Annuleren</button>
-                    <button type="submit" class="btn btn-success">
+                    <button type="submit" class="btn btn-success" id="shipSubmit">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;">
                             <polyline points="20 6 9 17 4 12"/>
                         </svg>
-                        Verzenden
+                        <span>Verzenden</span>
                     </button>
                 </div>
             </form>
@@ -631,14 +686,103 @@
     </div>
 
     <script>
-        function openShipModal(orderNumber) {
-            document.getElementById('shipForm').action = '/admin/orders/' + orderNumber + '/ship';
+        let shipOrder = null;
+
+        function openShipModal(order) {
+            shipOrder = order;
+            document.getElementById('shipForm').action = '/admin/orders/' + order.orderNumber + '/ship';
+            document.getElementById('shipOrderNumber').textContent = order.orderNumber;
+            document.getElementById('postnlSection').hidden = !order.postnl;
+            document.getElementById('labelError').hidden = true;
+            document.querySelectorAll('input[name="postnl_product"]').forEach(r => r.checked = r.value === order.product);
+
+            if (order.postnl && order.labelUrl) {
+                showLabel(order.labelUrl, order.barcode);
+            } else {
+                document.getElementById('labelPreview').hidden = true;
+                document.getElementById('labelButton').hidden = false;
+                document.getElementById('shipModalBox').classList.remove('wide');
+                setShipSubmit(order.postnl ? 'Zonder label verzenden' : 'Verzenden');
+            }
             document.getElementById('shipModal').classList.add('active');
         }
-        
+
+        function showLabel(url, barcode) {
+            const src = url + '?t=' + Date.now();
+            document.getElementById('labelFrame').src = src;
+            document.getElementById('labelOpen').href = src;
+            document.getElementById('labelPreview').hidden = false;
+            document.getElementById('labelButton').hidden = true;
+            document.getElementById('shipModalBox').classList.add('wide');
+            document.getElementById('track_trace').value = barcode || '';
+            setShipSubmit('Bevestig verzending & mail klant');
+        }
+
+        function setShipSubmit(text) {
+            document.querySelector('#shipSubmit span').textContent = text;
+        }
+
+        async function createLabel(replace = false) {
+            if (replace && !confirm('Een nieuw label maken? Gebruik daarna alleen het nieuwe label; het oude vervalt.')) return;
+
+            const button = document.getElementById('labelButton');
+            const error = document.getElementById('labelError');
+            const product = document.querySelector('input[name="postnl_product"]:checked')?.value;
+            button.disabled = true;
+            button.textContent = 'Label wordt gemaakt…';
+            error.hidden = true;
+
+            try {
+                const response = await fetch('/admin/orders/' + shipOrder.orderNumber + '/label', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    body: JSON.stringify({ product: product, replace: replace }),
+                });
+                const data = await response.json().catch(() => ({}));
+
+                if (response.status === 409 && data.has_label) {
+                    return createLabel(true);
+                }
+                if (!response.ok) {
+                    throw new Error(data.error || data.message || 'Label maken mislukt (HTTP ' + response.status + ').');
+                }
+                shipOrder.labelUrl = data.label_url;
+                shipOrder.barcode = data.barcode;
+                shipOrder.product = product;
+                showLabel(data.label_url, data.barcode);
+            } catch (e) {
+                error.textContent = e.message + ' Je kunt de Track & Trace-code ook handmatig invullen.';
+                error.hidden = false;
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Label maken via PostNL';
+            }
+        }
+
+        function printLabel() {
+            const frame = document.getElementById('labelFrame');
+            try {
+                frame.contentWindow.focus();
+                frame.contentWindow.print();
+            } catch (e) {
+                window.open(frame.src, '_blank');
+            }
+        }
+
         function closeShipModal() {
             document.getElementById('shipModal').classList.remove('active');
             document.getElementById('track_trace').value = '';
+            document.getElementById('labelFrame').removeAttribute('src');
+            // Een nieuw gemaakt label is pas na herladen in de knop van de rij bekend
+            if (shipOrder && shipOrder.labelUrl) {
+                const order = Object.assign({}, shipOrder);
+                const button = document.querySelector('button[data-ship="' + CSS.escape(order.orderNumber) + '"]');
+                if (button) button.onclick = () => openShipModal(Object.assign({}, order));
+            }
         }
         
         document.getElementById('shipModal').addEventListener('click', function(e) {

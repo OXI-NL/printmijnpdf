@@ -10,6 +10,7 @@ use App\Services\InvoiceService;
 use App\Services\MonthlyInvoiceSummaryService;
 use App\Services\OrderThumbnailService;
 use App\Services\PakbonService;
+use App\Services\PostNLService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -34,7 +35,9 @@ class AdminController extends Controller
         $activeCount = Order::whereNull('archived_at')->count();
         $archivedCount = Order::whereNotNull('archived_at')->count();
 
-        return view('admin.orders', compact('orders', 'archive', 'activeCount', 'archivedCount'));
+        $postnlEnabled = PostNLService::isConfigured();
+
+        return view('admin.orders', compact('orders', 'archive', 'activeCount', 'archivedCount', 'postnlEnabled'));
     }
 
     /**
@@ -123,6 +126,59 @@ class AdminController extends Controller
         return response($pdfData, 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="' . $pdfFilename . '"',
+        ]);
+    }
+
+    /**
+     * Maak een PostNL-label; de klant krijgt nog niets tot de verzending bevestigd is
+     */
+    public function createLabel(Request $request, string $orderNumber)
+    {
+        $request->validate([
+            'product' => 'required|in:' . implode(',', array_keys(config('postnl.products'))),
+            'replace' => 'nullable|boolean',
+        ]);
+
+        $order = Order::where('order_number', $orderNumber)->firstOrFail();
+
+        if (!PostNLService::isConfigured()) {
+            return response()->json(['error' => 'PostNL is nog niet ingesteld (POSTNL_API_KEY ontbreekt).'], 422);
+        }
+        if (!PostNLService::supports($order)) {
+            return response()->json(['error' => 'Labels via PostNL alleen voor verzending binnen Nederland.'], 422);
+        }
+        // Voorkomt per ongeluk een tweede zending voor dezelfde order
+        if ($order->postnl_label_path && !$request->boolean('replace')) {
+            return response()->json(['error' => 'Deze order heeft al een label.', 'has_label' => true], 409);
+        }
+
+        try {
+            $barcode = (new PostNLService())->createLabel($order, $request->input('product'));
+        } catch (\RuntimeException $e) {
+            Log::warning("PostNL-label {$orderNumber} mislukt: " . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 502);
+        }
+
+        return response()->json([
+            'barcode' => $barcode,
+            'label_url' => route('admin.order.label', $orderNumber),
+        ]);
+    }
+
+    /**
+     * Toon het PostNL-label (A6-PDF) in de browser om te controleren en printen
+     */
+    public function label(string $orderNumber)
+    {
+        $order = Order::where('order_number', $orderNumber)->firstOrFail();
+
+        if (!$order->postnl_label_path || !Storage::disk('local')->exists($order->postnl_label_path)) {
+            abort(404, 'Label niet gevonden');
+        }
+
+        return response(Storage::disk('local')->get($order->postnl_label_path), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $order->order_number . '_label.pdf"',
         ]);
     }
 
@@ -237,6 +293,7 @@ class AdminController extends Controller
                 'pdf_path' => null,
                 'pdf_stored_name' => null,
                 'pdf_imposed_path' => null,
+                'postnl_label_path' => null,
                 'archived_at' => now(),
             ]);
         }
@@ -274,6 +331,7 @@ class AdminController extends Controller
             Storage::disk('local')->delete($order->pdf_imposed_path);
         }
         OrderThumbnailService::delete($order);
+        PostNLService::deleteLabel($order);
     }
 
     /**
