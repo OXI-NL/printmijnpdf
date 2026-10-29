@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Pdf\Fpdi;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use setasign\Fpdi\PdfReader\PageBoundaries;
 
@@ -208,7 +209,15 @@ class PakbonService
                 return null;
             }
 
-            $pdf->setSourceFile(Storage::disk('local')->path($order->pdf_path));
+            // Een geheugentekort is fataal en vangt de catch niet op; dan gaat ook de
+            // adminmail (met deze pakbon als bijlage) niet weg. Liever geen thumbnail.
+            $path = Storage::disk('local')->path($order->pdf_path);
+            if (!MirroredBleedService::fitsInMemory((int) @filesize($path))) {
+                Log::info("Pakbon: PDF te groot voor het geheugen, geen thumbnail voor {$order->order_number}");
+                return null;
+            }
+
+            $pdf->setSourceFile($path);
             // TrimBox: alleen het eindformaat, zonder afloop en snijtekens
             $tpl = $pdf->importPage(1, PageBoundaries::TRIM_BOX);
             $size = $pdf->getTemplateSize($tpl);

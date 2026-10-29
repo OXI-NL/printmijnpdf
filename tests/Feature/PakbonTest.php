@@ -84,6 +84,38 @@ class PakbonTest extends TestCase
         $this->assertStringContainsString('OMSLAG', $this->pdfText($this->order('shipping')));
     }
 
+    public function test_te_grote_klant_pdf_geeft_pakbon_zonder_thumbnail(): void
+    {
+        Storage::fake('local');
+        // Ruis comprimeert niet, dus de PDF wordt ongeveer even groot als de PNG (±2 MB)
+        $img = imagecreatetruecolor(800, 800);
+        for ($y = 0; $y < 800; $y++) {
+            for ($x = 0; $x < 800; $x++) {
+                imagesetpixel($img, $x, $y, random_int(0, 0xFFFFFF));
+            }
+        }
+        $png = tempnam(sys_get_temp_dir(), 'ruis').'.png';
+        imagepng($img, $png, 0);
+        $source = new \FPDF('P', 'mm', 'A4');
+        $source->AddPage();
+        $source->Image($png, 10, 10, 190);
+        Storage::disk('local')->put('pdfs/stored.pdf', $source->Output('S'));
+        unlink($png);
+        $order = $this->order('shipping');
+
+        // Net genoeg ruimte voor de pakbon zelf, niet voor het inlezen van de klant-PDF
+        $limit = ini_get('memory_limit');
+        ini_set('memory_limit', (string) (memory_get_usage(true) + 17 * 1024 ** 2));
+        try {
+            $pdf = PakbonService::generate($order);
+        } finally {
+            ini_set('memory_limit', $limit);
+        }
+
+        $this->assertStringStartsWith('%PDF', $pdf);
+        $this->assertDoesNotMatchRegularExpression('#/Subtype\s*/Form#', $pdf);
+    }
+
     public function test_zonder_klant_pdf_komt_er_gewoon_een_pakbon(): void
     {
         Storage::fake('local');
