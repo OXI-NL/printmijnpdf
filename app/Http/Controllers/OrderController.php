@@ -359,14 +359,15 @@ class OrderController extends Controller
                 // gezet voordat deze webhook binnenkwam. De atomaire claim op
                 // paid_processed_at zorgt dat dit precies één keer gebeurt.
                 if ($order->status !== 'cancelled' && $this->claimPaidProcessing($order)) {
+                    // Eerst de mails, dan pas de inslag. Een geheugentekort of
+                    // time-out bij een zware PDF is fataal en vangt geen catch op;
+                    // de claim staat dan al, dus een latere webhook mailt niet meer.
+                    // De inslag is ook vanuit de admin opnieuw te maken.
+                    $this->sendConfirmationEmail($order);
+                    $this->notifyAdmin($order);
+
                     // Maak de inslag (boekje of cut & stack)
                     $this->createImposition($order);
-
-                    // Stuur bevestigingsmail
-                    $this->sendConfirmationEmail($order);
-
-                    // Notificeer admin
-                    $this->notifyAdmin($order);
                 }
             } elseif ($payment->isCanceled() || $payment->isExpired() || $payment->isFailed()) {
                 // Gebruik alleen 'cancelled' (database ENUM ondersteunt geen 'expired'/'failed')
@@ -615,7 +616,7 @@ class OrderController extends Controller
     protected function createImposition(Order $order)
     {
         try {
-            $impositionService = new BookletImpositionService();
+            $impositionService = app(BookletImpositionService::class);
             $result = $impositionService->createImposition($order);
             
             if ($result['success']) {

@@ -116,6 +116,54 @@ class PakbonTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('#/Subtype\s*/Form#', $pdf);
     }
 
+    /** Een PDF met één zwaar beeld op pagina 1, zoals een fotoboek of poster */
+    private function zwareKlantPdf(): void
+    {
+        $img = imagecreatetruecolor(1100, 1100);
+        for ($y = 0; $y < 1100; $y++) {
+            for ($x = 0; $x < 1100; $x++) {
+                imagesetpixel($img, $x, $y, random_int(0, 0xFFFFFF));
+            }
+        }
+        $png = tempnam(sys_get_temp_dir(), 'ruis').'.png';
+        imagepng($img, $png, 0);
+        $source = new \FPDF('P', 'mm', 'A4');
+        $source->AddPage();
+        $source->Image($png, 10, 10, 190);
+        Storage::disk('local')->put('pdfs/stored.pdf', $source->Output('S'));
+        unlink($png);
+    }
+
+    public function test_pakbon_gebruikt_de_kleine_png_en_blijft_klein(): void
+    {
+        Storage::fake('local');
+        $this->zwareKlantPdf();
+        $thumb = imagecreatetruecolor(240, 340);
+        imagefill($thumb, 0, 0, imagecolorallocate($thumb, 200, 30, 30));
+        ob_start();
+        imagepng($thumb);
+        Storage::disk('local')->put('pdfs/stored-thumb.png', ob_get_clean());
+
+        $pdf = PakbonService::generate($this->order('shipping'));
+
+        $this->assertMatchesRegularExpression('#/Subtype\s*/Image#', $pdf, 'de thumbnail staat erop');
+        $this->assertDoesNotMatchRegularExpression('#/Subtype\s*/Form#', $pdf, 'de klant-PDF zelf niet');
+        $this->assertLessThan(100 * 1024, strlen($pdf));
+    }
+
+    public function test_zware_klant_pdf_zonder_png_komt_niet_in_de_pakbon(): void
+    {
+        // Bij PMP-261029-6D1F werd de adminmail zo 28 MB en nooit afgeleverd
+        Storage::fake('local');
+        $this->zwareKlantPdf();
+        $this->assertGreaterThan(2 * 1024 * 1024, Storage::disk('local')->size('pdfs/stored.pdf'));
+
+        $pdf = PakbonService::generate($this->order('shipping'));
+
+        $this->assertDoesNotMatchRegularExpression('#/Subtype\s*/Form#', $pdf);
+        $this->assertLessThan(100 * 1024, strlen($pdf));
+    }
+
     public function test_zonder_klant_pdf_komt_er_gewoon_een_pakbon(): void
     {
         Storage::fake('local');

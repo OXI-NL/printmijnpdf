@@ -7,6 +7,7 @@ use App\Mail\OrderConfirmation;
 use App\Mail\PaymentFailed;
 use App\Models\CreditNote;
 use App\Models\Order;
+use App\Services\BookletImpositionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
@@ -177,6 +178,32 @@ class MollieWebhookTest extends TestCase
 
         Mail::assertSent(OrderConfirmation::class, 1);
         Mail::assertSent(AdminOrderNotification::class, 1);
+    }
+
+    public function test_mails_gaan_weg_voordat_de_inslag_begint(): void
+    {
+        // Een zware inslag kan fataal aflopen (geheugen, time-out); dan moeten
+        // klant en admin hun mail al hebben, want een retry komt er niet
+        $order = $this->order(['binding_type' => 'booklet']);
+        $this->mockMollie($order->id, 'paid');
+
+        // Assertions binnen de inslag zou de catch in de controller opslokken,
+        // dus noteer wat er op dat moment al verstuurd was
+        $sentBeforeImposition = null;
+        $imposition = Mockery::mock(BookletImpositionService::class);
+        $imposition->shouldReceive('createImposition')->once()->andReturnUsing(function () use (&$sentBeforeImposition) {
+            $sentBeforeImposition = [
+                Mail::sent(OrderConfirmation::class)->count(),
+                Mail::sent(AdminOrderNotification::class)->count(),
+            ];
+
+            return ['success' => true, 'path' => 'pdfs/imposed/x.pdf', 'message' => ''];
+        });
+        $this->app->instance(BookletImpositionService::class, $imposition);
+
+        $this->post('/webhook/mollie', ['id' => 'tr_test123'])->assertOk();
+
+        $this->assertSame([1, 1], $sentBeforeImposition, 'bevestiging en adminmelding horen vóór de inslag te zijn verstuurd');
     }
 
     public function test_herhaalde_webhook_mailt_maar_een_keer(): void

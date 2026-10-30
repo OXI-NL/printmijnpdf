@@ -10,6 +10,9 @@ use setasign\Fpdi\PdfReader\PageBoundaries;
 
 class PakbonService
 {
+    /** Grootste klant-PDF die nog als thumbnail in de pakbon (en dus de adminmail) mag */
+    private const MAX_IMPORT_BYTES = 2 * 1024 * 1024;
+
     /**
      * Genereer pakbon PDF en retourneer als string (binary data)
      */
@@ -205,28 +208,44 @@ class PakbonService
         $top = 20;
 
         try {
-            if (!$order->pdf_path || !Storage::disk('local')->exists($order->pdf_path)) {
-                return null;
+            // Bij voorkeur de kleine PNG die de browser al voor de bevestigingsmail
+            // maakte: een paar KB, wat de klant-PDF ook weegt
+            if ($thumb = OrderThumbnailService::existingPath($order)) {
+                $thumbPath = Storage::disk('local')->path($thumb);
+                [$pw, $ph] = getimagesize($thumbPath);
+                $scale = min($maxW / $pw, $maxH / $ph);
+                $w = $pw * $scale;
+                $h = $ph * $scale;
+                $x = $right - $w;
+
+                $pdf->Image($thumbPath, $x, $top, $w, $h, 'PNG');
+            } else {
+                if (!$order->pdf_path || !Storage::disk('local')->exists($order->pdf_path)) {
+                    return null;
+                }
+
+                // importPage neemt alle beelden van pagina 1 op volle resolutie mee.
+                // Bij PMP-261029-6D1F werd de adminmail zo 28 MB en die is nooit
+                // afgeleverd. Een geheugentekort is bovendien fataal en vangt de
+                // catch niet op. Liever geen thumbnail.
+                $path = Storage::disk('local')->path($order->pdf_path);
+                $fileSize = (int) @filesize($path);
+                if ($fileSize > self::MAX_IMPORT_BYTES || !MirroredBleedService::fitsInMemory($fileSize)) {
+                    Log::info("Pakbon: PDF te groot om in te voegen, geen thumbnail voor {$order->order_number}");
+                    return null;
+                }
+
+                $pdf->setSourceFile($path);
+                // TrimBox: alleen het eindformaat, zonder afloop en snijtekens
+                $tpl = $pdf->importPage(1, PageBoundaries::TRIM_BOX);
+                $size = $pdf->getTemplateSize($tpl);
+                $scale = min($maxW / $size['width'], $maxH / $size['height']);
+                $w = $size['width'] * $scale;
+                $h = $size['height'] * $scale;
+                $x = $right - $w;
+
+                $pdf->useTemplate($tpl, $x, $top, $w, $h);
             }
-
-            // Een geheugentekort is fataal en vangt de catch niet op; dan gaat ook de
-            // adminmail (met deze pakbon als bijlage) niet weg. Liever geen thumbnail.
-            $path = Storage::disk('local')->path($order->pdf_path);
-            if (!MirroredBleedService::fitsInMemory((int) @filesize($path))) {
-                Log::info("Pakbon: PDF te groot voor het geheugen, geen thumbnail voor {$order->order_number}");
-                return null;
-            }
-
-            $pdf->setSourceFile($path);
-            // TrimBox: alleen het eindformaat, zonder afloop en snijtekens
-            $tpl = $pdf->importPage(1, PageBoundaries::TRIM_BOX);
-            $size = $pdf->getTemplateSize($tpl);
-            $scale = min($maxW / $size['width'], $maxH / $size['height']);
-            $w = $size['width'] * $scale;
-            $h = $size['height'] * $scale;
-            $x = $right - $w;
-
-            $pdf->useTemplate($tpl, $x, $top, $w, $h);
         } catch (\Throwable $e) {
             return null;
         }
