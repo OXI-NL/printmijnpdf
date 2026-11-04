@@ -12,13 +12,13 @@
     <link rel="dns-prefetch" href="https://www.google-analytics.com">
     <link rel="dns-prefetch" href="https://js.mollie.com">
 
-    <title>PDF Printen als Boekje, Morgen Verzonden | PrintMijnPDF</title>
-    <meta name="description" content="Upload je PDF → professioneel geprint boekje, binnen 1 werkdag verzonden met PostNL. Full colour drukwerkkwaliteit, vanaf €0,15/pagina. Gratis afhalen mogelijk.">
+    <title>PDF Printen als Boekje, Vandaag Klaar | PrintMijnPDF</title>
+    <meta name="description" content="Upload je PDF → professioneel geprint boekje. Vóór 11:00 besteld = vandaag klaar: gratis afhalen in Delfgauw of verzonden met PostNL. Full colour, vanaf €0,15/pagina.">
     <meta name="msvalidate.01" content="1A1260063F50FF0586F052944BAF1CF1">
 
     <!-- Open Graph -->
-    <meta property="og:title" content="PDF Printen als Boekje, Morgen Verzonden | PrintMijnPDF">
-    <meta property="og:description" content="Upload je PDF en ontvang full colour printwerk, binnen 1 werkdag verzonden. Professioneel geniet boekje of losse pagina's. Echte drukwerkkwaliteit.">
+    <meta property="og:title" content="PDF Printen als Boekje, Vandaag Klaar | PrintMijnPDF">
+    <meta property="og:description" content="Upload je PDF en ontvang full colour printwerk. Vóór 11:00 besteld = vandaag klaar: afhalen in Delfgauw of verzonden met PostNL. Echte drukwerkkwaliteit.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://printmijnpdf.nl/">
     <meta property="og:image" content="https://printmijnpdf.nl/og-image.jpg">
@@ -30,8 +30,8 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="PDF Printen als Boekje, Morgen Verzonden">
-    <meta name="twitter:description" content="Upload je PDF → professioneel geprint boekje, binnen 1 werkdag verzonden. Full colour drukwerkkwaliteit.">
+    <meta name="twitter:title" content="PDF Printen als Boekje, Vandaag Klaar">
+    <meta name="twitter:description" content="Upload je PDF → professioneel geprint boekje. Vóór 11:00 besteld = vandaag klaar om af te halen of te verzenden.">
     <meta name="twitter:image" content="https://printmijnpdf.nl/og-image.jpg">
 
     <link rel="icon" type="image/png" sizes="96x96" href="/favicon.png">
@@ -204,7 +204,7 @@
         "@@context": "https://schema.org",
         "@type": "PrintingService",
         "name": "PrintMijnPDF",
-        "description": "Online printservice van drukkerij NIVO print | design | web in Delfgauw (bij Delft). Upload je PDF en ontvang een geprint boekje of losse pagina's, binnen 1 werkdag verzonden met PostNL, of haal het de volgende werkdag gratis af (werkdagen 17:00-17:30).",
+        "description": "Online printservice van drukkerij NIVO print | design | web in Delfgauw (bij Delft). Upload je PDF en ontvang een geprint boekje of losse pagina's. Vóór 11:00 op een werkdag besteld (tot 50 exemplaren) is dezelfde dag klaar: gratis af te halen tussen 17:00 en 17:30 of verzonden met PostNL.",
         "url": "https://printmijnpdf.nl",
         "telephone": "+31152192525",
         "email": "info@printmijnpdf.nl",
@@ -329,7 +329,7 @@
                 "name": "Hoe snel wordt mijn bestelling geleverd?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Bestel je vóór 11:00 op een werkdag? Dan versturen we je pakket dezelfde dag (tot 50 exemplaren; grotere oplagen de volgende werkdag) en bezorgt PostNL het binnen 2 werkdagen. Je ontvangt een track & trace code zodra we verzenden. Heb je je bestelling dezelfde dag nog nodig? Bel ons dan even op 015-219 2525, dan kijken we wat er mogelijk is."
+                    "text": "Vóór 11:00 op een werkdag besteld (tot 50 exemplaren)? Dan is je bestelling dezelfde dag klaar. Afhalen: vandaag tussen 17:00 en 17:30 in Delfgauw. Bezorgen: vandaag verzonden, PostNL bezorgt binnen 2 werkdagen. Later besteld of meer exemplaren? Dan de volgende werkdag."
                 }
             },
             {
@@ -353,7 +353,7 @@
                 "name": "Kan ik mijn bestelling afhalen?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Ja! Afhalen is gratis en kan vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO print | design | web, Exportweg 11, 2645ED Delfgauw. Heb je je bestelling dezelfde dag nog nodig? Bel ons dan even op 015-219 2525, dan kijken we wat er mogelijk is."
+                    "text": "Ja, gratis, op werkdagen tussen 17:00 en 17:30 bij NIVO print | design | web, Exportweg 11, 2645ED Delfgauw. Vóór 11:00 besteld (tot 50 exemplaren)? Dan haal je het dezelfde dag al op. Je krijgt een mail zodra het klaarligt."
                 }
             },
             {
@@ -1840,7 +1840,7 @@
                 <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
             <span id="urgency-text">
-                <strong>Binnen 1 werkdag</strong> verzonden met PostNL
+                <strong>Vóór 11:00 besteld = vandaag klaar</strong>: afhalen of verzonden
             </span>
         </div>
 
@@ -1943,7 +1943,7 @@
             <div class="proof-divider"></div>
             <div class="proof-item">
                 <span class="proof-number">vóór 11:00</span>
-                <span class="proof-label">vandaag verzonden</span>
+                <span class="proof-label">vandaag klaar</span>
             </div>
         </div>
     </section>
@@ -2114,7 +2114,7 @@
                     <div class="delivery-radio"></div>
                     <div class="delivery-content">
                         <div class="delivery-title">Thuisbezorgd met PostNL</div>
-                        <div class="delivery-subtitle">Binnen 1 werkdag verzonden, PostNL bezorgt binnen 2 werkdagen</div>
+                        <div class="delivery-subtitle" id="deliveryShippingWhen">Vóór 11:00 besteld: vandaag verzonden, PostNL bezorgt binnen 2 werkdagen</div>
                     </div>
                     <div class="delivery-price" id="deliveryShippingPrice">€{{ number_format(config('pricing.shipping') / 100, 2, ',', '.') }}</div>
                 </label>
@@ -2124,7 +2124,7 @@
                     <div class="delivery-radio"></div>
                     <div class="delivery-content">
                         <div class="delivery-title">Zelf afhalen in Delfgauw</div>
-                        <div class="delivery-subtitle">Bij NIVO print | design | web, elke werkdag 17:00–17:30</div>
+                        <div class="delivery-subtitle" id="deliveryPickupWhen">Vóór 11:00 besteld: vandaag klaar, 17:00–17:30</div>
                     </div>
                     <div class="delivery-price">Gratis</div>
                 </label>
@@ -2281,7 +2281,12 @@
         
         <details>
             <summary>Hoe snel wordt mijn bestelling geleverd?</summary>
-            <p>Bestel je vóór 11:00 op een werkdag? Dan versturen we je pakket dezelfde dag (tot 50 exemplaren; grotere oplagen de volgende werkdag) en bezorgt PostNL het binnen 2 werkdagen. Je ontvangt een track & trace code zodra we verzenden. Heb je je bestelling dezelfde dag nog nodig? Bel ons dan even op <a href="tel:0152192525">015-219 2525</a>, dan kijken we wat er mogelijk is.</p>
+            <p>Vóór 11:00 op een werkdag besteld (tot 50 exemplaren)? Dan is je bestelling dezelfde dag klaar.</p>
+            <ul style="margin: 0.5rem 0 0.5rem 1.5rem;">
+                <li><strong>Afhalen:</strong> vandaag tussen 17:00 en 17:30 in Delfgauw.</li>
+                <li><strong>Bezorgen:</strong> vandaag verzonden, PostNL bezorgt binnen 2 werkdagen.</li>
+            </ul>
+            <p>Later besteld of meer exemplaren? Dan de volgende werkdag.</p>
         </details>
         
         <details>
@@ -2303,7 +2308,7 @@
         
         <details>
             <summary>Kan ik mijn bestelling afhalen?</summary>
-            <p>Ja! Afhalen is gratis en kan vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO print | design | web, Exportweg 11, 2645ED Delfgauw. Heb je je bestelling dezelfde dag nog nodig? Bel ons dan even op <a href="tel:0152192525">015-219 2525</a>, dan kijken we wat er mogelijk is.</p>
+            <p>Ja, gratis, op werkdagen tussen 17:00 en 17:30 bij NIVO print | design | web, Exportweg 11, 2645ED Delfgauw. Vóór 11:00 besteld (tot 50 exemplaren)? Dan haal je het dezelfde dag al op. Je krijgt een mail zodra het klaarligt.</p>
         </details>
         
         <details>
@@ -3289,6 +3294,15 @@
                 bindingRow.style.display = 'none';
             }
 
+            // Vóór 11:00 klaar geldt tot 50 exemplaren; daarboven de volgende werkdag
+            const sameDay = quantity <= 50;
+            document.getElementById('deliveryShippingWhen').textContent = sameDay
+                ? 'Vóór 11:00 besteld: vandaag verzonden, PostNL bezorgt binnen 2 werkdagen'
+                : 'Volgende werkdag verzonden, PostNL bezorgt binnen 2 werkdagen';
+            document.getElementById('deliveryPickupWhen').textContent = sameDay
+                ? 'Vóór 11:00 besteld: vandaag klaar, 17:00–17:30'
+                : 'Volgende werkdag klaar, 17:00–17:30';
+
             if (deliveryType === 'pickup') {
                 document.getElementById('priceShippingLabel').textContent = 'Afhalen';
                 document.getElementById('priceShippingValue').textContent = 'Gratis';
@@ -3811,7 +3825,7 @@
 
             if (day === 0 || day === 6 || hour >= 11) {
                 banner.classList.add('standard');
-                textEl.innerHTML = '<strong>Binnen 1 werkdag</strong> verzonden met PostNL';
+                textEl.innerHTML = '<strong>Vóór 11:00 besteld = vandaag klaar</strong>: afhalen of verzonden';
                 return;
             }
 
@@ -3824,7 +3838,7 @@
             // De afteltekst komt pas in de browser: zonder JavaScript (crawlers,
             // AI-assistenten) staat er geen lege timer met "verzending vandaag"
             banner.classList.remove('standard');
-            textEl.innerHTML = 'Bestel binnen <strong>' + hoursLeft + 'u ' + minutesLeft + 'm</strong>, dan gaat je pakket vandaag nog op de post (tot 50 exemplaren)';
+            textEl.innerHTML = 'Bestel binnen <strong>' + hoursLeft + 'u ' + minutesLeft + 'm</strong>: vandaag om 17:00 af te halen of vandaag op de post (tot 50 exemplaren)';
         }
 
         updateUrgencyBanner();

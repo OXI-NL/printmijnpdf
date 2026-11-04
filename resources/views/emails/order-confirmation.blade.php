@@ -166,14 +166,25 @@
                                                 <td style="padding: 6px 0; color: #64748b; font-size: 13px; vertical-align: top;">→</td>
                                                 <td style="padding: 6px 0; color: #475569; font-size: 13px;">We printen en binden je document</td>
                                             </tr>
+                                            @if($order->delivery_type === 'pickup')
+                                            <tr>
+                                                <td style="padding: 6px 0; color: #64748b; font-size: 13px; vertical-align: top;">→</td>
+                                                <td style="padding: 6px 0; color: #475569; font-size: 13px;">Je ontvangt een mail zodra het klaarligt</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 6px 0; color: #64748b; font-size: 13px; vertical-align: top;">→</td>
+                                                <td style="padding: 6px 0; color: #475569; font-size: 13px;"><strong>{{ ($order->quantity ?? 1) <= 50 ? 'Vóór 11:00 besteld: vandaag' : 'De volgende werkdag' }} af te halen, 17:00–17:30</strong></td>
+                                            </tr>
+                                            @else
                                             <tr>
                                                 <td style="padding: 6px 0; color: #64748b; font-size: 13px; vertical-align: top;">→</td>
                                                 <td style="padding: 6px 0; color: #475569; font-size: 13px;">Je ontvangt een Track & Trace code</td>
                                             </tr>
                                             <tr>
                                                 <td style="padding: 6px 0; color: #64748b; font-size: 13px; vertical-align: top;">→</td>
-                                                <td style="padding: 6px 0; color: #475569; font-size: 13px;"><strong>Binnen 1 werkdag verzonden met PostNL</strong></td>
+                                                <td style="padding: 6px 0; color: #475569; font-size: 13px;"><strong>{{ ($order->quantity ?? 1) <= 50 ? 'Vóór 11:00 besteld: vandaag' : 'De volgende werkdag' }} verzonden met PostNL</strong></td>
                                             </tr>
+                                            @endif
                                         </table>
                                     </td>
                                 </tr>

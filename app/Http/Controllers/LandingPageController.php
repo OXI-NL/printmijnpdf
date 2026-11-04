@@ -94,7 +94,7 @@ class LandingPageController extends Controller
                 [
                     'icon' => 'clock',
                     'title' => 'Binnen 1 werkdag verzonden',
-                    'text' => 'Binnen 1 werkdag op de post met PostNL, daarna bezorgt PostNL binnen 2 werkdagen. Of gratis afhalen.',
+                    'text' => 'Vóór 11:00 besteld: vandaag gratis afhalen, of vandaag op de post en binnen 2 werkdagen bezorgd door PostNL.',
                 ],
                 [
                     'icon' => 'palette',
@@ -122,7 +122,7 @@ class LandingPageController extends Controller
                     ],
                     [
                         'title' => 'Hoe werkt het?',
-                        'text' => 'Upload je PDF, kies voor een geniet boekje, vul je gegevens in en reken af met iDEAL. Binnen 1 werkdag versturen we je scripties met PostNL. Heb je haast? Bel ons, dan kijken we wat mogelijk is.',
+                        'text' => 'Upload je PDF, kies voor een geniet boekje, vul je gegevens in en reken af met iDEAL. Vóór 11:00 besteld? Dan haal je je scripties dezelfde dag af, of versturen we ze dezelfde dag met PostNL.',
                     ],
                     [
                         'title' => 'Meerdere exemplaren nodig?',
@@ -692,7 +692,7 @@ class LandingPageController extends Controller
                 ['question' => 'Moet ik mijn PDF zelf in boekjesvolgorde zetten?', 'answer' => 'Nee. Upload je PDF in de gewone leesvolgorde, met pagina 1 als voorkant. Wij zetten de pagina\'s zelf in de juiste volgorde voor het boekje. Upload dus geen PDF die al als boekje is opgemaakt.'],
                 ['question' => 'Kan ik een A4-PDF als A4-boekje laten printen?', 'answer' => 'Ja. Een A4-boekje printen we op liggend A3 en vouwen we dubbel, zodat elke pagina A4 blijft. Een A5-boekje printen we op liggend A4.'],
                 ['question' => 'Hoeveel pagina\'s mag mijn boekje hebben?', 'answer' => 'Een geniet boekje heeft 4 tot 64 pagina\'s en altijd een veelvoud van 4. Heeft je PDF bijvoorbeeld 10 pagina\'s, dan voegen wij 2 blanco pagina\'s toe aan het eind.'],
-                ['question' => 'Hoe snel heb ik mijn boekje?', 'answer' => 'Bestel je vóór 11:00 op een werkdag, dan versturen we je boekje dezelfde dag (bij meer dan 50 exemplaren de volgende werkdag) en bezorgt PostNL het binnen 2 werkdagen. Afhalen in Delfgauw kan vanaf de volgende werkdag.'],
+                ['question' => 'Hoe snel heb ik mijn boekje?', 'answer' => 'Bestel je vóór 11:00 op een werkdag (tot 50 exemplaren), dan is je boekje dezelfde dag klaar: tussen 17:00 en 17:30 af te halen in Delfgauw, of verzonden met PostNL, dat binnen 2 werkdagen bezorgt. Later besteld of meer exemplaren: de volgende werkdag.'],
             ],
             'slug' => 'pdf-naar-boekje',
         ]);
@@ -754,7 +754,7 @@ class LandingPageController extends Controller
             ],
             'faq' => [
                 ['question' => 'Kan ik mijn PDF enkelzijdig laten printen?', 'answer' => 'Ja, bij losse pagina\'s kies je zelf enkel- of dubbelzijdig. Een geniet boekje is altijd dubbelzijdig.'],
-                ['question' => 'Kan ik mijn bestelling ophalen?', 'answer' => 'Ja, afhalen is gratis en kan vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO print | design | web, Exportweg 11 in Delfgauw.'],
+                ['question' => 'Kan ik mijn bestelling ophalen?', 'answer' => 'Ja, afhalen is gratis, op werkdagen tussen 17:00 en 17:30 bij NIVO print | design | web, Exportweg 11 in Delfgauw. Vóór 11:00 besteld (tot 50 exemplaren)? Dan al dezelfde dag.'],
                 ['question' => 'Hoe betaal ik?', 'answer' => 'Je betaalt veilig met iDEAL via Mollie. Pas na de betaling gaat je bestelling in productie.'],
                 ['question' => 'Kan ik meerdere exemplaren bestellen?', 'answer' => 'Ja. Je kiest het aantal exemplaren bij het bestellen en ziet direct de totaalprijs.'],
             ],
@@ -835,33 +835,34 @@ class LandingPageController extends Controller
     {
         return $this->page([
             'meta' => [
-                'title' => 'PDF Printen met Spoed | Morgen Afhalen bij Delft | PrintMijnPDF',
-                'description' => 'PDF of boekje met spoed nodig? Vóór 11:00 besteld is vandaag verzonden, of haal het de volgende werkdag gratis af in Delfgauw (bij Delft). Zelfde dag in overleg.',
+                'title' => 'PDF Printen met Spoed | Vandaag Afhalen bij Delft | PrintMijnPDF',
+                'description' => 'PDF of boekje met spoed nodig? Vóór 11:00 besteld is vandaag klaar: gratis afhalen in Delfgauw (bij Delft) tussen 17:00 en 17:30, of vandaag verzonden met PostNL.',
                 'canonical' => route('landing.spoed'),
-                'keywords' => 'pdf printen spoed, boekje printen spoed, snel printen delft, printen afhalen delft, drukwerk morgen klaar',
+                'keywords' => 'pdf printen spoed, boekje printen spoed, snel printen delft, printen afhalen delft, drukwerk vandaag klaar, drukwerk morgen klaar',
                 'service_type' => 'Spoed PDF printen',
             ],
             'breadcrumb' => 'PDF printen met spoed',
             'hero' => [
                 'title' => 'PDF printen met spoed',
-                'subtitle' => 'Vandaag bestellen, morgen afhalen bij Delft',
+                'subtitle' => 'Vóór 11:00 besteld, vandaag afhalen bij Delft',
                 'cta' => 'Upload je PDF',
             ],
             'benefits' => [
-                ['icon' => 'clock', 'title' => 'Morgen afhalen', 'text' => 'Gratis afhalen vanaf de volgende werkdag, 17:00–17:30 in Delfgauw.'],
-                ['icon' => 'zap', 'title' => 'Zelfde dag in overleg', 'text' => 'Bel 015-219 2525, dan kijken we wat er nog kan.'],
-                ['icon' => 'package', 'title' => 'Of laten bezorgen', 'text' => 'Vóór 11:00 besteld: tot 50 exemplaren vandaag verzonden, binnen 2 werkdagen bezorgd door PostNL.'],
+                ['icon' => 'clock', 'title' => 'Vandaag afhalen', 'text' => 'Vóór 11:00 besteld: vandaag 17:00–17:30 gratis afhalen in Delfgauw.'],
+                ['icon' => 'zap', 'title' => 'Na 11:00 nog nodig?', 'text' => 'Bel 015-219 2525, dan kijken we wat er nog kan.'],
+                ['icon' => 'package', 'title' => 'Of laten bezorgen', 'text' => 'Vóór 11:00 besteld: vandaag verzonden, binnen 2 werkdagen bezorgd door PostNL.'],
                 ['icon' => 'euro', 'title' => 'Geen spoedtoeslag', 'text' => 'Afhalen is gratis; je betaalt alleen het printwerk.'],
             ],
             'content' => [
-                'intro' => 'Moet je scriptie, programmaboekje of reader er morgen al liggen? Bestel online en haal je drukwerk de volgende werkdag op bij onze drukkerij in Delfgauw, tussen Delft, Den Haag, Zoetermeer en Rotterdam. Afhalen kost niets en er is geen spoedtoeslag.',
+                'intro' => 'Moet je scriptie, programmaboekje of reader er vandaag nog liggen? Bestel vóór 11:00 online en haal je drukwerk dezelfde dag op bij onze drukkerij in Delfgauw, tussen Delft, Den Haag, Zoetermeer en Rotterdam. Afhalen kost niets en er is geen spoedtoeslag.',
                 'sections' => [
                     [
                         'title' => 'Hoe snel is het klaar?',
+                        'text' => 'Vóór 11:00 op een werkdag besteld, tot 50 exemplaren: dezelfde dag klaar. Later besteld of een grotere oplage: de volgende werkdag.',
                         'list' => [
-                            'Afhalen: gratis, vanaf de volgende werkdag tussen 17:00 en 17:30 bij NIVO print | design | web, Exportweg 11, 2645 ED Delfgauw.',
-                            'Zelfde dag: niet standaard. Bel 015-219 2525 voordat je bestelt, dan kijken we samen wat er mogelijk is.',
-                            'Bezorgen: bestel je vóór 11:00 op een werkdag, dan versturen we tot 50 exemplaren dezelfde dag en bezorgt PostNL het binnen 2 werkdagen. Grotere oplagen gaan de volgende werkdag de deur uit.',
+                            'Afhalen: gratis, tussen 17:00 en 17:30 bij NIVO print | design | web, Exportweg 11, 2645 ED Delfgauw.',
+                            'Bezorgen: we versturen op de dag dat het klaar is; PostNL bezorgt binnen 2 werkdagen.',
+                            'Na 11:00 en toch vandaag nodig? Bel 015-219 2525 voordat je bestelt, dan kijken we wat er kan.',
                         ],
                     ],
                     [
@@ -871,7 +872,7 @@ class LandingPageController extends Controller
                             'Upload je PDF op printmijnpdf.nl; je ziet direct het aantal pagina\'s en de prijs.',
                             'Kies geniet boekje of losse pagina\'s, A4 of A5.',
                             'Kies "Afhalen" als bezorgmethode en betaal met iDEAL.',
-                            'Haal je drukwerk de volgende werkdag tussen 17:00 en 17:30 op.',
+                            'Vóór 11:00 besteld? Haal je drukwerk dezelfde dag tussen 17:00 en 17:30 op.',
                         ],
                     ],
                     [
@@ -885,10 +886,10 @@ class LandingPageController extends Controller
                 ],
             ],
             'faq' => [
-                ['question' => 'Kan ik mijn PDF vandaag nog laten printen?', 'answer' => 'Standaard haal je je bestelling de volgende werkdag op. Heb je het dezelfde dag nodig? Bel dan 015-219 2525, dan kijken we wat er mogelijk is.'],
+                ['question' => 'Kan ik mijn PDF vandaag nog laten printen?', 'answer' => 'Ja. Bestel je vóór 11:00 op een werkdag (tot 50 exemplaren), dan haal je het dezelfde dag tussen 17:00 en 17:30 op. Na 11:00? Bel 015-219 2525, dan kijken we wat er nog kan.'],
                 ['question' => 'Waar kan ik mijn drukwerk afhalen?', 'answer' => 'Bij NIVO print | design | web, Exportweg 11, 2645 ED Delfgauw (gemeente Pijnacker-Nootdorp, naast Delft). Op werkdagen tussen 17:00 en 17:30.'],
                 ['question' => 'Kost spoed extra?', 'answer' => 'Nee. Afhalen is gratis en er is geen spoedtoeslag; je betaalt startkosten, de pagina\'s en eventueel het nieten.'],
-                ['question' => 'Ik woon niet in de buurt van Delft, hoe snel kan het dan?', 'answer' => 'Dan versturen we met PostNL. Bestel je vóór 11:00 op een werkdag, dan gaat je pakket (tot 50 exemplaren) dezelfde dag de deur uit en bezorgt PostNL het binnen 2 werkdagen.'],
+                ['question' => 'Ik woon niet in de buurt van Delft, hoe snel kan het dan?', 'answer' => 'Dan versturen we met PostNL. Vóór 11:00 op een werkdag besteld (tot 50 exemplaren)? Dan gaat je pakket dezelfde dag de deur uit en bezorgt PostNL het binnen 2 werkdagen.'],
             ],
             'slug' => 'pdf-printen-met-spoed',
         ]);
@@ -974,8 +975,8 @@ class LandingPageController extends Controller
     {
         return $this->page([
             'meta' => [
-                'title' => 'Liturgie Uitvaart Printen | Morgen Afhalen | PrintMijnPDF',
-                'description' => 'Liturgie voor een uitvaart laten printen: full colour geniet boekje in A5 of A4. Vandaag bestellen, morgen gratis afhalen bij Delft of verzonden met PostNL.',
+                'title' => 'Liturgie Uitvaart Printen | Vandaag Afhalen | PrintMijnPDF',
+                'description' => 'Liturgie voor een uitvaart laten printen: full colour geniet boekje in A5 of A4. Vóór 11:00 besteld, vandaag gratis afhalen bij Delft of verzonden met PostNL.',
                 'canonical' => route('landing.uitvaart'),
                 'keywords' => 'liturgie uitvaart printen, rouwboekje printen, programmaboekje uitvaart, liturgie begrafenis drukken, liturgie crematie printen',
                 'service_type' => 'Liturgie uitvaart printen',
@@ -987,13 +988,13 @@ class LandingPageController extends Controller
                 'cta' => 'Upload je liturgie',
             ],
             'benefits' => [
-                ['icon' => 'clock', 'title' => 'Morgen klaar', 'text' => 'Vandaag bestellen, de volgende werkdag gratis afhalen in Delfgauw. Zelfde dag in overleg.'],
+                ['icon' => 'clock', 'title' => 'Vandaag klaar', 'text' => 'Vóór 11:00 besteld, vandaag 17:00–17:30 gratis afhalen in Delfgauw.'],
                 ['icon' => 'palette', 'title' => 'Foto\'s in full colour', 'text' => 'Een foto op de voorkant en kleur in het hele boekje, in drukwerkkwaliteit.'],
                 ['icon' => 'book', 'title' => 'Gevouwen en geniet', 'text' => 'Een net boekje in A5 of A4, van 4 tot 64 pagina\'s.'],
                 ['icon' => 'phone', 'title' => 'Persoonlijk contact', 'text' => 'Twijfel of haast? Bel 015-219 2525, dan denken we met je mee.'],
             ],
             'content' => [
-                'intro' => 'Tussen het overlijden en de uitvaart zit vaak maar een paar dagen. De liturgie of het programmaboekje moet dan snel en goed gedrukt worden. Bij PrintMijnPDF upload je de PDF, zie je meteen de prijs, en haal je de boekjes de volgende werkdag op bij onze drukkerij in Delfgauw, vlak bij Delft. Of we versturen ze met PostNL.',
+                'intro' => 'Tussen het overlijden en de uitvaart zit vaak maar een paar dagen. De liturgie of het programmaboekje moet dan snel en goed gedrukt worden. Bij PrintMijnPDF upload je de PDF, zie je meteen de prijs, en haal je de boekjes bij een bestelling vóór 11:00 dezelfde dag op bij onze drukkerij in Delfgauw, vlak bij Delft. Of we versturen ze met PostNL.',
                 'sections' => [
                     [
                         'title' => 'Wat staat er meestal in een liturgie?',
@@ -1015,7 +1016,7 @@ class LandingPageController extends Controller
                             'Maak de liturgie in Word, Canva of een ander programma en sla hem op als PDF, in het formaat van één pagina (meestal A5).',
                             'Upload de PDF op printmijnpdf.nl en kies "Magazine" (geniet boekje).',
                             'Vul het aantal exemplaren in. Online bestel je tot 100 stuks; heb je er meer nodig, mail of bel ons dan.',
-                            'Kies afhalen (gratis, de volgende werkdag tussen 17:00 en 17:30) of bezorgen, en betaal met iDEAL.',
+                            'Kies afhalen (gratis, tussen 17:00 en 17:30) of bezorgen, en betaal met iDEAL.',
                         ],
                     ],
                     [
@@ -1025,7 +1026,7 @@ class LandingPageController extends Controller
                 ],
             ],
             'faq' => [
-                ['question' => 'Hoe snel kan een liturgie klaar zijn?', 'answer' => 'Bestel je op een werkdag, dan kun je de boekjes de volgende werkdag tussen 17:00 en 17:30 gratis afhalen in Delfgauw. Laat je ze bezorgen, dan versturen we binnen 1 werkdag en bezorgt PostNL binnen 2 werkdagen. Is het nog sneller nodig? Bel 015-219 2525, dan kijken we wat er kan.'],
+                ['question' => 'Hoe snel kan een liturgie klaar zijn?', 'answer' => 'Bestel je vóór 11:00 op een werkdag (tot 50 exemplaren), dan haal je de boekjes dezelfde dag tussen 17:00 en 17:30 gratis af in Delfgauw. Later besteld of meer exemplaren: de volgende werkdag. Laat je ze bezorgen, dan bezorgt PostNL binnen 2 werkdagen na verzending. Na 11:00 en toch vandaag nodig? Bel 015-219 2525.'],
                 ['question' => 'Hoeveel exemplaren kan ik bestellen?', 'answer' => 'Online bestel je 1 tot 100 exemplaren. Verwacht je meer gasten, mail dan naar info@printmijnpdf.nl of bel 015-219 2525, dan maken we het via de drukkerij.'],
                 ['question' => 'Wat kost een liturgie?', 'answer' => 'Dat zie je direct na het uploaden van je PDF. De prijs bestaat uit € 10,00 startkosten, een prijs per pagina en het nieten. Afhalen is gratis.'],
                 ['question' => 'Waar kan ik de liturgie afhalen?', 'answer' => 'Bij NIVO print | design | web, Exportweg 11, 2645 ED Delfgauw, naast Delft. Op werkdagen tussen 17:00 en 17:30. Je krijgt een mail zodra de boekjes klaarliggen.'],
@@ -1090,7 +1091,7 @@ class LandingPageController extends Controller
                 ['question' => 'Hoeveel boekjes kan ik bestellen?', 'answer' => 'Online bestel je 1 tot 100 exemplaren. Heb je er meer nodig, mail dan naar info@printmijnpdf.nl.'],
                 ['question' => 'Kan ik het boekje in Canva maken?', 'answer' => 'Ja. Kies in Canva bij downloaden "PDF voor drukwerk" en zet "Snijtekens en afloop" aan als je achtergrond tot de rand doorloopt. Upload daarna de PDF bij ons.'],
                 ['question' => 'Op welk papier printen jullie?', 'answer' => 'Op hoogwaardig wit papier van professionele drukwerkkwaliteit, met heldere kleuren voor foto\'s en tekst.'],
-                ['question' => 'Wanneer moet ik bestellen?', 'answer' => 'Liefst een week of twee van tevoren, zodat je eerst een proefexemplaar kunt bekijken. Haast? We versturen binnen 1 werkdag en afhalen kan de volgende werkdag.'],
+                ['question' => 'Wanneer moet ik bestellen?', 'answer' => 'Liefst een week of twee van tevoren, zodat je eerst een proefexemplaar kunt bekijken. Haast? Vóór 11:00 besteld is dezelfde dag klaar om af te halen of te verzenden.'],
             ],
             'slug' => 'boekje-bruiloft-printen',
         ]);
@@ -1118,7 +1119,7 @@ class LandingPageController extends Controller
             'benefits' => [
                 ['icon' => 'file-text', 'title' => 'Geen printer nodig', 'text' => 'Geen inkt, geen vastgelopen papier, geen gedoe.'],
                 ['icon' => 'palette', 'title' => 'Beter dan thuis', 'text' => 'Full colour in drukwerkkwaliteit, van een echte drukkerij.'],
-                ['icon' => 'package', 'title' => 'Thuisbezorgd', 'text' => 'Binnen 1 werkdag verzonden, PostNL bezorgt binnen 2 werkdagen.'],
+                ['icon' => 'package', 'title' => 'Thuisbezorgd', 'text' => 'Vóór 11:00 besteld: vandaag verzonden, PostNL bezorgt binnen 2 werkdagen.'],
                 ['icon' => 'euro', 'title' => 'Vanaf € 0,15 per pagina', 'text' => 'Plus € 10,00 startkosten per bestelling. Geen account nodig.'],
             ],
             'content' => [
@@ -1169,8 +1170,8 @@ class LandingPageController extends Controller
     {
         return $this->page([
             'meta' => [
-                'title' => 'Printen in Delft | Morgen Gratis Afhalen | PrintMijnPDF',
-                'description' => 'PDF of boekje printen in de regio Delft, Den Haag, Zoetermeer of Rotterdam? Bestel online en haal het de volgende werkdag gratis af bij onze drukkerij in Delfgauw.',
+                'title' => 'Printen in Delft | Vandaag Gratis Afhalen | PrintMijnPDF',
+                'description' => 'PDF of boekje printen in de regio Delft, Den Haag, Zoetermeer of Rotterdam? Bestel vóór 11:00 online en haal het dezelfde dag gratis af bij onze drukkerij in Delfgauw.',
                 'canonical' => route('landing.delft'),
                 'keywords' => 'printen delft, pdf printen delft, boekje printen den haag, printen zoetermeer, drukkerij delft, printshop delft',
                 'service_type' => 'PDF printen regio Delft',
@@ -1178,23 +1179,23 @@ class LandingPageController extends Controller
             'breadcrumb' => 'Printen in Delft en omgeving',
             'hero' => [
                 'title' => 'Printen in Delft en omgeving',
-                'subtitle' => 'Online bestellen, morgen gratis afhalen in Delfgauw',
+                'subtitle' => 'Vóór 11:00 besteld, vandaag gratis afhalen in Delfgauw',
                 'cta' => 'Upload je PDF',
             ],
             'benefits' => [
-                ['icon' => 'clock', 'title' => 'Morgen afhalen', 'text' => 'Vanaf de volgende werkdag, tussen 17:00 en 17:30.'],
+                ['icon' => 'clock', 'title' => 'Vandaag afhalen', 'text' => 'Vóór 11:00 besteld: vandaag tussen 17:00 en 17:30.'],
                 ['icon' => 'euro', 'title' => 'Afhalen is gratis', 'text' => 'Geen verzendkosten en geen spoedtoeslag.'],
                 ['icon' => 'briefcase', 'title' => 'Echte drukkerij', 'text' => 'NIVO print | design | web, sinds 1980 in de regio.'],
-                ['icon' => 'phone', 'title' => 'Vandaag nodig?', 'text' => 'Bel 015-219 2525, dan kijken we wat er kan.'],
+                ['icon' => 'phone', 'title' => 'Na 11:00 nog nodig?', 'text' => 'Bel 015-219 2525, dan kijken we wat er kan.'],
             ],
             'content' => [
-                'intro' => 'PrintMijnPDF is de online printservice van drukkerij NIVO print | design | web in Delfgauw, gemeente Pijnacker-Nootdorp, direct naast Delft. Woon of werk je in Delft, Den Haag, Rijswijk, Zoetermeer, Pijnacker, Nootdorp, het Westland of Rotterdam? Dan bestel je online en haal je je drukwerk de volgende werkdag gratis op.',
+                'intro' => 'PrintMijnPDF is de online printservice van drukkerij NIVO print | design | web in Delfgauw, gemeente Pijnacker-Nootdorp, direct naast Delft. Woon of werk je in Delft, Den Haag, Rijswijk, Zoetermeer, Pijnacker, Nootdorp, het Westland of Rotterdam? Dan bestel je online en haal je je drukwerk gratis op; vóór 11:00 besteld al dezelfde dag.',
                 'sections' => [
                     [
                         'title' => 'Afhaaladres',
                         'list' => [
                             'NIVO print | design | web, Exportweg 11, 2645 ED Delfgauw.',
-                            'Afhalen op werkdagen tussen 17:00 en 17:30, vanaf de werkdag na je bestelling.',
+                            'Afhalen op werkdagen tussen 17:00 en 17:30. Vóór 11:00 besteld (tot 50 exemplaren): dezelfde dag, anders de volgende werkdag.',
                             'Je krijgt een mail zodra je bestelling klaarligt.',
                         ],
                     ],
@@ -1204,13 +1205,13 @@ class LandingPageController extends Controller
                     ],
                     [
                         'title' => 'Liever bezorgd?',
-                        'text' => 'Dat kan in heel Nederland. We versturen binnen 1 werkdag met PostNL en PostNL bezorgt binnen 2 werkdagen. Verzending kost € 7,50 per bestelling.',
+                        'text' => 'Dat kan in heel Nederland. Vóór 11:00 besteld is vandaag verzonden; PostNL bezorgt binnen 2 werkdagen. Verzending kost € 7,50 per bestelling.',
                     ],
                 ],
             ],
             'faq' => [
-                ['question' => 'Waar kan ik in Delft een PDF laten printen?', 'answer' => 'Bestel online bij PrintMijnPDF en haal je drukwerk de volgende werkdag gratis op bij drukkerij NIVO print | design | web, Exportweg 11 in Delfgauw, vlak bij Delft. Afhalen kan op werkdagen tussen 17:00 en 17:30.'],
-                ['question' => 'Kan ik mijn drukwerk dezelfde dag ophalen?', 'answer' => 'Standaard haal je het de volgende werkdag op. Heb je het dezelfde dag nodig, bel dan voor je bestelt naar 015-219 2525, dan kijken we wat er mogelijk is.'],
+                ['question' => 'Waar kan ik in Delft een PDF laten printen?', 'answer' => 'Bestel online bij PrintMijnPDF en haal je drukwerk gratis op bij drukkerij NIVO print | design | web, Exportweg 11 in Delfgauw, vlak bij Delft. Afhalen kan op werkdagen tussen 17:00 en 17:30.'],
+                ['question' => 'Kan ik mijn drukwerk dezelfde dag ophalen?', 'answer' => 'Ja. Bestel je vóór 11:00 op een werkdag (tot 50 exemplaren), dan haal je het dezelfde dag tussen 17:00 en 17:30 op. Later besteld? Dan de volgende werkdag, of bel 015-219 2525 voor je bestelt.'],
                 ['question' => 'Kan ik ook langskomen zonder online te bestellen?', 'answer' => 'Bestellen gaat via de website, zodat je bestand direct gecontroleerd wordt en de prijs vastligt. Daarna haal je het op in Delfgauw.'],
                 ['question' => 'Vanuit welke plaatsen haal je het makkelijk op?', 'answer' => 'Delfgauw ligt naast Delft, Pijnacker en Nootdorp, en op korte afstand van Den Haag, Rijswijk, Zoetermeer en Rotterdam.'],
             ],

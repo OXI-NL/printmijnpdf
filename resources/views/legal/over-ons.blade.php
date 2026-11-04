@@ -55,7 +55,7 @@
     </ul>
 
     <h2>Snel en dichtbij</h2>
-    <p>We versturen je bestelling binnen 1 werkdag met PostNL, dat binnen 2 werkdagen bezorgt. Woon je in de buurt? Dan haal je het de volgende werkdag gratis op aan de Exportweg 11 in Delfgauw, tussen 17:00 en 17:30.</p>
+    <p>Vóór 11:00 besteld (tot 50 exemplaren) is dezelfde dag klaar. Woon je in de buurt? Dan haal je het gratis op aan de Exportweg 11 in Delfgauw, tussen 17:00 en 17:30. Anders versturen we het met PostNL, dat binnen 2 werkdagen bezorgt.</p>
 
     <h2>Lid van KVGO</h2>
     <p>NIVO print | design | web is lid van KVGO, de brancheorganisatie voor de grafimedia. Op onze bestellingen zijn de <a href="{{ route('leveringsvoorwaarden') }}">leveringsvoorwaarden van de grafimediabranche</a> van toepassing.</p>

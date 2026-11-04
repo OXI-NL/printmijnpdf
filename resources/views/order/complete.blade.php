@@ -176,8 +176,14 @@
                 <ol>
                     <li>Je ontvangt een bevestigingsmail op <strong>{{ $order->customer_email }}</strong></li>
                     <li>Wij printen en binden je document</li>
+                    @php($when = ($order->quantity ?? 1) <= 50 ? 'Vóór 11:00 besteld: vandaag' : 'De volgende werkdag')
+                    @if($order->delivery_type === 'pickup')
+                    <li>Je ontvangt een mail zodra het klaarligt</li>
+                    <li>{{ $when }} af te halen, tussen 17:00 en 17:30</li>
+                    @else
                     <li>Je ontvangt een Track & Trace code zodra het pakket onderweg is</li>
-                    <li>Binnen 1 werkdag versturen we het met PostNL; PostNL bezorgt het daarna binnen 2 werkdagen.</li>
+                    <li>{{ $when }} verzonden; PostNL bezorgt binnen 2 werkdagen</li>
+                    @endif
                 </ol>
             </div>
             @elseif($order->status === 'cancelled')

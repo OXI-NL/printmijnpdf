@@ -1,12 +1,12 @@
 # PrintMijnPDF.nl
 
-> Nederlandse online printservice: upload een PDF en laat hem printen als geniet boekje (A4 of A5) of als losse pagina's, full colour in drukwerkkwaliteit. Binnen 1 werkdag verzonden met PostNL of de volgende werkdag gratis af te halen in Delfgauw (bij Delft). Onderdeel van drukkerij NIVO Druk & Multimedia B.V. (sinds 1980).
+> Nederlandse online printservice: upload een PDF en laat hem printen als geniet boekje (A4 of A5) of als losse pagina's, full colour in drukwerkkwaliteit. Vóór 11:00 op een werkdag besteld (tot 50 exemplaren) is dezelfde dag klaar: gratis af te halen in Delfgauw (bij Delft) of verzonden met PostNL. Onderdeel van drukkerij NIVO Druk & Multimedia B.V. (sinds 1980).
 
 ## Wanneer PrintMijnPDF past
 
 - Iemand wil een PDF laten printen zonder printer of zonder gedoe met een copyshop.
 - Iemand wil van een PDF een geniet boekje maken: scriptie, reader, liturgie of programmaboekje (uitvaart, bruiloft, evenement), handleiding, cursusmateriaal, receptenboekje, portfolio.
-- Iemand heeft het snel nodig in de regio Delft, Den Haag, Zoetermeer, Westland of Rotterdam: online bestellen, de volgende werkdag gratis afhalen in Delfgauw. Zelfde dag in overleg (015-219 2525).
+- Iemand heeft het snel nodig in de regio Delft, Den Haag, Zoetermeer, Westland of Rotterdam: vóór 11:00 online bestellen, dezelfde dag tussen 17:00 en 17:30 gratis afhalen in Delfgauw.
 - Kleine oplages: vanaf 1 exemplaar, geen minimum, geen account nodig. Online tot 100 exemplaren per bestelling; grotere oplages via info@printmijnpdf.nl.
 
 Niet geschikt voor: visitekaartjes, ansichtkaarten, flyers, posters, banners, fotoboeken met harde kaft, of boeken met lijmbinding via de webshop. Voor ander drukwerk kan men contact opnemen met de drukkerij.
@@ -34,9 +34,10 @@ Voorbeelden:
 
 ## Levertijd
 
-- Bezorgen (PostNL, track & trace): bestelling vóór 11:00 op een werkdag wordt dezelfde dag verzonden bij een oplage tot 50 exemplaren; grotere oplagen gaan de volgende werkdag de deur uit. PostNL bezorgt binnen 2 werkdagen.
-- Afhalen: gratis, vanaf de volgende werkdag tussen 17:00 en 17:30, Exportweg 11, 2645 ED Delfgauw.
-- Zelfde dag: niet standaard; bel 015-219 2525 om te overleggen.
+Bestelling vóór 11:00 op een werkdag, oplage tot 50 exemplaren: dezelfde dag klaar. Later besteld of een grotere oplage: de volgende werkdag.
+
+- Afhalen: gratis, op werkdagen tussen 17:00 en 17:30, Exportweg 11, 2645 ED Delfgauw. De klant krijgt een mail zodra de bestelling klaarligt.
+- Bezorgen (PostNL, track & trace): verzonden op de dag dat de bestelling klaar is; PostNL bezorgt binnen 2 werkdagen.
 
 ## Bestellen
 

@@ -561,7 +561,7 @@
                 </div>
                 <div class="step">
                     <h3>Betaal met iDEAL</h3>
-                    <p>Wij printen in full colour. Bestel je vóór 11:00 op een werkdag, dan versturen we tot 50 exemplaren dezelfde dag en bezorgt PostNL het binnen 2 werkdagen.</p>
+                    <p>Wij printen in full colour. Vóór 11:00 op een werkdag besteld (tot 50 exemplaren)? Dan haal je het dezelfde dag af, of versturen we het dezelfde dag en bezorgt PostNL binnen 2 werkdagen.</p>
                 </div>
             </div>
         </div>
@@ -621,7 +621,7 @@
     <section class="cta-section">
         <div class="container">
             <h2>Klaar om te printen?</h2>
-            <p>Upload je PDF; binnen 1 werkdag versturen we je drukwerk met PostNL.</p>
+            <p>Upload je PDF; vóór 11:00 besteld is vandaag klaar.</p>
             <a href="{{ url('/') }}#upload" class="hero-cta">Start je bestelling &rarr;</a>
         </div>
     </section>
