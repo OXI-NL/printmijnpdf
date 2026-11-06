@@ -50,6 +50,9 @@ class SyncMollieFees extends Command
             ->count();
 
         $this->info("{$stats['matched']} orders gevonden in Mollie, {$stats['updated']} bijgewerkt, {$stats['unchanged']} al goed.");
+        if ($stats['without_deductions'] > 0) {
+            $this->warn("{$stats['without_deductions']} betaling(en) zonder ingehouden kosten op de balance transaction; die blijven leeg in plaats van € 0.");
+        }
         if ($missing > 0) {
             $this->warn("{$missing} betaalde order(s) nog zonder kosten (nog niet op de balance, of buiten de periode: probeer --all).");
         }

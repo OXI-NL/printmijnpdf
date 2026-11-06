@@ -35,11 +35,11 @@ class MollieFeeService
      * @param  Carbon|null  $since  stop bij transacties van vóór dit moment (null = hele historie)
      * @param  string|null  $orderNumber  alleen deze order
      * @param  callable|null  $report  krijgt (Order $order, bool $changed) per gevonden order
-     * @return array{matched: int, updated: int, unchanged: int}
+     * @return array{matched: int, updated: int, unchanged: int, without_deductions: int}
      */
     public static function sync(?Carbon $since = null, ?string $orderNumber = null, ?callable $report = null): array
     {
-        $stats = ['matched' => 0, 'updated' => 0, 'unchanged' => 0];
+        $stats = ['matched' => 0, 'updated' => 0, 'unchanged' => 0, 'without_deductions' => 0];
 
         $orders = Order::query()
             ->whereNotNull('mollie_payment_id')
@@ -62,6 +62,18 @@ class MollieFeeService
 
             $order = $orders->get(self::paymentId($transaction));
             if (! $order) {
+                continue;
+            }
+
+            // Geen ingehouden kosten op deze transactie: niet als "€ 0" vastleggen (dat was
+            // precies de oude fout), maar onbekend laten en melden.
+            if (self::cents($transaction->deductions->value ?? '0') === 0) {
+                $stats['without_deductions']++;
+                $orders->forget($order->mollie_payment_id);
+                if ($orders->isEmpty()) {
+                    break;
+                }
+
                 continue;
             }
 

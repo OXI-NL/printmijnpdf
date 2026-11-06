@@ -172,6 +172,21 @@ class MollieFeeSyncTest extends TestCase
         $this->assertNull($other->refresh()->mollie_fee);
     }
 
+    public function test_betaling_zonder_inhouding_blijft_onbekend_in_plaats_van_nul(): void
+    {
+        $order = $this->order();
+        $transaction = $this->transaction('tr_betaald1', '19.75', '0.00');
+        $transaction->deductions = null; // Mollie laat het veld weg als er niets is ingehouden
+
+        $this->mockBalance([$transaction]);
+
+        $this->artisan('mollie:sync-fees', ['--all' => true])
+            ->expectsOutputToContain('1 betaling(en) zonder ingehouden kosten')
+            ->assertSuccessful();
+
+        $this->assertNull($order->refresh()->mollie_fee);
+    }
+
     public function test_days_stopt_bij_oudere_transacties(): void
     {
         $this->travelTo('2026-11-06 04:00:00');
