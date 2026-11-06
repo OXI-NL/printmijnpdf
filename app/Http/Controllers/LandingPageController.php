@@ -74,6 +74,79 @@ class LandingPageController extends Controller
     }
 
     /**
+     * Totaalprijs van één voorbeeld, opgebouwd uit dezelfde calculator als de
+     * bestelling. Zonder kortingscode; een tariefwijziging in config/pricing.php
+     * werkt dus direct door.
+     */
+    private static function priceBreakdown(string $label, int $pages, string $format, string $binding): array
+    {
+        $shipping = Order::calculatePrice($pages, $format, $binding, 'shipping', 1);
+        $pickup = Order::calculatePrice($pages, $format, $binding, 'pickup', 1);
+        $billable = Order::billablePages($pages, $binding);
+
+        $lines = [["Printen: {$billable} pagina's {$format}, full colour", self::euro($shipping['pages'])]];
+        if ($binding === 'booklet') {
+            $lines[] = ['Nieten tot boekje', self::euro($shipping['binding'])];
+        }
+        $lines[] = ['Startkosten (één keer per bestelling)', self::euro($shipping['startup'])];
+        $lines[] = ['Verzending met PostNL', self::euro($shipping['shipping'])];
+
+        return [
+            'label' => $label,
+            'lines' => $lines,
+            'total' => self::euro($shipping['total']),
+            'pickupTotal' => self::euro($pickup['total']),
+        ];
+    }
+
+    /**
+     * Dezelfde PDF en afwerking in verschillende aantallen: totaal en per exemplaar.
+     * Startkosten en verzending betaal je één keer per bestelling.
+     */
+    private static function quantityComparison(string $label, int $pages, string $format, string $binding, array $counts): array
+    {
+        $counts = array_values(array_filter($counts, fn ($n) => $n >= 1 && $n <= (int) config('pricing.max_quantity', 100)));
+
+        return [
+            'label' => $label,
+            'rows' => array_map(function (int $n) use ($pages, $format, $binding) {
+                $total = Order::calculatePrice($pages, $format, $binding, 'shipping', $n)['total'];
+
+                return [
+                    'quantity' => $n,
+                    'total' => self::euro($total),
+                    'each' => self::euro((int) round($total / $n)),
+                ];
+            }, $counts),
+            'maxQuantity' => (int) config('pricing.max_quantity', 100),
+        ];
+    }
+
+    /** Laagste paginaprijs (A5), voor "vanaf"-teksten */
+    private static function lowestPagePrice(): string
+    {
+        return self::euro((int) min(config('pricing.per_page_a5', 10), config('pricing.per_page_a4', 15)));
+    }
+
+    /**
+     * Levertijd en afhalen, gelijk aan de homepage en de bevestigingsmail.
+     * Eén bron voor de spoed- en Delft-pagina.
+     */
+    private static function sameDayConditions(): array
+    {
+        return [
+            'title' => 'Vandaag klaar: de voorwaarden',
+            'items' => [
+                ['Besteltijd', 'Vóór 11:00 op een werkdag besteld.'],
+                ['Aantal', 'Tot en met 50 exemplaren. Meer exemplaren of later besteld: de volgende werkdag klaar.'],
+                ['Afhalen', 'Gratis, dezelfde dag tussen 17:00 en 17:30 bij NIVO print | design | web, Exportweg 11, 2645 ED Delfgauw. Je krijgt een mail zodra het klaarligt.'],
+                ['Bezorgen', 'Dezelfde dag verzonden; PostNL bezorgt binnen 2 werkdagen. Verzending kost ' . self::euro((int) config('pricing.shipping', 750)) . ' per bestelling.'],
+            ],
+            'note' => 'Na 11:00 en toch vandaag nodig? Bel 015-219 2525 voordat je bestelt.',
+        ];
+    }
+
+    /**
      * Scriptie printen - voor studenten HBO/WO
      */
     public function scriptie(): View
@@ -237,9 +310,13 @@ class LandingPageController extends Controller
             ],
             'hero' => [
                 'title' => 'Cursusmateriaal printen',
-                'subtitle' => 'Professioneel materiaal voor je training of workshop',
-                'cta' => 'Upload je materiaal',
+                'subtitle' => 'Van je eigen PDF naar een reader, geniet cursusboekje of losse werkbladen. Full colour, in het aantal exemplaren voor jouw groep.',
+                'cta' => 'Bereken de prijs voor jouw cursus',
+                'points' => ['Tot ' . (int) config('pricing.max_quantity', 100) . ' exemplaren online', 'Geniet tot 64 pagina\'s', 'Losse prints enkel- of dubbelzijdig'],
             ],
+            'choice' => true,
+            'quantities' => self::quantityComparison("A4-cursusboekje van 24 pagina's, geniet", 24, 'A4', 'booklet', [1, 10, 15, 25]),
+            'quantitiesIntro' => 'Startkosten en verzending betaal je één keer per bestelling; daarna betaal je per exemplaar alleen het printen en nieten. Je ziet de totaalprijs van jouw PDF direct na het uploaden. Meer dan ' . (int) config('pricing.max_quantity', 100) . ' exemplaren? Mail naar info@printmijnpdf.nl.',
             'benefits' => [
                 [
                     'icon' => 'briefcase',
@@ -298,15 +375,41 @@ class LandingPageController extends Controller
         return $this->page([
             'meta' => [
                 'title' => 'Eigen Boekje Maken | Receptenboek, Fotoboekje en Meer | PrintMijnPDF',
-                'description' => 'Maak je eigen boekje van een PDF. Receptenboekje, fotoboekje, verhalen bundelen. Full colour geprint, binnen 1 werkdag verzonden.',
+                'description' => 'Maak een persoonlijk boekje van je PDF: verjaardagstijdschrift, receptenbundel of reisdagboek. Geniet tot 64 pagina\'s, vanaf 1 exemplaar, totaalprijs direct na het uploaden.',
                 'canonical' => route('landing.boekje'),
-                'keywords' => 'boekje maken, eigen boekje printen, pdf naar boekje, boekje laten drukken',
+                'keywords' => 'boekje maken, eigen boekje printen, pdf naar boekje, boekje laten drukken, receptenboekje printen, verjaardagstijdschrift printen',
             ],
             'hero' => [
-                'title' => 'Je eigen boekje maken',
-                'subtitle' => 'Van PDF naar professioneel geprint boekje',
-                'cta' => 'Upload je PDF',
+                'title' => 'Je eigen boekje maken van je PDF',
+                'subtitle' => 'Een verjaardagstijdschrift, receptenbundel of reisdagboek gemaakt? Upload je PDF, kies een geniet boekje of losse pagina\'s en zie meteen de totaalprijs.',
+                'cta' => 'Upload je PDF en bekijk je prijs',
+                'points' => ['Geniet boekje tot 64 pagina\'s', 'A5 of A4', 'Vanaf 1 exemplaar', 'Full colour'],
             ],
+            'usecases' => [
+                'title' => 'Waar maak je een boekje van?',
+                'items' => [
+                    [
+                        'variant' => 'cadeau',
+                        'title' => 'Cadeau of verjaardagstijdschrift',
+                        'text' => 'Een tijdschrift voor een verjaardag, jubileum of afscheid, met foto\'s en verhalen van familie en vrienden.',
+                    ],
+                    [
+                        'variant' => 'recepten',
+                        'title' => 'Receptenboekje',
+                        'text' => 'De recepten van oma, je eigen favorieten of een bundel voor de hele familie, met een foto bij elk gerecht.',
+                    ],
+                    [
+                        'variant' => 'reis',
+                        'title' => 'Reisdagboek of fotoboekje',
+                        'text' => 'Foto\'s, kaartjes en verhalen van een reis of een bijzonder jaar, als boekje om door te bladeren.',
+                    ],
+                ],
+                'note' => 'Illustraties. Wij printen jouw PDF zoals je hem aanlevert; vormgeven doe je zelf, bijvoorbeeld in Word, Canva of Pages.',
+            ],
+            'priceExample' => self::priceBreakdown("A5-boekje van 16 pagina's, 1 exemplaar", 16, 'A5', 'booklet'),
+            'quantities' => self::quantityComparison("Hetzelfde A5-boekje van 16 pagina's", 16, 'A5', 'booklet', [1, 2, 3, 5]),
+            'quantitiesIntro' => 'Voor jezelf, of ook een exemplaar om weg te geven? Startkosten en verzending betaal je één keer per bestelling, dus een extra exemplaar kost minder dan het eerste. Je kiest het aantal zelf bij de afwerking.',
+            'choice' => true,
             'benefits' => [
                 [
                     'icon' => 'heart',
@@ -316,17 +419,17 @@ class LandingPageController extends Controller
                 [
                     'icon' => 'palette',
                     'title' => 'Full colour',
-                    'text' => 'Foto\'s en illustraties komen prachtig tot hun recht.',
+                    'text' => 'Foto\'s en illustraties in kleur, op elke pagina.',
                 ],
                 [
                     'icon' => 'zap',
                     'title' => 'Simpel proces',
-                    'text' => 'Upload, bestel, klaar. Geen ingewikkelde software nodig.',
+                    'text' => 'Upload, kies je afwerking, betaal met iDEAL. Geen account nodig.',
                 ],
                 [
                     'icon' => 'euro',
-                    'title' => 'Betaalbaar',
-                    'text' => 'Al vanaf €0,15 per pagina. Geen minimale oplage.',
+                    'title' => 'Geen minimale oplage',
+                    'text' => 'Vanaf ' . self::lowestPagePrice() . ' per pagina (A5). Eén exemplaar bestellen kan gewoon.',
                 ],
             ],
             'content' => [
@@ -339,14 +442,14 @@ class LandingPageController extends Controller
                     ],
                     [
                         'title' => 'Hoe maak ik een PDF?',
-                        'text' => 'De meeste programma\'s kunnen opslaan als PDF: Word, Pages, Canva, Google Docs. Heb je hulp nodig? Neem contact op.',
+                        'text' => 'De meeste programma\'s kunnen opslaan als PDF: Word, Pages, Canva, Google Docs. Maak je pagina\'s in het formaat van je boekje, dus A5 voor een A5-boekje. Heb je hulp nodig? Neem contact op.',
                     ],
                 ],
             ],
             'faq' => [
                 [
                     'question' => 'Wat is het minimale aantal pagina\'s?',
-                    'answer' => 'Een boekje heeft minimaal 4 pagina\'s nodig. Het maximum is 64 pagina\'s.',
+                    'answer' => 'Een boekje heeft minimaal 4 pagina\'s nodig. Het maximum is 64 pagina\'s. Is je document langer? Bestel het dan als losse pagina\'s.',
                 ],
                 [
                     'question' => 'Waarom gaat een boekje per 4 pagina\'s?',
@@ -845,8 +948,9 @@ class LandingPageController extends Controller
             'hero' => [
                 'title' => 'PDF printen met spoed',
                 'subtitle' => 'Vóór 11:00 besteld, vandaag afhalen bij Delft',
-                'cta' => 'Upload je PDF',
+                'cta' => 'Upload je PDF en kies afhalen',
             ],
+            'conditions' => self::sameDayConditions(),
             'benefits' => [
                 ['icon' => 'clock', 'title' => 'Vandaag afhalen', 'text' => 'Vóór 11:00 besteld: vandaag 17:00–17:30 gratis afhalen in Delfgauw.'],
                 ['icon' => 'zap', 'title' => 'Na 11:00 nog nodig?', 'text' => 'Bel 015-219 2525, dan kijken we wat er nog kan.'],
@@ -1180,8 +1284,9 @@ class LandingPageController extends Controller
             'hero' => [
                 'title' => 'Printen in Delft en omgeving',
                 'subtitle' => 'Vóór 11:00 besteld, vandaag gratis afhalen in Delfgauw',
-                'cta' => 'Upload je PDF',
+                'cta' => 'Upload je PDF en kies afhalen',
             ],
+            'conditions' => self::sameDayConditions(),
             'benefits' => [
                 ['icon' => 'clock', 'title' => 'Vandaag afhalen', 'text' => 'Vóór 11:00 besteld: vandaag tussen 17:00 en 17:30.'],
                 ['icon' => 'euro', 'title' => 'Afhalen is gratis', 'text' => 'Geen verzendkosten en geen spoedtoeslag.'],
@@ -1205,7 +1310,7 @@ class LandingPageController extends Controller
                     ],
                     [
                         'title' => 'Liever bezorgd?',
-                        'text' => 'Dat kan in heel Nederland. Vóór 11:00 besteld is vandaag verzonden; PostNL bezorgt binnen 2 werkdagen. Verzending kost € 7,50 per bestelling.',
+                        'text' => 'Dat kan in heel Nederland. Vóór 11:00 besteld is vandaag verzonden; PostNL bezorgt binnen 2 werkdagen. Verzending kost ' . self::euro((int) config('pricing.shipping', 750)) . ' per bestelling.',
                     ],
                 ],
             ],

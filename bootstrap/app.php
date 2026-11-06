@@ -17,6 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Mollie webhook heeft geen CSRF token
         $middleware->validateCsrfTokens(except: [
             'webhook/mollie',
+            // Beveiligd met een HMAC-token; een klant kan na een verlopen sessie terugkeren
+            'bestelling/*/aankoop-gemeten',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

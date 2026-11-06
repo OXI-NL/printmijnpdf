@@ -36,6 +36,20 @@ jobs:
       - name: Tests draaien
         run: vendor/bin/phpunit
 
+  javascript:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node instellen
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Trechterevents testen
+        run: node --test "tests/js/*.test.mjs"
+
   security-audit:
     runs-on: ubuntu-latest
 

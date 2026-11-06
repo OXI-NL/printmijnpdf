@@ -383,8 +383,62 @@
             text-decoration: underline;
         }
 
+        /* Koophulp (landing/partials/koophulp) */
+        .hero-subtitle { max-width: 620px; margin-left: auto; margin-right: auto; }
+        .hero-points {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem 1.25rem;
+            margin-top: 1.25rem;
+            font-size: 0.875rem;
+            color: #404040;
+        }
+        .hero-points li::before { content: "✓ "; color: #16a34a; font-weight: 700; }
+        .kh { padding: 2.5rem 0; border-bottom: 1px solid #e5e5e5; }
+        .kh h2 { font-size: 1.5rem; margin-bottom: 1.25rem; text-align: center; }
+        .kh h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+        .kh-card {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+        .kh-note { font-size: 0.8125rem; color: #737373; margin-top: 0.75rem; }
+        .kh-center { text-align: center; }
+        .kh-center .hero-cta { margin-top: 1.25rem; }
+        .kh-intro { font-size: 0.9375rem; color: #525252; margin-bottom: 0.75rem; }
+        .kh-conditions { padding-top: 0; background: linear-gradient(180deg, #fff 0%, #fafafa 100%); }
+        .kh-conditions .kh-card { border-color: #fecaca; box-shadow: 0 2px 12px rgba(230, 57, 70, 0.06); }
+        .kh-conditions h2 { font-size: 1.25rem; text-align: left; margin-bottom: 0.75rem; }
+        .kh-dl > div { display: grid; grid-template-columns: 7.5rem 1fr; gap: 0.75rem; padding: 0.5rem 0; border-top: 1px solid #f0f0f0; }
+        .kh-dl dt { font-weight: 600; color: #171717; }
+        .kh-dl dd { color: #404040; }
+        .kh-usecase-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        .kh-usecase { background: #fafafa; border-radius: 12px; padding: 1rem; }
+        .kh-usecase p { font-size: 0.875rem; color: #525252; }
+        .kh-figure { display: block; width: 100%; height: auto; margin-bottom: 0.75rem; }
+        .kh-price { background: #fafafa; }
+        .kh-price-grid, .kh-choice-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; align-items: start; }
+        .kh-price-grid > .kh-card:only-child { grid-column: 1 / -1; width: 100%; max-width: 560px; justify-self: center; }
+        .kh-table { width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
+        .kh-table th, .kh-table td { text-align: left; padding: 0.5rem 0.25rem; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+        .kh-table td:last-child, .kh-table th:last-child { text-align: right; white-space: nowrap; }
+        .kh-table thead th { font-size: 0.8125rem; color: #737373; font-weight: 600; }
+        .kh-table tfoot th, .kh-table tfoot td { font-weight: 700; color: #171717; border-bottom: none; padding-top: 0.75rem; }
+        .kh-qty td:nth-child(2) { text-align: right; white-space: nowrap; }
+        .kh-qty th:nth-child(2) { text-align: right; }
+        .kh-pickup { font-size: 0.875rem; color: #404040; margin-top: 0.75rem; }
+        .kh-choice ul { margin-left: 1.1rem; color: #525252; font-size: 0.9375rem; }
+        .kh-choice li { margin-bottom: 0.375rem; }
+
         /* Responsive */
         @media (max-width: 640px) {
+            .kh-usecase-grid, .kh-price-grid, .kh-choice-grid { grid-template-columns: 1fr; }
+            .kh-dl > div { grid-template-columns: 1fr; gap: 0.125rem; }
+            .kh h2 { font-size: 1.3rem; }
+            .hero-cta { max-width: 100%; }
             .hero h1 {
                 font-size: 1.5rem;
             }
@@ -396,13 +450,14 @@
         }
     </style>
 
-    <!-- GA4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9F48GD4CX5"></script>
+    <!-- Google Analytics 4 -->
+    @include('partials.ga4')
     <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-9F48GD4CX5');
+        // Welke knop naar de upload leidde (hero, prijsblok of onderaan); zie docs/analytics-meting.md
+        document.addEventListener('click', function (e) {
+            var link = e.target.closest && e.target.closest('a[data-cta]');
+            if (link) gtag('event', 'landing_cta_click', { cta_location: link.dataset.cta, landing_page: @json($slug ?? '') });
+        });
     </script>
 </head>
 <body>
@@ -424,9 +479,18 @@
         <div class="container">
             <h1>{{ $hero['title'] }}</h1>
             <p class="hero-subtitle">{{ $hero['subtitle'] }}</p>
-            <a href="{{ url('/') }}#upload" class="hero-cta">{{ $hero['cta'] }} &rarr;</a>
+            <a href="{{ url('/') }}#upload" class="hero-cta" data-cta="hero">{{ $hero['cta'] }} &rarr;</a>
+            @if(!empty($hero['points']))
+            <ul class="hero-points">
+                @foreach($hero['points'] as $point)
+                <li>{{ $point }}</li>
+                @endforeach
+            </ul>
+            @endif
         </div>
     </section>
+
+    @include('landing.partials.koophulp')
 
     <section class="benefits">
         <div class="container">
@@ -622,7 +686,7 @@
         <div class="container">
             <h2>Klaar om te printen?</h2>
             <p>Upload je PDF; vóór 11:00 besteld is vandaag klaar.</p>
-            <a href="{{ url('/') }}#upload" class="hero-cta">Start je bestelling &rarr;</a>
+            <a href="{{ url('/') }}#upload" class="hero-cta" data-cta="onderaan">Start je bestelling &rarr;</a>
         </div>
     </section>
 
