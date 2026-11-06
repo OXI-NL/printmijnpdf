@@ -76,4 +76,17 @@ class PublicPagesTest extends TestCase
             ->assertSee(route('privacy'), false)
             ->assertSee(route('leveringsvoorwaarden'), false);
     }
+
+    public function test_homepage_claimt_geen_onbewezen_aantallen_of_score(): void
+    {
+        // Aantal alleen met bron en juiste reikwijdte; geen klantwaardering (zie welcome.blade.php)
+        $this->get('/')
+            ->assertOk()
+            ->assertDontSee('500+')
+            ->assertSee('bestellingen bij onze drukkerij')
+            ->assertDontSee('klantwaardering')
+            ->assertDontSee('aggregateRating', false)
+            ->assertSee('pagina\'s per boekje', false)
+            ->assertSee('tot 64');
+    }
 }
