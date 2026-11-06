@@ -377,6 +377,14 @@ class MollieFeeSyncTest extends TestCase
         $this->assertStringContainsString("(- \x80 0,31) Tj", $november);
     }
 
+    public function test_zonder_mock_bouwt_de_service_een_echte_client_met_het_token(): void
+    {
+        // Geen binding: zo draait het in productie. Er gaat geen verzoek uit; alleen de client wordt gebouwd.
+        $this->assertFalse($this->app->bound('mollie.org_client'));
+
+        $this->assertInstanceOf(MollieApiClient::class, \App\Services\MollieFeeService::client());
+    }
+
     public function test_sync_staat_dagelijks_in_de_planning(): void
     {
         $events = collect($this->app->make(Schedule::class)->events())
