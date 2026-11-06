@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\CreditNote;
 use App\Models\Order;
 use App\Services\InvoiceService;
 use App\Services\MonthlyInvoiceSummaryService;
@@ -108,7 +109,7 @@ class MollieFeeSyncTest extends TestCase
 
         $this->artisan('mollie:sync-fees', ['--all' => true])
             ->expectsOutputToContain('PMP-261028-2627: € 0,39')
-            ->expectsOutputToContain('1 orders gevonden in Mollie, 1 bijgewerkt')
+            ->expectsOutputToContain('1 betalingen/terugstortingen gevonden in Mollie, 1 bijgewerkt')
             ->assertSuccessful();
 
         $order->refresh();
@@ -144,7 +145,7 @@ class MollieFeeSyncTest extends TestCase
 
         $this->travel(1)->days();
         $this->artisan('mollie:sync-fees', ['--all' => true])
-            ->expectsOutputToContain('1 orders gevonden in Mollie, 0 bijgewerkt, 1 al goed')
+            ->expectsOutputToContain('1 betalingen/terugstortingen gevonden in Mollie, 0 bijgewerkt, 1 al goed')
             ->assertSuccessful();
 
         $order->refresh();
@@ -181,7 +182,7 @@ class MollieFeeSyncTest extends TestCase
         $this->mockBalance([$transaction]);
 
         $this->artisan('mollie:sync-fees', ['--all' => true])
-            ->expectsOutputToContain('1 betaling(en) zonder ingehouden kosten')
+            ->expectsOutputToContain('1 transactie(s) zonder ingehouden kosten')
             ->assertSuccessful();
 
         $this->assertNull($order->refresh()->mollie_fee);
@@ -199,7 +200,7 @@ class MollieFeeSyncTest extends TestCase
         ]);
 
         $this->artisan('mollie:sync-fees', ['--days' => 14])
-            ->expectsOutputToContain('1 betaalde order(s) nog zonder kosten')
+            ->expectsOutputToContain('1 betaalde order(s)/creditnota')
             ->assertSuccessful();
 
         $this->assertSame(39, $recent->refresh()->mollie_fee);
@@ -290,6 +291,90 @@ class MollieFeeSyncTest extends TestCase
         $text = $this->pdfText(MonthlyInvoiceSummaryService::generate(2026, 10));
 
         $this->assertStringContainsString('zijn de Mollie-kosten nog niet bekend', $text);
+    }
+
+    /** Creditnota zoals CreditNoteService die voor een Mollie-terugbetaling maakt. */
+    private function creditNote(Order $order, array $overrides = []): CreditNote
+    {
+        return CreditNote::create(array_merge([
+            'order_id' => $order->id,
+            'credit_number' => 'C-PMP-261028-0001',
+            'mollie_refund_id' => 're_terug1',
+            'credit_date' => '2026-10-28',
+            'amount_excl_btw' => 1533,
+            'amount_btw' => 322,
+            'amount_incl_btw' => 1855,
+            'btw_percentage' => 21,
+        ], $overrides));
+    }
+
+    /** Refund-transactie zoals de Balances API die geeft (context: paymentId, refundId, ...). */
+    private function refundTransaction(string $paymentId, string $refundId, string $amount, string $deduction): object
+    {
+        $transaction = $this->transaction($paymentId, $amount, $deduction, '2026-10-28T15:00:00+00:00');
+        $transaction->type = 'refund';
+        $transaction->id = 'baltr_'.substr(md5($refundId), 0, 10);
+        $transaction->context->refundId = $refundId;
+
+        return $transaction;
+    }
+
+    public function test_kosten_van_een_terugstorting_komen_op_de_creditnota(): void
+    {
+        $order = $this->order(['price_total' => 1855]);
+        $creditNote = $this->creditNote($order);
+
+        $this->mockBalance([
+            $this->refundTransaction('tr_betaald1', 're_terug1', '-18.55', '-0.31'), // nieuwer dan de betaling
+            $this->transaction('tr_betaald1', '18.55', '-0.39'),
+        ]);
+
+        $this->artisan('mollie:sync-fees', ['--all' => true])
+            ->expectsOutputToContain('C-PMP-261028-0001: € 0,31')
+            ->expectsOutputToContain('2 betalingen/terugstortingen gevonden in Mollie, 2 bijgewerkt')
+            ->assertSuccessful();
+
+        $creditNote->refresh();
+        $this->assertSame(31, $creditNote->mollie_fee);
+        $this->assertSame(5, $creditNote->mollie_fee_vat); // 31 − round(31 / 1,21) = 31 − 26
+        $this->assertSame(39, $order->refresh()->mollie_fee);
+        $this->assertSame(70, $order->total_mollie_fee);
+
+        // Tweede run verandert niets
+        $this->artisan('mollie:sync-fees', ['--all' => true])
+            ->expectsOutputToContain('0 bijgewerkt, 2 al goed')
+            ->assertSuccessful();
+    }
+
+    public function test_adminlijst_telt_terugstortingskosten_mee(): void
+    {
+        $order = $this->order(['mollie_fee' => 39, 'mollie_fee_vat' => 7, 'mollie_net_received' => 1936]);
+        $this->creditNote($order, ['mollie_fee' => 31, 'mollie_fee_vat' => 5]);
+
+        $this->withSession(['admin_authenticated' => true])
+            ->get('/admin/orders')
+            ->assertOk()
+            ->assertSee('Mollie − € 0,70')
+            ->assertSee('terugstorting € 0,31');
+    }
+
+    public function test_maandoverzicht_telt_terugstortingskosten_in_de_maand_van_de_creditnota(): void
+    {
+        $order = $this->order(['mollie_fee' => 39, 'mollie_fee_vat' => 7, 'mollie_net_received' => 1936]);
+        $this->creditNote($order, ['amount_excl_btw' => 1632, 'amount_btw' => 343, 'amount_incl_btw' => 1975, 'mollie_fee' => 31, 'mollie_fee_vat' => 5]);
+
+        $october = $this->pdfText(MonthlyInvoiceSummaryService::generate(2026, 10));
+        $this->assertStringContainsString("(- \x80 0,70) Tj", $october);  // 0,39 betaling + 0,31 terugstorting
+        $this->assertStringContainsString("(\x80 0,12) Tj", $october);    // btw 0,07 + 0,05
+        $this->assertStringContainsString('waarvan terugstortingen', $october);
+        $this->assertStringContainsString("(\x80 -0,70) Tj", $october);   // netto: 19,75 − 19,75 − 0,70
+
+        // Terugbetaling in november: de kosten verhuizen mee naar november
+        CreditNote::query()->update(['credit_date' => '2026-11-02']);
+        $october = $this->pdfText(MonthlyInvoiceSummaryService::generate(2026, 10));
+        $november = $this->pdfText(MonthlyInvoiceSummaryService::generate(2026, 11));
+        $this->assertStringContainsString("(- \x80 0,39) Tj", $october);
+        $this->assertStringContainsString("(- \x80 0,31) Tj", $november);
     }
 
     public function test_sync_staat_dagelijks_in_de_planning(): void

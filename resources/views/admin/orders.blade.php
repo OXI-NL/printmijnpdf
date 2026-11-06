@@ -467,7 +467,8 @@
                                 <td class="price">
                                     € {{ number_format($order->price_total / 100, 2, ',', '.') }}
                                     @if($order->mollie_fee !== null)
-                                        <br><small class="mollie-fee" title="Mollie-transactiekosten, ingehouden op de balance (btw € {{ number_format(($order->mollie_fee_vat ?? 0) / 100, 2, ',', '.') }})">Mollie − {{ $order->formatted_mollie_fee }}</small>
+                                        @php $refundFee = (int) $order->creditNotes->sum('mollie_fee'); @endphp
+                                        <br><small class="mollie-fee" title="Mollie-transactiekosten incl. btw, ingehouden op de balance: betaling € {{ number_format($order->mollie_fee / 100, 2, ',', '.') }}{{ $refundFee > 0 ? ' + terugstorting € ' . number_format($refundFee / 100, 2, ',', '.') : '' }}">Mollie − {{ $order->formatted_mollie_fee }}</small>
                                     @elseif($order->isPaid() && $order->mollie_payment_id)
                                         <br><small class="mollie-fee" title="Nog niet opgehaald; wordt dagelijks bijgewerkt via mollie:sync-fees">Mollie-kosten volgen</small>
                                     @endif

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\CreditNote;
 use App\Models\Order;
 use Illuminate\Support\Carbon;
 use Mollie\Api\MollieApiClient;
@@ -29,12 +30,12 @@ class MollieFeeService
 
     /**
      * Loopt de balance transactions af (nieuwste eerst) en zet de kosten op de
-     * bijbehorende orders. Veilig om opnieuw te draaien: alleen afwijkende of
-     * ontbrekende waarden worden geschreven.
+     * bijbehorende orders (betalingen) en creditnota's (terugstortingen). Veilig om
+     * opnieuw te draaien: alleen afwijkende of ontbrekende waarden worden geschreven.
      *
      * @param  Carbon|null  $since  stop bij transacties van vóór dit moment (null = hele historie)
-     * @param  string|null  $orderNumber  alleen deze order
-     * @param  callable|null  $report  krijgt (Order $order, bool $changed) per gevonden order
+     * @param  string|null  $orderNumber  alleen deze order (en zijn creditnota's)
+     * @param  callable|null  $report  krijgt (string $nummer, int $kostenInCenten, bool $gewijzigd)
      * @return array{matched: int, updated: int, unchanged: int, without_deductions: int}
      */
     public static function sync(?Carbon $since = null, ?string $orderNumber = null, ?callable $report = null): array
@@ -48,7 +49,12 @@ class MollieFeeService
             ->get()
             ->keyBy('mollie_payment_id');
 
-        if ($orders->isEmpty()) {
+        $creditNotes = CreditNote::query()
+            ->when($orderNumber, fn ($q, $number) => $q->whereHas('order', fn ($o) => $o->where('order_number', $number)))
+            ->get()
+            ->keyBy('mollie_refund_id');
+
+        if ($orders->isEmpty() && $creditNotes->isEmpty()) {
             return $stats;
         }
 
@@ -56,41 +62,57 @@ class MollieFeeService
             if ($since && Carbon::parse($transaction->createdAt)->lt($since)) {
                 break;
             }
-            if (($transaction->type ?? null) !== 'payment') {
+
+            [$pool, $id] = match ($transaction->type ?? null) {
+                'payment' => [$orders, self::paymentId($transaction)],
+                'refund' => [$creditNotes, self::refundId($transaction)],
+                default => [null, null],
+            };
+            $subject = $id ? $pool->pull($id) : null;
+            if (! $subject) {
                 continue;
             }
 
-            $order = $orders->get(self::paymentId($transaction));
-            if (! $order) {
-                continue;
-            }
-
-            // Geen ingehouden kosten op deze transactie: niet als "€ 0" vastleggen (dat was
-            // precies de oude fout), maar onbekend laten en melden.
-            if (self::cents($transaction->deductions->value ?? '0') === 0) {
+            $fee = abs(self::cents($transaction->deductions->value ?? '0'));
+            if ($fee === 0) {
+                // Geen ingehouden kosten: niet als "€ 0" vastleggen (dat was precies de
+                // oude fout), maar onbekend laten en melden.
                 $stats['without_deductions']++;
-                $orders->forget($order->mollie_payment_id);
-                if ($orders->isEmpty()) {
-                    break;
+            } else {
+                $changed = $subject instanceof Order
+                    ? self::apply($subject, $transaction)
+                    : self::applyRefund($subject, $transaction);
+                $stats['matched']++;
+                $stats[$changed ? 'updated' : 'unchanged']++;
+                if ($report) {
+                    $report($subject instanceof Order ? $subject->order_number : $subject->credit_number, $fee, $changed);
                 }
-
-                continue;
             }
 
-            $changed = self::apply($order, $transaction);
-            $stats['matched']++;
-            $stats[$changed ? 'updated' : 'unchanged']++;
-            if ($report) {
-                $report($order, $changed);
-            }
-
-            $orders->forget($order->mollie_payment_id);
-            if ($orders->isEmpty()) {
+            if ($orders->isEmpty() && $creditNotes->isEmpty()) {
                 break;
             }
         }
 
         return $stats;
+    }
+
+    /** Schrijft de kosten van een terugstorting op de creditnota. Geeft true als er iets veranderde. */
+    public static function applyRefund(CreditNote $creditNote, object $transaction): bool
+    {
+        $fee = abs(self::cents($transaction->deductions->value ?? '0'));
+        $values = [
+            'mollie_fee' => $fee,
+            'mollie_fee_vat' => self::vatPart($fee),
+            'mollie_balance_transaction_id' => $transaction->id ?? null,
+        ];
+
+        $changed = collect($values)->contains(fn ($value, $key) => $creditNote->{$key} !== $value);
+        if ($changed) {
+            $creditNote->update($values + ['mollie_fee_synced_at' => now()]);
+        }
+
+        return $changed;
     }
 
     /** Schrijft de kosten van één balance transaction op de order (en de factuur). Geeft true als er iets veranderde. */
@@ -139,6 +161,14 @@ class MollieFeeService
         $context = $transaction->context ?? null;
 
         return $context->paymentId ?? $context->payment->paymentId ?? null;
+    }
+
+    /** Het refund-id uit de context van een refund-transactie. */
+    private static function refundId(object $transaction): ?string
+    {
+        $context = $transaction->context ?? null;
+
+        return $context->refundId ?? $context->refund->refundId ?? null;
     }
 
     /** "-0.29" → -29, zonder float-afrondingsfouten. */

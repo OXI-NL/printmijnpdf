@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\CreditNote;
 use App\Models\Order;
 use App\Services\MollieFeeService;
 use Illuminate\Console\Command;
@@ -33,9 +34,9 @@ class SyncMollieFees extends Command
             : now()->subDays((int) $this->option('days'));
 
         try {
-            $stats = MollieFeeService::sync($since, $this->option('order'), function (Order $order, bool $changed) {
+            $stats = MollieFeeService::sync($since, $this->option('order'), function (string $number, int $fee, bool $changed) {
                 if ($changed) {
-                    $this->line("  ✓ {$order->order_number}: {$order->formatted_mollie_fee}");
+                    $this->line("  ✓ {$number}: € ".number_format($fee / 100, 2, ',', '.'));
                 }
             });
         } catch (\Exception $e) {
@@ -47,14 +48,15 @@ class SyncMollieFees extends Command
         $missing = Order::whereIn('status', ['paid', 'processing', 'shipped', 'delivered'])
             ->whereNotNull('mollie_payment_id')
             ->whereNull('mollie_fee')
-            ->count();
+            ->count()
+            + CreditNote::whereNull('mollie_fee')->count();
 
-        $this->info("{$stats['matched']} orders gevonden in Mollie, {$stats['updated']} bijgewerkt, {$stats['unchanged']} al goed.");
+        $this->info("{$stats['matched']} betalingen/terugstortingen gevonden in Mollie, {$stats['updated']} bijgewerkt, {$stats['unchanged']} al goed.");
         if ($stats['without_deductions'] > 0) {
-            $this->warn("{$stats['without_deductions']} betaling(en) zonder ingehouden kosten op de balance transaction; die blijven leeg in plaats van € 0.");
+            $this->warn("{$stats['without_deductions']} transactie(s) zonder ingehouden kosten op de balance transaction; die blijven leeg in plaats van € 0.");
         }
         if ($missing > 0) {
-            $this->warn("{$missing} betaalde order(s) nog zonder kosten (nog niet op de balance, of buiten de periode: probeer --all).");
+            $this->warn("{$missing} betaalde order(s)/creditnota('s) nog zonder kosten (nog niet op de balance, of buiten de periode: probeer --all).");
         }
 
         return self::SUCCESS;

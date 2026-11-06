@@ -273,12 +273,19 @@ class Order extends Model
     }
 
     /**
-     * Mollie-transactiekosten zoals Mollie ze op de balance heeft ingehouden;
-     * null zolang mollie:sync-fees ze nog niet heeft opgehaald.
+     * Alle Mollie-kosten van deze order: de betaling plus eventuele terugstortingen
+     * (die staan op de creditnota's). Null zolang mollie:sync-fees de betaling niet kent.
      */
+    public function getTotalMollieFeeAttribute(): ?int
+    {
+        return $this->mollie_fee === null ? null : $this->mollie_fee + (int) $this->creditNotes->sum('mollie_fee');
+    }
+
     public function getFormattedMollieFeeAttribute(): ?string
     {
-        return $this->mollie_fee === null ? null : '€ ' . number_format($this->mollie_fee / 100, 2, ',', '.');
+        $fee = $this->total_mollie_fee;
+
+        return $fee === null ? null : '€ ' . number_format($fee / 100, 2, ',', '.');
     }
 
     /**

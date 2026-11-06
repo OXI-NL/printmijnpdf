@@ -168,6 +168,10 @@ class MonthlyInvoiceSummaryService
         $creditExcl = (int) $creditNotes->sum('amount_excl_btw');
         $creditBtw = (int) $creditNotes->sum('amount_btw');
         $creditIncl = (int) $creditNotes->sum('amount_incl_btw');
+        // Kosten van terugstortingen tellen mee in de maand van de creditnota
+        $creditMollie = (int) $creditNotes->sum('mollie_fee');
+        $creditMollieVat = (int) $creditNotes->sum('mollie_fee_vat');
+        $missingFees += $creditNotes->whereNull('mollie_fee')->count();
 
         if ($creditNotes->isNotEmpty()) {
             $pdf->Ln(8);
@@ -184,7 +188,8 @@ class MonthlyInvoiceSummaryService
             $pdf->Cell($w[3], 7, 'Excl. BTW', 1, 0, 'R', true);
             $pdf->Cell($w[4], 7, 'BTW 21%', 1, 0, 'R', true);
             $pdf->Cell($w[5], 7, 'Incl. BTW', 1, 0, 'R', true);
-            $pdf->Cell($w[6] + $w[7], 7, 'Betreft factuur', 1, 0, 'C', true);
+            $pdf->Cell($w[6], 7, 'Mollie fee', 1, 0, 'R', true);
+            $pdf->Cell($w[7], 7, 'Factuur', 1, 0, 'C', true);
             $pdf->Cell($w[8] + $w[9], 7, 'Teruggestort op', 1, 1, 'C', true);
 
             $pdf->SetFont('Arial', '', 8);
@@ -203,7 +208,8 @@ class MonthlyInvoiceSummaryService
                 $pdf->Cell($w[3], 6, self::formatCents(-$creditNote->amount_excl_btw), 1, 0, 'R', $fill);
                 $pdf->Cell($w[4], 6, self::formatCents(-$creditNote->amount_btw), 1, 0, 'R', $fill);
                 $pdf->Cell($w[5], 6, self::formatCents(-$creditNote->amount_incl_btw), 1, 0, 'R', $fill);
-                $pdf->Cell($w[6] + $w[7], 6, $creditNote->order->invoice?->invoice_number ?? '-', 1, 0, 'C', $fill);
+                $pdf->Cell($w[6], 6, $creditNote->mollie_fee !== null ? self::formatCents($creditNote->mollie_fee) : '-', 1, 0, 'R', $fill);
+                $pdf->Cell($w[7], 6, $creditNote->order->invoice?->invoice_number ?? '-', 1, 0, 'C', $fill);
                 $pdf->Cell($w[8] + $w[9], 6, $creditNote->credit_date->format('d-m'), 1, 1, 'C', $fill);
                 $fill = !$fill;
             }
@@ -214,7 +220,8 @@ class MonthlyInvoiceSummaryService
             $pdf->Cell($w[3], 8, self::formatCents(-$creditExcl), 1, 0, 'R', true);
             $pdf->Cell($w[4], 8, self::formatCents(-$creditBtw), 1, 0, 'R', true);
             $pdf->Cell($w[5], 8, self::formatCents(-$creditIncl), 1, 0, 'R', true);
-            $pdf->Cell($w[6] + $w[7] + $w[8] + $w[9], 8, '', 1, 1, 'C', true);
+            $pdf->Cell($w[6], 8, self::formatCents($creditMollie), 1, 0, 'R', true);
+            $pdf->Cell($w[7] + $w[8] + $w[9], 8, '', 1, 1, 'C', true);
         }
 
         if ($orders->isNotEmpty() || $creditNotes->isNotEmpty()) {
@@ -289,7 +296,7 @@ class MonthlyInvoiceSummaryService
             $pdf->Cell($labelW, 7, 'Mollie transactiekosten:', 0, 0);
             $pdf->SetFont('Arial', 'B', 10);
             $pdf->SetTextColor(220, 53, 69);
-            $pdf->Cell($valW, 7, '- ' . self::formatCents($totalMollie), 0, 1);
+            $pdf->Cell($valW, 7, '- ' . self::formatCents($totalMollie + $creditMollie), 0, 1);
 
             // Btw over de kosten (Mollie B.V. rekent Nederlandse btw; aftrekbare voorbelasting)
             $vatPct = (int) config('mollie_fees.vat_percentage', 21);
@@ -298,14 +305,18 @@ class MonthlyInvoiceSummaryService
             $pdf->Cell($labelW, 6, config('mollie_fees.vat_included', true)
                 ? "  waarvan btw ({$vatPct}%):"
                 : "  btw ({$vatPct}%) via Mollie-factuur:", 0, 0);
-            $pdf->Cell($valW, 6, self::formatCents($totalMollieVat), 0, 1);
+            $pdf->Cell($valW, 6, self::formatCents($totalMollieVat + $creditMollieVat), 0, 1);
+            if ($creditMollie > 0) {
+                $pdf->Cell($labelW, 6, '  waarvan terugstortingen:', 0, 0);
+                $pdf->Cell($valW, 6, self::formatCents($creditMollie), 0, 1);
+            }
 
             $pdf->SetTextColor(0, 0, 0);
             $pdf->SetFont('Arial', '', 10);
             $pdf->Cell($labelW, 7, 'Netto ontvangen:', 0, 0);
             $pdf->SetFont('Arial', 'B', 10);
             $pdf->SetTextColor(40, 167, 69);
-            $pdf->Cell($valW, 7, self::formatCents($totalIncl - $totalMollie - $creditIncl), 0, 1);
+            $pdf->Cell($valW, 7, self::formatCents($totalIncl - $totalMollie - $creditMollie - $creditIncl), 0, 1);
 
             if ($missingFees > 0) {
                 $pdf->SetTextColor(220, 53, 69);
