@@ -94,16 +94,32 @@ beslissing van de eigenaar, ook voor privacy.
 
 ### Controle tegen GA4
 
-1. In GA4: Verkennen → Vrije vorm, dimensie **Transactie-ID**, statistiek **E-commerce-aankopen** (of
-   **Transacties**), filter niet op ontwikkelaarsverkeer. Kies een afgesloten periode, liefst ≥ 2 dagen
-   geleden (verwerkingstijd), en exporteer als CSV.
+1. In GA4: Verkennen → Vrije vorm, rij-dimensie **Transactie-ID**, statistiek **E-commerce-aankopen**
+   (Ecommerce purchases). Geen andere dimensies of filters toevoegen, en zorg dat alle rijen in de export zitten
+   (niet alleen de eerste pagina). Kies een afgesloten periode, liefst ≥ 2 dagen geleden (verwerkingstijd), en
+   exporteer als CSV of TSV.
 2. Proef: `php artisan analytics:import-ga4 export.csv --from=2026-11-10 --to=2026-11-16 --dry-run`
-3. Echt: hetzelfde zonder `--dry-run`. Elke betaalde order (geen test) in die periode krijgt het aantal
-   uit de export, of 0.
+3. Echt: hetzelfde zonder `--dry-run`. Elke betaalde order (geen test) met orderdatum in `--from`…`--to`
+   krijgt het aantal uit de export, of 0.
 4. `php artisan orders:report --from=… --to=… --missing` toont welke orders ontbreken of nooit afgehandeld zijn.
 
-De periode gaat op orderdatum (Europe/Amsterdam). Een order net voor middernacht die pas na middernacht wordt
-betaald, kan in GA4 een dag later staan; neem de export dan een dag ruimer.
+De import weigert, vóór er iets wordt opgeslagen:
+
+- een export zonder **E-commerce-aankopen**. Een export met alleen Transactie-ID (of met opbrengst) heeft één
+  regel per transactie-ID, ook als de aankoop dubbel in GA4 staat; daaruit is het aantal niet af te leiden;
+- algemene tellingen als **Aantal gebeurtenissen** (Event count) of **Transacties**: die bewijzen niet dat
+  het om aankoopevents gaat;
+- een aantal dat geen geheel getal is (`1.5`, leeg, tekst, `1,234`). De melding noemt de regel.
+
+Regels met `#` (GA4-kop), `(not set)` en totaalregels worden overgeslagen. Staat een transactie-ID op meer
+regels (bijvoorbeeld meerdere tabellen in één bestand), dan worden de aantallen opgeteld.
+
+**Periode.** `--from`/`--to` gaan op orderdatum (Europe/Amsterdam); GA4 telt op de datum van het event. Een order
+net voor middernacht die pas na middernacht wordt betaald, of een klant die de bevestigingspagina later opent,
+staat in GA4 op een latere dag. Neem de export daarom een paar dagen ruimer dan `--from`/`--to`, nooit krapper:
+ID's buiten de orderperiode worden alleen genoemd, niet opgeslagen. Een te krappe of gefilterde export geeft
+onterecht "ontbreekt". De importer is nog niet getoetst aan een echte export van deze property: doe de eerste
+vergelijking met `--dry-run`.
 
 Overige grenzen:
 

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Console\Commands\ImportGa4Purchases;
 use App\Models\Order;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use InvalidArgumentException;
 use Tests\TestCase;
 
 /**
@@ -52,6 +53,16 @@ class ImportGa4PurchasesTest extends TestCase
         return $path;
     }
 
+    private function rejects(string $csv, string $message): void
+    {
+        try {
+            ImportGa4Purchases::parse($csv);
+            $this->fail('Export had geweigerd moeten worden');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString($message, $e->getMessage());
+        }
+    }
+
     public function test_nederlandse_export_met_kop_en_aantallen(): void
     {
         $counts = ImportGa4Purchases::parse(
@@ -59,6 +70,7 @@ class ImportGa4PurchasesTest extends TestCase
             ."# E-commerce-aankopen\n"
             ."# Begindatum: 20261103\n"
             ."Transactie-ID,E-commerce-aankopen,Opbrengst uit aankopen\n"
+            ."Totaal,3,\"1.254,25\"\n"
             ."PMP-261103-0001,1,19.75\n"
             ."PMP-261103-0002,2,\"1.234,50\"\n"
             ."(not set),3,0\n"
@@ -67,25 +79,63 @@ class ImportGa4PurchasesTest extends TestCase
         $this->assertSame(['PMP-261103-0001' => 1, 'PMP-261103-0002' => 2], $counts);
     }
 
-    public function test_engelse_tsv_export_zonder_aantalkolom_telt_regels(): void
+    public function test_csv_a_zonder_aankooptelling_wordt_geweigerd(): void
     {
-        $counts = ImportGa4Purchases::parse("Transaction ID\tPurchase revenue\nPMP-1\t19.75\nPMP-1\t19.75\nPMP-2\t5.00\n");
-        // 'Purchase revenue' is geen aantal; zonder aantalkolom telt elke regel één keer
-        $this->assertSame(['PMP-1' => 2, 'PMP-2' => 1], $counts);
+        // Eén regel per transactie-ID zegt niets over hoe vaak de aankoop in GA4 staat
+        $this->rejects("Transaction ID,Purchase revenue\nPMP-261031-1322,43.22\n", 'E-commerce-aankopen');
+        $this->rejects("Transactie-ID\nPMP-261031-1322\n", 'E-commerce-aankopen');
     }
 
-    public function test_engelse_export_met_aantalkolom(): void
+    public function test_csv_b_met_aankooptelling_toont_de_dubbele_aankoop(): void
     {
-        $counts = ImportGa4Purchases::parse("Transaction ID,Ecommerce purchases\nPMP-1,1\nGrand total,1\n");
-        $this->assertSame(['PMP-1' => 1], $counts);
+        $counts = ImportGa4Purchases::parse("Transaction ID,Ecommerce purchases,Purchase revenue\nPMP-261031-1322,2,43.22\n");
+        $this->assertSame(['PMP-261031-1322' => 2], $counts);
+    }
+
+    public function test_algemene_tellingen_gelden_niet_als_aankooptelling(): void
+    {
+        $this->rejects("Transaction ID,Event count\nPMP-261031-1322,3\n", 'Aantal gebeurtenissen');
+        $this->rejects("Transactie-ID,Aantal gebeurtenissen\nPMP-261031-1322,3\n", 'Aantal gebeurtenissen');
+        $this->rejects("Transaction ID,Transactions\nPMP-261031-1322,1\n", 'Transacties');
+    }
+
+    public function test_ongeldig_aantal_wordt_niet_omgezet_in_een_ander_getal(): void
+    {
+        foreach (['1.5', '', 'twee', '-1', '1,234'] as $value) {
+            $this->rejects("Transaction ID,Ecommerce purchases\nPMP-1,1\nPMP-2,\"{$value}\"\n", 'Regel 3 (PMP-2)');
+        }
+    }
+
+    public function test_tsv_export_en_herhaalde_kopregel(): void
+    {
+        $counts = ImportGa4Purchases::parse(
+            "Transaction ID\tEcommerce purchases\nPMP-1\t1\n"
+            ."#\n# tweede tabel\nTransaction ID\tEcommerce purchases\nPMP-2\t1\nPMP-1\t1\n"
+        );
+        // Zelfde ID in twee tabellen/regels: opgeteld, dus zichtbaar als dubbel
+        $this->assertSame(['PMP-1' => 2, 'PMP-2' => 1], $counts);
     }
 
     public function test_export_zonder_transactie_id_wordt_geweigerd(): void
     {
-        $this->assertNull(ImportGa4Purchases::parse("Paginatitel,Weergaven\nHome,10\n"));
+        $this->rejects("Paginatitel,Weergaven\nHome,10\n", 'Transactie-ID');
 
         $this->artisan('analytics:import-ga4', ['file' => $this->csv("Paginatitel,Weergaven\n"), '--from' => '2026-11-03', '--to' => '2026-11-03'])
             ->assertFailed();
+    }
+
+    public function test_geweigerde_export_wijzigt_niets(): void
+    {
+        $this->travelTo(now()->setDate(2026, 11, 3)->setTime(12, 0));
+        $order = $this->order('PMP-261103-0001');
+
+        $this->artisan('analytics:import-ga4', [
+            'file' => $this->csv("Transaction ID,Purchase revenue\nPMP-261103-0001,19.75\n"), '--from' => '2026-11-03', '--to' => '2026-11-03',
+        ])->expectsOutputToContain('E-commerce-aankopen')->assertFailed();
+
+        $order->refresh();
+        $this->assertNull($order->analytics_purchase_ga4_count);
+        $this->assertNull($order->analytics_purchase_ga4_checked_at);
     }
 
     public function test_import_legt_gevonden_dubbel_en_ontbrekend_vast(): void
@@ -129,7 +179,7 @@ class ImportGa4PurchasesTest extends TestCase
         $order = $this->order('PMP-261103-0001');
 
         $this->artisan('analytics:import-ga4', [
-            'file' => $this->csv("Transactie-ID\nPMP-261103-0001\n"), '--from' => '2026-11-03', '--to' => '2026-11-03', '--dry-run' => true,
+            'file' => $this->csv("Transactie-ID,E-commerce-aankopen\nPMP-261103-0001,1\n"), '--from' => '2026-11-03', '--to' => '2026-11-03', '--dry-run' => true,
         ])->expectsOutputToContain('[proef]')->assertSuccessful();
 
         $this->assertNull($order->refresh()->analytics_purchase_ga4_count);
