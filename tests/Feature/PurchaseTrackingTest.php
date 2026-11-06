@@ -123,7 +123,7 @@ class PurchaseTrackingTest extends TestCase
 
         $this->travel(30)->days();
         $this->assertStringNotContainsString(self::PURCHASE, $this->get('/bestelling/'.$order->order_number)->getContent());
-        $this->assertNotNull($order->refresh()->analytics_purchase_sent_at);
+        $this->assertNotNull($order->refresh()->analytics_purchase_handled_at);
     }
 
     public function test_zonder_bevestiging_probeert_een_later_bezoek_het_opnieuw(): void
@@ -154,7 +154,7 @@ class PurchaseTrackingTest extends TestCase
 
         // Ook een geldig token maakt van een onbetaalde order geen aankoop
         $this->confirm($pending)->assertJson(['recorded' => false]);
-        $this->assertNull($pending->refresh()->analytics_purchase_sent_at);
+        $this->assertNull($pending->refresh()->analytics_purchase_handled_at);
     }
 
     public function test_verkeerd_token_wordt_genegeerd(): void
@@ -163,7 +163,7 @@ class PurchaseTrackingTest extends TestCase
         $this->get('/bestelling/'.$order->order_number);
 
         $this->confirm($order, 'vervalst')->assertJson(['recorded' => false]);
-        $this->assertNull($order->refresh()->analytics_purchase_sent_at);
+        $this->assertNull($order->refresh()->analytics_purchase_handled_at);
     }
 
     public function test_twee_orders_blijven_twee_aankopen(): void
@@ -220,28 +220,91 @@ class PurchaseTrackingTest extends TestCase
         $this->assertStringNotContainsString('debug_mode', $html);
     }
 
-    public function test_migratie_markeert_bestaande_betaalde_orders_als_gemeten(): void
+    private function rerunMigration(): void
     {
-        $migration = require database_path('migrations/2024_01_17_000001_add_analytics_purchase_to_orders_table.php');
+        $migration = require database_path('migrations/2024_01_18_000001_add_analytics_purchase_to_orders_table.php');
         $migration->down();
         $migration->up();
+    }
 
+    public function test_migratie_onderdrukt_oude_orders_zonder_meetbewijs_te_verzinnen(): void
+    {
+        $this->travelTo(now()->setDate(2026, 11, 3)->setTime(12, 0));
         $paid = $this->order(['status' => 'shipped']);
         $pending = $this->order(['status' => 'pending', 'paid_at' => null]);
-        $migration->down();
-        $migration->up();
+        $this->rerunMigration();
 
-        $this->assertNotNull(Order::find($paid->id)->analytics_purchase_sent_at);
-        $this->assertNull(Order::find($pending->id)->analytics_purchase_sent_at);
-        // Een oude klant die zijn bevestigingspagina opent, telt niet opnieuw
+        $paid = Order::find($paid->id);
+        $this->assertTrue($paid->analytics_purchase_legacy);
+        $this->assertNull($paid->analytics_purchase_handled_at, 'geen afgehandeld-datum zonder melding van een browser');
+        $this->assertNull($paid->analytics_purchase_ga4_count, 'geen GA4-uitkomst zonder export');
+        $this->assertFalse(Order::find($pending->id)->analytics_purchase_legacy);
+
+        // Een oude klant die zijn bevestigingspagina opent, telt niet opnieuw ...
         $this->assertStringNotContainsString(self::PURCHASE, $this->get('/bestelling/'.$paid->order_number)->getContent());
+        // ... en het rapport noemt hem onbekend, niet 'gemeten'
+        $this->artisan('orders:report', ['--from' => '2026-11-01', '--to' => '2026-11-05', '--details' => true])
+            ->expectsOutputToContain('Vóór de nieuwe meting (onbekend, niet opnieuw gestuurd) | 1')
+            ->expectsOutputToContain('| vóór meting |')
+            ->doesntExpectOutputToContain('| afgehandeld |')
+            ->assertSuccessful();
+    }
+
+    public function test_order_die_na_de_uitrol_betaald_wordt_telt_gewoon(): void
+    {
+        $pending = $this->order(['status' => 'pending', 'paid_at' => null]);
+        $this->rerunMigration();
+
+        $pending->refresh()->update(['status' => 'paid', 'paid_at' => now()]);
+
+        $this->assertStringContainsString(self::PURCHASE, $this->get('/bestelling/'.$pending->order_number)->getContent());
+    }
+
+    public function test_zonder_migratie_werken_webhook_en_bevestigingspagina_door(): void
+    {
+        // Uitrol: nieuwe code staat er, `migrate` is nog niet gedraaid
+        $order = $this->order(['status' => 'pending', 'paid_at' => null, 'mollie_payment_id' => 'tr_test123']);
+        $migration = require database_path('migrations/2024_01_18_000001_add_analytics_purchase_to_orders_table.php');
+        $migration->down();
+        $this->mockMollie($order, 'paid');
+
+        $this->post('/webhook/mollie', ['id' => 'tr_test123'])->assertOk();
+        $this->assertSame('paid', Order::find($order->id)->status);
+
+        $html = $this->get('/bestelling/'.$order->order_number)->assertOk()->getContent();
+        $this->assertStringNotContainsString(self::PURCHASE, $html);
+        $this->confirm($order)->assertOk()->assertJson(['recorded' => false]);
+
+        $this->artisan('orders:report')->assertFailed();
+
+        $migration->up();
+    }
+
+    public function test_aankoop_die_al_in_ga4_staat_wordt_niet_opnieuw_gestuurd(): void
+    {
+        $order = $this->order();
+        $order->forceFill(['analytics_purchase_ga4_count' => 1, 'analytics_purchase_ga4_checked_at' => now()])->save();
+
+        $this->assertStringNotContainsString(self::PURCHASE, $this->get('/bestelling/'.$order->order_number)->getContent());
+    }
+
+    public function test_netwerkfout_bij_eigen_melding_probeert_na_de_claimtermijn_opnieuw(): void
+    {
+        // gtag handelde af, maar POST /aankoop-gemeten kwam nooit aan (of tab dicht)
+        $order = $this->order();
+        $this->assertStringContainsString(self::PURCHASE, $this->get('/bestelling/'.$order->order_number)->getContent());
+        $this->assertNull($order->refresh()->analytics_purchase_handled_at);
+
+        $this->travel(11)->minutes();
+        // Opnieuw: kan in GA4 dubbel tellen als de eerste wél aankwam; de GA4-import toont dat
+        $this->assertStringContainsString(self::PURCHASE, $this->get('/bestelling/'.$order->order_number)->getContent());
     }
 
     public function test_orderrapport_telt_unieke_betaalde_orders_en_terugbetalingen(): void
     {
         $this->travelTo(now()->setDate(2026, 11, 3)->setTime(12, 0));
         $a = $this->order();
-        $a->forceFill(['analytics_purchase_sent_at' => now()])->save();
+        $a->forceFill(['analytics_purchase_handled_at' => now()])->save();
         $this->order(['price_total' => 2161]);
         $this->order(['status' => 'pending', 'paid_at' => null]);
         $this->order(['payment_mode' => 'test']);
@@ -263,9 +326,27 @@ class PurchaseTrackingTest extends TestCase
                 ['Terugbetaald in deze periode', '€ 18,55 (1×)'],
                 ['Netto na terugbetaling', '€ 22,81'],
                 ['Gem. orderwaarde (bruto)', '€ 20,68'],
-                ['Waarvan aankoop in GA4 bevestigd', '1 van 2'],
                 ['Testbetalingen (niet meegeteld)', 1],
             ])
+            ->expectsTable(['Status', 'Orders'], [
+                ['Browser: event afgehandeld (geen ontvangstbewijs)', 1],
+                ['Browser: niet afgehandeld', 1],
+                ['Vóór de nieuwe meting (onbekend, niet opnieuw gestuurd)', 0],
+                ['GA4-export: precies één keer', 0],
+                ['GA4-export: dubbel', 0],
+                ['GA4-export: ontbreekt', 0],
+                ['Niet tegen een GA4-export gecontroleerd', 2],
+            ])
             ->assertSuccessful();
+    }
+
+    public function test_bestelpagina_laadt_de_geteste_trechterhelper(): void
+    {
+        // tests/js/analytics-helper.test.mjs test dezelfde partial
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('window.PMP_Analytics = {', $html);
+        $this->assertStringContainsString('this.state.shipping !== shippingTier', $html);
+        $this->assertStringNotContainsString('{{--', $html);
     }
 }

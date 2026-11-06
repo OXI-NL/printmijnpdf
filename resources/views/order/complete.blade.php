@@ -201,14 +201,18 @@
 
     @if($trackPurchase)
     {{-- Alleen de pagina die de aankoop bij de server heeft geclaimd, komt hier.
-         Pas als gtag het event heeft afgehandeld, legt de server vast dat de
-         aankoop gemeten is. Zie App\Services\PurchaseTracking. --}}
+         Roept gtag event_callback aan, dan meldt de pagina dat aan de server; daarna
+         stuurt geen pagina dit ordernummer nog. Dat is deduplicatie, geen bewijs van
+         ontvangst bij Google: event_callback komt ook na een time-out of als alleen
+         het verzoek naar Google geblokkeerd is. Laadt gtag.js helemaal niet, dan komt
+         er geen callback en mag een bezoek na de claimtermijn het opnieuw proberen.
+         Zie App\Services\PurchaseTracking en docs/analytics-meting.md. --}}
     <script>
     (function () {
-        var confirmed = false;
-        function confirmTracked() {
-            if (confirmed) return;
-            confirmed = true;
+        var reported = false;
+        function reportHandled() {
+            if (reported) return;
+            reported = true;
             fetch(@json(route('order.purchase-tracked', $order->order_number)), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -217,7 +221,7 @@
             }).catch(function () {});
         }
         var params = @json($purchaseEvent);
-        params.event_callback = confirmTracked;
+        params.event_callback = reportHandled;
         gtag('event', 'purchase', params);
     })();
     </script>

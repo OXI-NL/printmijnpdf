@@ -440,7 +440,7 @@ class OrderController extends Controller
         }
 
         // Alleen de eerste pagina die de aankoop claimt, stuurt het GA4-event
-        $trackPurchase = PurchaseTracking::claim($order);
+        $trackPurchase = PurchaseTracking::ready() && PurchaseTracking::claim($order);
 
         return view('order.complete', [
             'order' => $order,
@@ -460,7 +460,8 @@ class OrderController extends Controller
     {
         $order = Order::where('order_number', $orderNumber)->firstOrFail();
 
-        $recorded = PurchaseTracking::confirm($order, (string) $request->input('token', ''));
+        $recorded = PurchaseTracking::ready()
+            && PurchaseTracking::handled($order, (string) $request->input('token', ''));
 
         return response()->json(['recorded' => $recorded]);
     }
@@ -469,6 +470,11 @@ class OrderController extends Controller
     private function rememberPaymentMode(Order $order, $payment): void
     {
         $mode = $payment->mode ?? null;
+
+        // Vóór de migratie bestaat de kolom niet; de webhook moet dan gewoon doorwerken
+        if (! PurchaseTracking::ready()) {
+            return;
+        }
 
         if ($order->payment_mode === null && in_array($mode, ['live', 'test'], true)) {
             $order->update(['payment_mode' => $mode]);
