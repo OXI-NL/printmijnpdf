@@ -1541,15 +1541,21 @@
             padding: 0.75rem 0;
             margin: 0.5rem 0 1rem;
         }
-        .proof-item { text-align: center; }
+        .proof-item { text-align: center; flex: 1 1 0; max-width: 11rem; }
         .proof-number {
             display: block;
             font-size: 1.25rem;
             font-weight: 600;
             color: var(--primary);
+            white-space: nowrap;
         }
-        .proof-label {
+        /* .proof-label bestaat ook in de 3D-proefweergave (flex/min-width); hier niet */
+        .social-proof-bar .proof-label {
+            display: block;
+            flex: none;
+            min-width: 0;
             font-size: 0.75rem;
+            line-height: 1.35;
             color: #737373;
         }
         .proof-divider {
@@ -1824,16 +1830,18 @@
             </div>
         </div>
 
-        <!-- Social Proof -->
+        {{-- Alleen feiten met een bron. 10.000+ = bestellingen bij de drukkerij als geheel
+             (opgave eigenaar, 6-11-2026), niet alleen via deze webshop. Geen klantwaardering
+             tonen zolang er niet genoeg reviews zijn. --}}
         <div class="social-proof-bar">
             <div class="proof-item">
-                <span class="proof-number">500+</span>
-                <span class="proof-label">bestellingen</span>
+                <span class="proof-number">10.000+</span>
+                <span class="proof-label">bestellingen bij onze drukkerij</span>
             </div>
             <div class="proof-divider"></div>
             <div class="proof-item">
-                <span class="proof-number">4.8</span>
-                <span class="proof-label">klantwaardering</span>
+                <span class="proof-number">tot {{ \App\Http\Controllers\OrderController::MAX_BOOKLET_PAGES }}</span>
+                <span class="proof-label">pagina's per boekje</span>
             </div>
             <div class="proof-divider"></div>
             <div class="proof-item">
