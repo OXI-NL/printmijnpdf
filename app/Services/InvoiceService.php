@@ -4,9 +4,7 @@ namespace App\Services;
 
 use App\Models\Invoice;
 use App\Models\Order;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Mollie\Laravel\Facades\Mollie;
 use FPDF;
 
 class InvoiceService
@@ -42,24 +40,10 @@ class InvoiceService
             $pagesExcl += ($exclTotal - $sumExcl);
         }
 
-        // Mollie fee ophalen
-        $mollieFee = null;
-        $netReceived = null;
-        if ($order->mollie_payment_id) {
-            try {
-                $payment = Mollie::api()->payments->get($order->mollie_payment_id);
-                $paidAmount = (int) round(floatval($payment->amount->value) * 100);
-
-                // settlementAmount is het bedrag dat Mollie uitbetaalt (na aftrek fees)
-                if (isset($payment->settlementAmount)) {
-                    $settlementCents = (int) round(floatval($payment->settlementAmount->value) * 100);
-                    $mollieFee = $paidAmount - $settlementCents;
-                    $netReceived = $settlementCents;
-                }
-            } catch (\Exception $e) {
-                Log::warning("Kon Mollie fee niet ophalen voor order {$order->order_number}: " . $e->getMessage());
-            }
-        }
+        // Mollie-kosten komen uit de Balances API (mollie:sync-fees); bij een verse
+        // betaling zijn ze vaak nog niet bekend en vult de sync ze later aan.
+        $mollieFee = $order->mollie_fee;
+        $netReceived = $order->mollie_net_received;
 
         // Klantadres samenstellen
         $customerAddress = $order->address_street . ' ' . $order->address_number;

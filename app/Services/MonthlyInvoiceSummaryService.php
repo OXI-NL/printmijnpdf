@@ -5,8 +5,6 @@ namespace App\Services;
 use App\Models\CreditNote;
 use App\Models\Invoice;
 use App\Models\Order;
-use Illuminate\Support\Facades\Log;
-use Mollie\Laravel\Facades\Mollie;
 use FPDF;
 
 class MonthlyInvoiceSummaryService
@@ -74,7 +72,8 @@ class MonthlyInvoiceSummaryService
         $totalBtw = 0;
         $totalIncl = 0;
         $totalMollie = 0;
-        $totalNet = 0;
+        $totalMollieVat = 0;
+        $missingFees = 0;
 
         if ($orders->isEmpty()) {
             $pdf->SetFont('Arial', 'I', 12);
@@ -110,25 +109,9 @@ class MonthlyInvoiceSummaryService
                 $exclTotal = (int) round($inclTotal / (1 + $btwPercentage / 100));
                 $btwAmount = $inclTotal - $exclTotal;
 
-                // Mollie fee: uit invoice als beschikbaar, anders proberen op te halen
-                $mollieFee = null;
-                $netReceived = null;
-
-                if ($order->invoice) {
-                    $mollieFee = $order->invoice->mollie_fee;
-                    $netReceived = $order->invoice->net_received;
-                } elseif ($order->mollie_payment_id) {
-                    try {
-                        $payment = Mollie::api()->payments->get($order->mollie_payment_id);
-                        if (isset($payment->settlementAmount)) {
-                            $settlementCents = (int) round(floatval($payment->settlementAmount->value) * 100);
-                            $mollieFee = $inclTotal - $settlementCents;
-                            $netReceived = $settlementCents;
-                        }
-                    } catch (\Exception $e) {
-                        // Geen probleem, laat leeg
-                    }
-                }
+                // Mollie-kosten zoals ingehouden op de balance (mollie:sync-fees); '-' zolang onbekend
+                $mollieFee = $order->mollie_fee;
+                $netReceived = $order->mollie_net_received;
 
                 $customerName = self::text($order->customer_name);
                 if (strlen($customerName) > 25) {
@@ -160,7 +143,8 @@ class MonthlyInvoiceSummaryService
                 $totalBtw += $btwAmount;
                 $totalIncl += $inclTotal;
                 $totalMollie += $mollieFee ?? 0;
-                $totalNet += $netReceived ?? 0;
+                $totalMollieVat += $order->mollie_fee_vat ?? 0;
+                $missingFees += $mollieFee === null ? 1 : 0;
 
                 $fill = !$fill;
             }
@@ -176,7 +160,7 @@ class MonthlyInvoiceSummaryService
             $pdf->Cell($w[4], 8, self::formatCents($totalBtw), 1, 0, 'R', true);
             $pdf->Cell($w[5], 8, self::formatCents($totalIncl), 1, 0, 'R', true);
             $pdf->Cell($w[6], 8, self::formatCents($totalMollie), 1, 0, 'R', true);
-            $pdf->Cell($w[7], 8, self::formatCents($totalNet), 1, 0, 'R', true);
+            $pdf->Cell($w[7], 8, self::formatCents($totalIncl - $totalMollie), 1, 0, 'R', true);
             $pdf->Cell($w[8] + $w[9], 8, '', 1, 1, 'C', true);
         }
 
@@ -307,12 +291,28 @@ class MonthlyInvoiceSummaryService
             $pdf->SetTextColor(220, 53, 69);
             $pdf->Cell($valW, 7, '- ' . self::formatCents($totalMollie), 0, 1);
 
+            // Btw over de kosten (Mollie B.V. rekent Nederlandse btw; aftrekbare voorbelasting)
+            $vatPct = (int) config('mollie_fees.vat_percentage', 21);
+            $pdf->SetTextColor(100, 100, 100);
+            $pdf->SetFont('Arial', '', 9);
+            $pdf->Cell($labelW, 6, config('mollie_fees.vat_included', true)
+                ? "  waarvan btw ({$vatPct}%):"
+                : "  btw ({$vatPct}%) via Mollie-factuur:", 0, 0);
+            $pdf->Cell($valW, 6, self::formatCents($totalMollieVat), 0, 1);
+
             $pdf->SetTextColor(0, 0, 0);
             $pdf->SetFont('Arial', '', 10);
             $pdf->Cell($labelW, 7, 'Netto ontvangen:', 0, 0);
             $pdf->SetFont('Arial', 'B', 10);
             $pdf->SetTextColor(40, 167, 69);
-            $pdf->Cell($valW, 7, self::formatCents($totalNet - $creditIncl), 0, 1);
+            $pdf->Cell($valW, 7, self::formatCents($totalIncl - $totalMollie - $creditIncl), 0, 1);
+
+            if ($missingFees > 0) {
+                $pdf->SetTextColor(220, 53, 69);
+                $pdf->SetFont('Arial', 'I', 9);
+                $pdf->Cell(0, 6, "Let op: bij {$missingFees} bestelling(en) zijn de Mollie-kosten nog niet bekend (php artisan mollie:sync-fees).", 0, 1);
+            }
+            $pdf->SetTextColor(0, 0, 0);
         }
 
         // === FOOTER === (binnen de pagina-eindemarge, dus zonder automatische pagina-overgang)
