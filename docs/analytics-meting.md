@@ -33,6 +33,7 @@ In een trechterverkenning telt GA4 iemand per stap maar één keer.
 | `payment_failed` | Terug van Mollie, betaling geannuleerd/mislukt/verlopen | `transaction_id` (één keer per tab) |
 | `checkout_exit` | Pagina verlaten met een geanalyseerde PDF, zonder betaalstart | `checkout_stage`, `seconds_since_upload` |
 | `select_finishing` | Andere afwerking of zijdigheid gekozen (alleen bij een echte wijziging) | `finishing_type`, `print_side`, `quantity` |
+| `landing_cta_click` | Klik op een uploadknop op een landingspagina | `cta_location` (`hero`, `prijs`, `onderaan`), `landing_page` |
 
 Er gaan nooit bestandsnamen, PDF-inhoud, namen, e-mailadressen of adressen naar GA4.
 

@@ -477,6 +477,7 @@
         .header-link:hover { color: var(--primary); }
         
         /* ===== HERO ===== */
+        .upload-anchor { display: block; scroll-margin-top: 0.75rem; }
         .hero {
             text-align: center;
             padding: 2rem 1.5rem 3rem;
@@ -1853,6 +1854,9 @@
                 op afdrukken, startkosten en afwerking
             </div>
         </div>
+
+        <!-- Doel van de knoppen op de landingspagina's (/#upload) -->
+        <span id="upload" class="upload-anchor" aria-hidden="true"></span>
 
         <!-- Urgency Banner -->
         <div class="urgency-banner standard" id="urgency-banner">
