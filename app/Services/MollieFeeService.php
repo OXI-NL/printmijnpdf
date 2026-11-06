@@ -22,10 +22,17 @@ class MollieFeeService
         return filled(config('mollie_fees.org_token'));
     }
 
-    /** Client met het organization access token; in tests vervangen door een mock. */
+    /**
+     * Client met het organization access token. Tests zetten een mock op 'mollie.org_client';
+     * anders bouwen we hem hier (dit project registreert AppServiceProvider niet).
+     */
     public static function client(): MollieApiClient
     {
-        return app('mollie.org_client');
+        if (app()->bound('mollie.org_client')) {
+            return app('mollie.org_client');
+        }
+
+        return (new MollieApiClient)->setAccessToken((string) config('mollie_fees.org_token'));
     }
 
     /**
