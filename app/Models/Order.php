@@ -36,6 +36,11 @@ class Order extends Model
         'price_shipping',
         'price_discount',
         'price_total',
+        'mollie_fee',
+        'mollie_fee_vat',
+        'mollie_net_received',
+        'mollie_balance_transaction_id',
+        'mollie_fee_synced_at',
         'customer_name',
         'customer_email',
         'customer_phone',
@@ -76,6 +81,10 @@ class Order extends Model
         'trim_height_mm' => 'float',
         'paid_at' => 'datetime',
         'paid_processed_at' => 'datetime',
+        'mollie_fee' => 'integer',
+        'mollie_fee_vat' => 'integer',
+        'mollie_net_received' => 'integer',
+        'mollie_fee_synced_at' => 'datetime',
         'payment_failed_mailed_at' => 'datetime',
         'analytics_purchase_claimed_at' => 'datetime',
         'analytics_purchase_sent_at' => 'datetime',
@@ -264,6 +273,22 @@ class Order extends Model
     public function getFormattedTotalAttribute(): string
     {
         return '€ ' . number_format($this->price_total / 100, 2, ',', '.');
+    }
+
+    /**
+     * Alle Mollie-kosten van deze order: de betaling plus eventuele terugstortingen
+     * (die staan op de creditnota's). Null zolang mollie:sync-fees de betaling niet kent.
+     */
+    public function getTotalMollieFeeAttribute(): ?int
+    {
+        return $this->mollie_fee === null ? null : $this->mollie_fee + (int) $this->creditNotes->sum('mollie_fee');
+    }
+
+    public function getFormattedMollieFeeAttribute(): ?string
+    {
+        $fee = $this->total_mollie_fee;
+
+        return $fee === null ? null : '€ ' . number_format($fee / 100, 2, ',', '.');
     }
 
     /**

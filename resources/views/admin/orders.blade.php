@@ -124,6 +124,7 @@
         .status.delivered { background: #e2e3e5; color: #383d41; }
         .status.cancelled { background: #f8d7da; color: #721c24; }
         .status.pending { background: #ffeeba; color: #856404; }
+        .mollie-fee { font-weight: 400; font-size: 11px; color: #6c757d; white-space: nowrap; }
         .refund-badge { display: inline-block; margin-top: 4px; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #f8d7da; color: #721c24; }
         .checkbox-cell { width: 40px; text-align: center; overflow: visible; text-overflow: clip; }
         .checkbox-cell input[type="checkbox"] {
@@ -463,7 +464,15 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td class="price">€ {{ number_format($order->price_total / 100, 2, ',', '.') }}</td>
+                                <td class="price">
+                                    € {{ number_format($order->price_total / 100, 2, ',', '.') }}
+                                    @if($order->mollie_fee !== null)
+                                        @php $refundFee = (int) $order->creditNotes->sum('mollie_fee'); @endphp
+                                        <br><small class="mollie-fee" title="Mollie-transactiekosten incl. btw, ingehouden op de balance: betaling € {{ number_format($order->mollie_fee / 100, 2, ',', '.') }}{{ $refundFee > 0 ? ' + terugstorting € ' . number_format($refundFee / 100, 2, ',', '.') : '' }}">Mollie − {{ $order->formatted_mollie_fee }}</small>
+                                    @elseif($order->isPaid() && $order->mollie_payment_id)
+                                        <br><small class="mollie-fee" title="Nog niet opgehaald; wordt dagelijks bijgewerkt via mollie:sync-fees">Mollie-kosten volgen</small>
+                                    @endif
+                                </td>
                                 <td>
                                     <span class="status {{ $order->status }}">
                                         @switch($order->status)

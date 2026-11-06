@@ -12,3 +12,6 @@ Artisan::command('inspire', function () {
 // Vereist cronjob: * * * * * cd /path && php artisan schedule:run >> /dev/null 2>&1
 // Als je geen cronjob kunt instellen, draait deze cleanup niet automatisch.
 Schedule::command('pdfs:cleanup --days=7')->daily()->at('03:00');
+
+// Mollie-transactiekosten van nieuwe betalingen ophalen (staan pas op de balance na de betaling)
+Schedule::command('mollie:sync-fees --days=14')->daily()->at('04:00');

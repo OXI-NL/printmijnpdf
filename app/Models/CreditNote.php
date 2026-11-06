@@ -16,6 +16,10 @@ class CreditNote extends Model
         'amount_btw',
         'amount_incl_btw',
         'btw_percentage',
+        'mollie_fee',
+        'mollie_fee_vat',
+        'mollie_balance_transaction_id',
+        'mollie_fee_synced_at',
         'description',
         'pdf_path',
     ];
@@ -23,6 +27,9 @@ class CreditNote extends Model
     protected $casts = [
         'credit_date' => 'date',
         'btw_percentage' => 'decimal:2',
+        'mollie_fee' => 'integer',
+        'mollie_fee_vat' => 'integer',
+        'mollie_fee_synced_at' => 'datetime',
     ];
 
     public function order()
