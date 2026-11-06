@@ -118,7 +118,8 @@ Overige grenzen:
 - **Volgorde:** de code werkt ook zonder de nieuwe kolommen (`PurchaseTracking::ready()`): betaling, webhook en
   bevestigingspagina gaan gewoon door, alleen zonder `purchase`-event, en `orders:report` weigert met een melding.
   Er is dus geen moment waarop de site stukgaat tussen de deploy en `php artisan migrate --force`.
-  Aankopen in dat tussenmoment worden gemeten zodra iemand de bevestigingspagina na de migratie opent.
+  Een order die in dat tussenmoment betaald wordt, krijgt bij de migratie `legacy` en wordt niet gemeten
+  (ondermeting, geen dubbeltelling). Draai `migrate` daarom direct na de deploy.
 - **Migratie:** voegt alleen kolommen toe en zet `analytics_purchase_legacy` voor bestaande betaalde orders.
 - **Terugval:** zet alleen de code terug, draai `migrate:rollback` **niet**. De oude code negeert de extra kolommen;
   zo blijft de meetstatus bewaard voor een nieuwe poging.
