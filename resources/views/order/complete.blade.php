@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bestelling bevestigd - PrintMijnPDF.nl</title>
+    <meta name="robots" content="noindex, nofollow">
+    <title>{{ $order->isPaid() ? 'Bestelling bevestigd' : ($order->status === 'cancelled' ? 'Betaling niet gelukt' : 'Wachten op betaling') }} - PrintMijnPDF.nl</title>
     <link rel="icon" type="image/png" sizes="96x96" href="/favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -132,7 +133,7 @@
                 </svg>
             </div>
             <h1>Wachten op betaling</h1>
-            <p class="subtitle">We wachten nog op de bevestiging van je betaling.</p>
+            <p class="subtitle">We wachten nog op de bevestiging van je betaling.<br><span id="pendingHint">Deze pagina ververst zichzelf.</span></p>
             @endif
 
             <div class="order-number">
@@ -196,35 +197,60 @@
         </div>
     </div>
 
-    @if($order->isPaid())
-    <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9F48GD4CX5"></script>
+    @include('partials.ga4', ['gaDebug' => $testOrder])
+
+    @if($trackPurchase)
+    {{-- Alleen de pagina die de aankoop bij de server heeft geclaimd, komt hier.
+         Pas als gtag het event heeft afgehandeld, legt de server vast dat de
+         aankoop gemeten is. Zie App\Services\PurchaseTracking. --}}
     <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-9F48GD4CX5');
-    </script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var trackedOrders = JSON.parse(localStorage.getItem('pmp_tracked_orders') || '[]');
-        var orderId = '{{ $order->order_number }}';
-
-        if (trackedOrders.indexOf(orderId) === -1) {
-            gtag('event', 'purchase', {
-                transaction_id: orderId,
-                currency: 'EUR',
-                value: {{ $order->price_total / 100 }},
-                shipping: {{ $order->price_shipping / 100 }}
-            });
-
-            trackedOrders.push(orderId);
-            localStorage.setItem('pmp_tracked_orders', JSON.stringify(trackedOrders));
-
-            sessionStorage.removeItem('pmp_uploaded');
-            sessionStorage.removeItem('pmp_upload_time');
+    (function () {
+        var confirmed = false;
+        function confirmTracked() {
+            if (confirmed) return;
+            confirmed = true;
+            fetch(@json(route('order.purchase-tracked', $order->order_number)), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ token: @json($purchaseToken) }),
+                keepalive: true
+            }).catch(function () {});
         }
-    });
+        var params = @json($purchaseEvent);
+        params.event_callback = confirmTracked;
+        gtag('event', 'purchase', params);
+    })();
+    </script>
+    @elseif(! $order->isPaid())
+    <script>
+    (function () {
+        // Betaalstatus zonder aankoop: één keer per order en status per tabblad
+        var status = @json($order->status === 'cancelled' ? 'failed' : 'pending');
+        var key = 'pmp_payment_status_' + @json($order->order_number) + '_' + status;
+        try {
+            if (!sessionStorage.getItem(key)) {
+                sessionStorage.setItem(key, '1');
+                gtag('event', status === 'failed' ? 'payment_failed' : 'payment_pending', {
+                    transaction_id: @json($order->order_number)
+                });
+            }
+        } catch (e) {}
+
+        // Wachten op Mollie: de pagina vraagt de status opnieuw op, max. 2 minuten
+        if (status === 'pending') {
+            var url = new URL(window.location.href);
+            var tries = parseInt(url.searchParams.get('controle') || '0', 10) || 0;
+            if (tries < 24) {
+                setTimeout(function () {
+                    url.searchParams.set('controle', String(tries + 1));
+                    window.location.replace(url.toString());
+                }, 5000);
+            } else {
+                var hint = document.getElementById('pendingHint');
+                if (hint) hint.textContent = 'Nog geen bevestiging van de bank. Je krijgt een e-mail zodra de betaling binnen is.';
+            }
+        }
+    })();
     </script>
     @endif
 </body>

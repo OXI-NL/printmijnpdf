@@ -12,6 +12,7 @@ class Order extends Model
     protected $fillable = [
         'order_number',
         'mollie_payment_id',
+        'payment_mode',
         'status',
         'pdf_original_name',
         'pdf_stored_name',
@@ -76,6 +77,8 @@ class Order extends Model
         'paid_at' => 'datetime',
         'paid_processed_at' => 'datetime',
         'payment_failed_mailed_at' => 'datetime',
+        'analytics_purchase_claimed_at' => 'datetime',
+        'analytics_purchase_sent_at' => 'datetime',
         'shipped_at' => 'datetime',
         'postnl_label_created_at' => 'datetime',
         'archived_at' => 'datetime',

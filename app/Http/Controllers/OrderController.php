@@ -14,6 +14,7 @@ use App\Services\MirroredBleedService;
 use App\Services\OrderThumbnailService;
 use App\Services\PdfFormatValidator;
 use App\Services\PdfPageCounter;
+use App\Services\PurchaseTracking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -344,6 +345,8 @@ class OrderController extends Controller
                 return response('OK');
             }
 
+            $this->rememberPaymentMode($order, $payment);
+
             // Update order status gebaseerd op Mollie status
             if ($payment->isPaid()) {
                 if ($order->status === 'pending') {
@@ -404,7 +407,8 @@ class OrderController extends Controller
         if ($order->mollie_payment_id) {
             try {
                 $payment = Mollie::api()->payments->get($order->mollie_payment_id);
-                
+                $this->rememberPaymentMode($order, $payment);
+
                 if ($payment->isPaid() && $order->status === 'pending') {
                     $order->update([
                         'status' => 'paid',
@@ -435,7 +439,40 @@ class OrderController extends Controller
             $this->sendPaymentFailedEmail($order);
         }
 
-        return view('order.complete', compact('order'));
+        // Alleen de eerste pagina die de aankoop claimt, stuurt het GA4-event
+        $trackPurchase = PurchaseTracking::claim($order);
+
+        return view('order.complete', [
+            'order' => $order,
+            'trackPurchase' => $trackPurchase,
+            'purchaseEvent' => $trackPurchase ? PurchaseTracking::eventParams($order) : null,
+            'purchaseToken' => $trackPurchase ? PurchaseTracking::token($order) : null,
+            'testOrder' => PurchaseTracking::isTestOrder($order),
+        ]);
+    }
+
+    /**
+     * De bevestigingspagina meldt dat gtag het aankoopevent heeft afgehandeld.
+     * Geen CSRF (de klant kan uren later terugkeren met een verlopen sessie);
+     * het HMAC-token komt alleen van de pagina die de server zelf rendert.
+     */
+    public function confirmPurchaseTracked(Request $request, string $orderNumber)
+    {
+        $order = Order::where('order_number', $orderNumber)->firstOrFail();
+
+        $recorded = PurchaseTracking::confirm($order, (string) $request->input('token', ''));
+
+        return response()->json(['recorded' => $recorded]);
+    }
+
+    /** Mollie meldt 'live' of 'test'; een testbetaling is geen omzet. */
+    private function rememberPaymentMode(Order $order, $payment): void
+    {
+        $mode = $payment->mode ?? null;
+
+        if ($order->payment_mode === null && in_array($mode, ['live', 'test'], true)) {
+            $order->update(['payment_mode' => $mode]);
+        }
     }
 
     /**

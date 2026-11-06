@@ -65,6 +65,9 @@ Route::post('/webhook/mollie', [OrderController::class, 'webhook'])->name('webho
 
 // Order pagina's
 Route::get('/bestelling/{orderNumber}', [OrderController::class, 'complete'])->name('order.complete');
+Route::post('/bestelling/{orderNumber}/aankoop-gemeten', [OrderController::class, 'confirmPurchaseTracked'])
+    ->middleware('throttle:30,1')
+    ->name('order.purchase-tracked');
 Route::get('/status/{orderNumber}', [OrderController::class, 'status'])->name('order.status');
 
 // Admin login routes

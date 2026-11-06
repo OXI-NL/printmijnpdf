@@ -396,14 +396,8 @@
         }
     </style>
 
-    <!-- GA4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9F48GD4CX5"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-9F48GD4CX5');
-    </script>
+    <!-- Google Analytics 4 -->
+    @include('partials.ga4')
 </head>
 <body>
     <header class="header">

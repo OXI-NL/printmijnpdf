@@ -39,22 +39,21 @@
     <link rel="canonical" href="https://printmijnpdf.nl/">
 
     <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9F48GD4CX5"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-9F48GD4CX5');
-    </script>
+    @include('partials.ga4')
 
     <!-- PrintMijnPDF Analytics Helper -->
+    {{-- Trechter en definities: docs/analytics-meting.md. Nooit bestandsnamen,
+         PDF-inhoud of klantgegevens meesturen. --}}
     <script>
     window.PMP_Analytics = {
         state: {
             uploaded: false,
             uploadTime: null,
+            finishing: null,     // 'booklet|double' enz., laatst gemeten keuze
+            shipping: null,      // 'delivery' of 'pickup', laatst gemeten keuze
             checkoutStarted: false,
-            purchaseComplete: false,
+            paymentStarted: false,
+            exitTracked: false,
             currentStage: 'landing'
         },
 
@@ -65,92 +64,114 @@
             }
         },
 
-        trackUpload: function(pageCount, fileSizeMB) {
-            this.state.uploaded = true;
-            this.state.uploadTime = Date.now();
-            this.state.currentStage = 'uploaded';
-            sessionStorage.setItem('pmp_uploaded', 'true');
-            sessionStorage.setItem('pmp_upload_time', this.state.uploadTime);
+        /** Fase 2: de server heeft een nieuwe PDF geanalyseerd en de prijs staat in beeld. Eén keer per PDF. */
+        trackUpload: function(pageCount, fileSizeMB, info) {
+            info = info || {};
+            var s = this.state;
+            s.uploaded = true;
+            s.uploadTime = Date.now();
+            s.finishing = info.finishing || null;
+            s.shipping = null;
+            s.checkoutStarted = false;
+            s.paymentStarted = false;
+            s.exitTracked = false;
+            s.currentStage = 'uploaded';
             this.track('pdf_upload', {
-                event_category: 'engagement',
                 page_count: pageCount,
-                file_size_mb: Math.round(fileSizeMB * 10) / 10
+                file_size_mb: Math.round(fileSizeMB * 10) / 10,
+                pdf_format: info.format || '',
+                booklet_possible: info.bookletPossible ? 'yes' : 'no'
+            });
+            this.track('view_item', {
+                currency: 'EUR',
+                value: Math.round((info.value || 0) * 100) / 100,
+                items: [this.item(info.finishing, info.format, 1)]
             });
         },
 
-        trackFinishing: function(type, quantity) {
-            this.state.currentStage = 'finishing_selected';
+        /** Upload of analyse mislukt. error_type: not_pdf, too_large, format_rejected, analysis_failed, server, network */
+        trackUploadFailed: function(errorType) {
+            this.track('pdf_upload_failed', { error_type: errorType });
+        },
+
+        /** Andere afwerking gekozen (geen trechterstap). Alleen bij een echte wijziging. */
+        trackFinishing: function(bindingType, printSide, quantity) {
+            var key = bindingType + '|' + printSide;
+            if (!this.state.uploaded || this.state.finishing === key) return;
+            this.state.finishing = key;
             this.track('select_finishing', {
-                event_category: 'engagement',
-                finishing_type: type,
+                finishing_type: bindingType,
+                print_side: printSide,
                 quantity: quantity
             });
-            this.track('select_item', {
-                item_list_name: 'Afwerking opties',
-                items: [{
-                    item_id: type,
-                    item_name: type === 'booklet' ? 'Geniet boekje' : 'Losse pagina\'s',
-                    quantity: quantity
-                }]
+        },
+
+        /** Fase 3: verzenden of afhalen gekozen. Alleen de eerste keuze en echte wijzigingen per PDF. */
+        trackShipping: function(method, value) {
+            if (!this.state.uploaded || this.state.shipping === method) return;
+            this.state.shipping = method;
+            this.state.currentStage = 'shipping_selected';
+            this.track('add_shipping_info', {
+                currency: 'EUR',
+                value: Math.round(value * 100) / 100,
+                shipping_tier: method
             });
         },
 
+        /** Fase 4: eerste invoer in de klantgegevens. Eén keer per PDF. */
         trackBeginCheckout: function(value) {
-            if (this.state.checkoutStarted) return;
+            if (!this.state.uploaded || this.state.checkoutStarted) return;
             this.state.checkoutStarted = true;
             this.state.currentStage = 'checkout';
             this.track('begin_checkout', {
-                event_category: 'ecommerce',
                 currency: 'EUR',
                 value: Math.round(value * 100) / 100
             });
         },
 
-        trackShipping: function(method) {
-            this.state.currentStage = 'shipping_selected';
-            this.track('add_shipping_info', {
-                event_category: 'ecommerce',
-                shipping_tier: method
-            });
-        },
-
-        trackPurchase: function(orderId, value, shippingCost) {
-            this.state.purchaseComplete = true;
-            this.state.currentStage = 'complete';
-            sessionStorage.removeItem('pmp_uploaded');
-            sessionStorage.removeItem('pmp_upload_time');
-            this.track('purchase', {
-                transaction_id: orderId,
+        /** Fase 5: de server heeft de order aangemaakt en stuurt de klant naar iDEAL (Mollie). */
+        trackPaymentStart: function(value, shippingTier) {
+            this.state.paymentStarted = true;
+            this.state.currentStage = 'payment';
+            this.track('add_payment_info', {
                 currency: 'EUR',
                 value: Math.round(value * 100) / 100,
-                shipping: Math.round(shippingCost * 100) / 100
+                payment_type: 'ideal',
+                shipping_tier: shippingTier
             });
         },
 
-        checkAbandonment: function() {
-            if (this.state.uploaded && !this.state.purchaseComplete) {
-                var timeOnPage = this.state.uploadTime
-                    ? Math.round((Date.now() - this.state.uploadTime) / 1000)
-                    : 0;
-                this.track('cart_abandonment', {
-                    event_category: 'ecommerce',
-                    checkout_stage: this.state.currentStage,
-                    time_on_page: timeOnPage
-                });
-            }
+        /** Bestellen lukte niet. error_type: validation, server, network */
+        trackPaymentStartFailed: function(errorType) {
+            this.track('payment_start_failed', { error_type: errorType });
+        },
+
+        /** Bezoeker verlaat de pagina met een geanalyseerde PDF, zonder naar de betaling te gaan. */
+        trackExit: function() {
+            var s = this.state;
+            if (!s.uploaded || s.paymentStarted || s.exitTracked) return;
+            s.exitTracked = true;
+            this.track('checkout_exit', {
+                checkout_stage: s.currentStage,
+                seconds_since_upload: s.uploadTime ? Math.round((Date.now() - s.uploadTime) / 1000) : 0
+            });
+        },
+
+        item: function(finishing, format, quantity) {
+            var booklet = String(finishing || '').indexOf('booklet') === 0;
+            return {
+                item_id: booklet ? 'booklet' : 'loose',
+                item_name: booklet ? 'Geniet boekje' : 'Losse pagina\'s',
+                item_variant: format || '',
+                quantity: quantity || 1
+            };
         }
     };
 
-    window.addEventListener('beforeunload', function() {
-        PMP_Analytics.checkAbandonment();
+    // pagehide werkt ook op mobiel, beforeunload niet betrouwbaar
+    window.addEventListener('pagehide', function() {
+        PMP_Analytics.trackExit();
     });
-
-    (function() {
-        if (sessionStorage.getItem('pmp_uploaded') === 'true') {
-            PMP_Analytics.state.uploaded = true;
-            PMP_Analytics.state.uploadTime = parseInt(sessionStorage.getItem('pmp_upload_time')) || Date.now();
-        }
-    })();
     </script>
 
     <!-- UTM & Attribution Tracking -->
@@ -2556,12 +2577,18 @@
         function handleFile(file) {
             if (!file) return;
 
-            if (file.type !== 'application/pdf') {
+            // Sommige mobiele bestandskiezers (cloudopslag, Android) geven geen of een
+            // algemeen bestandstype mee. Dan beslist de extensie; de server controleert de inhoud.
+            const looksLikePdf = file.type === 'application/pdf'
+                || ((file.type === '' || file.type === 'application/octet-stream') && /\.pdf$/i.test(file.name || ''));
+            if (!looksLikePdf) {
+                PMP_Analytics.trackUploadFailed('not_pdf');
                 showError('Dit bestand is geen PDF. Sla je document op als PDF en probeer opnieuw.');
                 return;
             }
 
             if (file.size > 100 * 1024 * 1024) {
+                PMP_Analytics.trackUploadFailed('too_large');
                 showError('Dit bestand is te groot (max 100 MB). Probeer je PDF te comprimeren.');
                 return;
             }
@@ -2583,6 +2610,7 @@
                 progressText.textContent = Math.round(progress) + '%';
             }, 200);
 
+            let failure = 'network';
             try {
                 const formData = new FormData();
                 formData.append('pdf', file);
@@ -2592,25 +2620,34 @@
 
                 const response = await fetch('/api/calculate-price', {
                     method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': csrfToken },
+                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                     body: formData
                 });
 
                 clearInterval(progressInterval);
                 progressBar.style.width = '100%';
 
+                failure = response.status === 422 ? 'analysis_failed' : 'server';
                 const data = await response.json();
 
                 if (data.format_rejected) {
                     clearInterval(progressInterval);
+                    PMP_Analytics.trackUploadFailed('format_rejected');
                     resetUpload();
                     openCustomFormatModal(file, data.message);
                     return;
                 }
 
+                if (response.status === 422 && data.success !== false) {
+                    // Laravel-validatie (geen geldig PDF-bestand of te groot); melding is Engels
+                    throw new Error('We konden dit bestand niet als PDF lezen. Sla je document opnieuw op als PDF en probeer het nog eens.');
+                }
+
                 if (!data.success) {
+                    failure = 'analysis_failed';
                     throw new Error(data.message || 'Er ging iets mis bij het analyseren');
                 }
+                failure = null;
 
                 pageCount = data.page_count;
                 detectedFormat = data.format || 'A4';
@@ -2630,7 +2667,15 @@
 
             } catch (error) {
                 clearInterval(progressInterval);
-                showError(error.message || 'Er ging iets mis. Probeer het opnieuw.');
+                if (failure) {
+                    PMP_Analytics.trackUploadFailed(failure);
+                } else {
+                    console.error(error);
+                }
+                const fallback = failure === 'network'
+                    ? 'Uploaden lukte niet. Controleer je internetverbinding en probeer het opnieuw.'
+                    : 'Er ging iets mis. Probeer het opnieuw.';
+                showError(failure === 'network' || !error.message ? fallback : error.message);
                 resetUpload();
             }
         }
@@ -2639,8 +2684,6 @@
             dropzone.classList.remove('uploading', 'processing');
             dropzone.style.display = 'none';
             pdfResult.classList.add('visible');
-
-            PMP_Analytics.trackUpload(pageCount, file.size / 1024 / 1024);
 
             document.getElementById('pdfName').textContent = file.name;
             document.getElementById('pdfMeta').textContent = 
@@ -2671,6 +2714,13 @@
             updateProgressStep(2);
             updatePriceDisplay();
             validateForm();
+
+            PMP_Analytics.trackUpload(pageCount, file.size / 1024 / 1024, {
+                format: detectedFormat,
+                bookletPossible: bookletAvailable(),
+                finishing: bindingType + '|' + printSide,
+                value: calculatePrices().total / 100
+            });
 
             // Eerst naar een melding (bv. geen afloop of te veel pagina's), anders naar de afwerking
             setTimeout(() => {
@@ -3231,6 +3281,8 @@
 
             mobileSticky.classList.remove('visible');
             document.body.classList.remove('has-sticky');
+
+            PMP_Analytics.state.uploaded = false;
         }
 
         function formatMm(mm) {
@@ -3405,6 +3457,24 @@
             validateForm();
         }
 
+        /** Validatiefout van de server in begrijpelijk Nederlands, per veld. */
+        function orderValidationMessage(errors) {
+            const messages = {
+                pdf: 'We konden je PDF niet verwerken. Kies het bestand opnieuw.',
+                email: 'Controleer je e-mailadres.',
+                postcode: 'Controleer je postcode, bijvoorbeeld 2611 AB.',
+                name: 'Vul je naam in.',
+                street: 'Controleer je adres.',
+                number: 'Controleer je huisnummer.',
+                city: 'Controleer je woonplaats.',
+                phone: 'Controleer je telefoonnummer.',
+                quantity: 'Kies een aantal tussen 1 en ' + MAX_QUANTITY + '.',
+                delivery_type: 'Kies verzenden of afhalen.'
+            };
+            const field = Object.keys(messages).find(f => errors[f]);
+            return field ? messages[field] : 'Controleer je gegevens en probeer het opnieuw.';
+        }
+
         async function submitOrder() {
             if (!validateForm()) return;
             if (!checkBlankPages()) return;
@@ -3441,28 +3511,45 @@
 
             PMP_Attribution.appendToForm(formData);
 
+            let failure = 'network';
             try {
                 const response = await fetch('/api/order', {
                     method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': csrfToken },
+                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                     body: formData
                 });
 
+                failure = response.status === 422 ? 'validation' : 'server';
                 const text = await response.text();
                 let data;
                 try {
                     data = JSON.parse(text);
                 } catch (e) {
-                    throw new Error('Server response (status ' + response.status + '): ' + text.substring(0, 200));
+                    throw new Error('Er ging iets mis bij het aanmaken van je bestelling. Probeer het opnieuw of mail naar info@printmijnpdf.nl.');
+                }
+
+                if (response.status === 422) {
+                    // Eigen meldingen (success: false) zijn al Nederlands; Laravel-validatie niet
+                    throw new Error(data.success === false && data.message
+                        ? data.message
+                        : orderValidationMessage(data.errors || {}));
                 }
 
                 if (data.success && data.redirect_url) {
+                    failure = null;
+                    PMP_Analytics.trackPaymentStart(
+                        calculatePrices().total / 100,
+                        deliveryType === 'pickup' ? 'pickup' : 'delivery'
+                    );
                     window.location.href = data.redirect_url;
                 } else {
-                    throw new Error(data.message || 'Er ging iets mis (status ' + response.status + ')');
+                    throw new Error(data.message || 'Er ging iets mis. Probeer het opnieuw.');
                 }
             } catch (error) {
-                showError(error.message);
+                if (failure) PMP_Analytics.trackPaymentStartFailed(failure);
+                showError(failure === 'network'
+                    ? 'Geen verbinding met de server. Controleer je internetverbinding en probeer het opnieuw.'
+                    : error.message);
                 btn.disabled = false;
                 btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-4-4 1.41-1.41L11 14.17l5.59-5.59L18 10l-7 7z"/></svg> <span id="payButtonText">Afrekenen met iDEAL – ${formatPrice(calculatePrices().total)}</span>`;
                 updateProgressStep(3);
@@ -3508,7 +3595,7 @@
             hideInlineNotice();
             updatePriceDisplay();
             checkBlankPages();
-            PMP_Analytics.trackFinishing('booklet', quantity);
+            PMP_Analytics.trackFinishing(bindingType, printSide, quantity);
             buildProof();
         });
 
@@ -3519,7 +3606,7 @@
             subOptions.classList.add('visible');
             if (bookletAvailable()) hideInlineNotice();
             updatePriceDisplay();
-            PMP_Analytics.trackFinishing('loose', quantity);
+            PMP_Analytics.trackFinishing(bindingType, printSide, quantity);
             buildProof();
         });
 
@@ -3527,6 +3614,7 @@
             printSide = 'double';
             optDouble.classList.add('selected');
             optSingle.classList.remove('selected');
+            PMP_Analytics.trackFinishing(bindingType, printSide, quantity);
             buildProof();
         });
 
@@ -3534,6 +3622,7 @@
             printSide = 'single';
             optSingle.classList.add('selected');
             optDouble.classList.remove('selected');
+            PMP_Analytics.trackFinishing(bindingType, printSide, quantity);
             buildProof();
         });
 
@@ -3544,7 +3633,7 @@
             pickupInfo.classList.remove('visible');
             updatePriceDisplay();
             validateForm();
-            PMP_Analytics.trackShipping('delivery');
+            PMP_Analytics.trackShipping('delivery', calculatePrices().total / 100);
         });
 
         const qtyInput = document.getElementById('qtyInput');
@@ -3575,9 +3664,9 @@
             deliveryPickup.classList.add('selected');
             deliveryShipping.classList.remove('selected');
             pickupInfo.classList.add('visible');
-            PMP_Analytics.trackShipping('pickup');
             updatePriceDisplay();
             validateForm();
+            PMP_Analytics.trackShipping('pickup', calculatePrices().total / 100);
         });
 
         document.querySelectorAll('#sectionAddress input').forEach(input => {
