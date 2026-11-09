@@ -257,18 +257,7 @@ class OrderController extends Controller
                 'address_postcode' => strtoupper(str_replace(' ', '', $request->input('postcode'))),
                 'address_city' => $request->input('city'),
                 'delivery_type' => $request->input('delivery_type'),
-                // Attribution
-                'utm_source' => $request->input('attribution_utm_source'),
-                'utm_medium' => $request->input('attribution_utm_medium'),
-                'utm_campaign' => $request->input('attribution_utm_campaign'),
-                'utm_term' => $request->input('attribution_utm_term'),
-                'utm_content' => $request->input('attribution_utm_content'),
-                'gclid' => $request->input('attribution_gclid'),
-                'fbclid' => $request->input('attribution_fbclid'),
-                'msclkid' => $request->input('attribution_msclkid'),
-                'landing_page' => $request->input('attribution_landing_page'),
-                'referrer' => $this->sanitizeReferrer($request->input('attribution_referrer')),
-            ]);
+            ] + $this->attribution($request));
 
             // Pagina 1 als PNG uit de browser, voor de bevestigingsmail (optioneel)
             OrderThumbnailService::store($order, $request->file('pdf_thumbnail'));
@@ -500,9 +489,44 @@ class OrderController extends Controller
         ], 422);
     }
 
-    private function sanitizeReferrer(?string $referrer): ?string
+    /**
+     * Herkomst zoals de browser hem meestuurt (partials/attribution.blade.php), ruw bewaard.
+     * Geen standaardwaarden: wat ontbreekt blijft leeg. Alleen ingekort tot de kolombreedte,
+     * zodat een lange UTM-waarde nooit een bestelling laat mislukken.
+     */
+    private function attribution(Request $request): array
     {
-        if (!$referrer || !filter_var($referrer, FILTER_VALIDATE_URL)) {
+        $text = function (string $key, int $max) use ($request): ?string {
+            $value = $request->input('attribution_' . $key);
+            if (!is_string($value) || trim($value) === '') {
+                return null;
+            }
+            return mb_substr(trim($value), 0, $max);
+        };
+
+        $landing = $text('landing_page', 255);
+
+        return [
+            'utm_source' => $text('utm_source', 100),
+            'utm_medium' => $text('utm_medium', 100),
+            'utm_campaign' => $text('utm_campaign', 255),
+            'utm_term' => $text('utm_term', 255),
+            'utm_content' => $text('utm_content', 255),
+            'gclid' => $text('gclid', 255),
+            'fbclid' => $text('fbclid', 255),
+            'msclkid' => $text('msclkid', 255),
+            // Alleen een pad op deze site, zonder querystring
+            'landing_page' => $landing !== null && str_starts_with($landing, '/') && !str_starts_with($landing, '//')
+                ? strtok($landing, '?#')
+                : null,
+            'referrer' => $this->sanitizeReferrer($request->input('attribution_referrer')),
+        ];
+    }
+
+    private function sanitizeReferrer(mixed $referrer): ?string
+    {
+        if (!is_string($referrer) || !filter_var($referrer, FILTER_VALIDATE_URL)
+            || !in_array(parse_url($referrer, PHP_URL_SCHEME), ['http', 'https'], true)) {
             return null;
         }
         return substr($referrer, 0, 500);

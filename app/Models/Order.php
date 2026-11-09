@@ -342,38 +342,95 @@ class Order extends Model
     }
 
     /**
-     * Attribution samenvatting
+     * Tot de herstelde herkomstmeting (9 nov 2026) vulde het bestelformulier een ontbrekende
+     * bron in als 'direct' / 'none'. Zo'n order heeft dus géén bewezen bron; die waarde
+     * blijft ruw in de database staan, maar telt hier niet als campagnelabel.
      */
-    public function getAttributionSummaryAttribute(): string
+    public function hasLegacyDirectDefault(): bool
     {
-        if ($this->gclid) return 'Google Ads';
-        if ($this->fbclid) return 'Facebook Ads';
-        if ($this->msclkid) return 'Microsoft Ads';
-
-        if ($this->utm_source) {
-            $summary = ucfirst($this->utm_source);
-            if ($this->utm_medium) {
-                $summary .= ' / ' . $this->utm_medium;
-            }
-            return $summary;
-        }
-
-        if ($this->referrer) {
-            return 'Referral: ' . parse_url($this->referrer, PHP_URL_HOST);
-        }
-
-        return 'Direct';
+        return $this->utm_source === 'direct'
+            && in_array($this->utm_medium, ['none', null], true)
+            && !$this->utm_campaign && !$this->utm_term && !$this->utm_content;
     }
 
     /**
-     * Is de order via betaalde advertentie binnengekomen?
+     * Herkomst met de bewijsbron erbij, voor het beheer. Overdrijft niets:
+     * - campagnelabel: er stond een utm_source in de instap-URL (zegt wat de link meldt, niet wie hem plaatste);
+     * - verwijzer: de browser gaf een externe verwijzende site door;
+     * - klik-id: alleen gclid/fbclid/msclkid, geen bewijs van een betaalde campagne;
+     * - onbekend: niets vastgelegd. Dat is níet hetzelfde als bewezen direct verkeer.
+     *
+     * @return array{basis: string, label: string, notes: list<string>, landing_page: ?string, raw: array<string, string>}
+     */
+    public function getAttributionAttribute(): array
+    {
+        $referrerHost = $this->referrer ? parse_url($this->referrer, PHP_URL_HOST) : null;
+        $clickIds = array_values(array_filter(['gclid', 'fbclid', 'msclkid'], fn ($key) => (bool) $this->{$key}));
+        $legacyDefault = $this->hasLegacyDirectDefault();
+        $notes = [];
+
+        if ($this->utm_source && !$legacyDefault) {
+            $basis = 'campagnelabel';
+            $label = 'Campagnelabel: ' . $this->utm_source . ($this->utm_medium ? ' / ' . $this->utm_medium : '');
+            if ($referrerHost) {
+                $notes[] = 'Verwijzer: ' . $referrerHost;
+            }
+        } elseif ($referrerHost) {
+            $basis = 'verwijzer';
+            $label = 'Verwijzer: ' . $referrerHost;
+        } elseif ($clickIds) {
+            $basis = 'klik-id';
+            $label = 'Alleen klik-ID: ' . implode(', ', $clickIds);
+        } else {
+            $basis = 'onbekend';
+            $label = 'Herkomst onbekend';
+        }
+
+        if ($clickIds && $basis !== 'klik-id') {
+            $notes[] = 'Klik-ID: ' . implode(', ', $clickIds);
+        }
+        if ($clickIds) {
+            $notes[] = 'Een klik-ID bewijst geen betaalde campagne';
+        }
+        if ($legacyDefault) {
+            $notes[] = "Opgeslagen als 'direct / none': standaardwaarde van het oude formulier, geen bewijs";
+        }
+
+        $raw = array_filter([
+            'utm_source' => $this->utm_source,
+            'utm_medium' => $this->utm_medium,
+            'utm_campaign' => $this->utm_campaign,
+            'utm_term' => $this->utm_term,
+            'utm_content' => $this->utm_content,
+            'gclid' => $this->gclid,
+            'fbclid' => $this->fbclid,
+            'msclkid' => $this->msclkid,
+            'landing_page' => $this->landing_page,
+            'referrer' => $this->referrer,
+        ], fn ($value) => $value !== null && $value !== '');
+
+        return [
+            'basis' => $basis,
+            'label' => $label,
+            'notes' => $notes,
+            'landing_page' => $this->landing_page,
+            'raw' => $raw,
+        ];
+    }
+
+    public function getAttributionSummaryAttribute(): string
+    {
+        return $this->attribution['label'];
+    }
+
+    /**
+     * Heeft de order een expliciet betaald campagnelabel (utm_medium cpc/ppc/paid)?
+     * Een losse klik-ID telt niet: die komt ook mee met gedeelde of opgeslagen links.
      */
     public function isFromPaidAds(): bool
     {
-        return $this->gclid !== null
-            || $this->fbclid !== null
-            || $this->msclkid !== null
-            || in_array($this->utm_medium, ['cpc', 'ppc', 'paid']);
+        return !$this->hasLegacyDirectDefault()
+            && in_array($this->utm_medium, ['cpc', 'ppc', 'paid'], true);
     }
 
     /**

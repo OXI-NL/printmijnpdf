@@ -452,6 +452,9 @@
 
     <!-- Google Analytics 4 -->
     @include('partials.ga4')
+
+    <!-- Herkomst van de bestelling: instap hier vastleggen, vóór de klant naar de homepage gaat -->
+    @include('partials.attribution')
     <script>
         // Welke knop naar de upload leidde (hero, prijsblok of onderaan); zie docs/analytics-meting.md
         document.addEventListener('click', function (e) {
