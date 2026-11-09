@@ -44,50 +44,8 @@
     <!-- PrintMijnPDF Analytics Helper -->
     @include('partials.analytics-helper')
 
-    <!-- UTM & Attribution Tracking -->
-    <script>
-    window.PMP_Attribution = {
-        init: function() {
-            var params = new URLSearchParams(window.location.search);
-            var keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid', 'fbclid', 'msclkid'];
-            keys.forEach(function(key) {
-                var val = params.get(key);
-                if (val) sessionStorage.setItem(key, val);
-            });
-            if (!sessionStorage.getItem('pmp_landing_page')) {
-                sessionStorage.setItem('pmp_landing_page', window.location.pathname);
-            }
-            if (!sessionStorage.getItem('pmp_referrer') && document.referrer) {
-                try {
-                    var host = new URL(document.referrer).hostname;
-                    if (host !== window.location.hostname) {
-                        sessionStorage.setItem('pmp_referrer', document.referrer);
-                    }
-                } catch(e) {}
-            }
-        },
-        getData: function() {
-            return {
-                utm_source: sessionStorage.getItem('utm_source') || 'direct',
-                utm_medium: sessionStorage.getItem('utm_medium') || 'none',
-                utm_campaign: sessionStorage.getItem('utm_campaign') || '',
-                utm_term: sessionStorage.getItem('utm_term') || '',
-                utm_content: sessionStorage.getItem('utm_content') || '',
-                gclid: sessionStorage.getItem('gclid') || '',
-                landing_page: sessionStorage.getItem('pmp_landing_page') || '/',
-                referrer: sessionStorage.getItem('pmp_referrer') || ''
-            };
-        },
-        appendToForm: function(formData) {
-            var data = this.getData();
-            Object.keys(data).forEach(function(key) {
-                if (data[key]) formData.append('attribution_' + key, data[key]);
-            });
-            return formData;
-        }
-    };
-    PMP_Attribution.init();
-    </script>
+    <!-- Herkomst van de bestelling (eerste instap per tabblad) -->
+    @include('partials.attribution')
 
     <!-- Structured Data: PrintingService -->
     <script type="application/ld+json">

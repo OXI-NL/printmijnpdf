@@ -129,7 +129,31 @@ Overige grenzen:
 - Een terugbetaling stuurt geen `refund`-event. Terugbetalingen staan als creditnota in het bestelbeheer en in
   `orders:report`. Dat is de bron.
 
+## Herkomst van de bestelling (bestelbeheer)
+
+Los van GA4: de bestelling zelf bewaart waar de klant binnenkwam. `resources/views/partials/attribution.blade.php`
+draait op de homepage, alle landingspagina's en de juridische pagina's (niet op de bevestigingspagina).
+
+- **Eerste instap per tabblad.** Het eerste bezoek legt instappad (zonder querystring), externe verwijzer en
+  campagnegegevens (`utm_*`, `gclid`, `fbclid`, `msclkid`) vast in `sessionStorage`. Latere pagina's overschrijven
+  niets, dus landingspagina → homepage houdt de landingspagina en de bron. Een nieuw tabblad is een nieuwe instap.
+- **Geen standaardwaarden.** Ontbreekt een bron, dan blijft hij leeg. Het oude formulier vulde `direct` / `none`
+  in; die waarde staat ruw in oudere orders, maar telt niet als bron.
+- **Beheer toont de bewijsbron** (`Order::attribution`): *Campagnelabel* (er stond een `utm_source` in de link: zegt
+  wat de link meldt, niet wie hem plaatste), *Verwijzer* (externe site volgens de browser), *Alleen klik-ID* (geen
+  bewijs van een betaalde campagne) of *Herkomst onbekend* (níet hetzelfde als bewezen direct verkeer). De ruwe
+  waarden staan in de tooltip.
+- Er gaat niets van naar GA4 of elders heen; alleen het bestelformulier stuurt het mee naar onze eigen server.
+- Getest: `tests/js/attribution.test.mjs` en `tests/Feature/AttributionTest.php`.
+
+GA4 en het bestelbeheer kunnen verschillen: GA4 bepaalt de bron per sessie met eigen regels, het beheer per
+tabblad bij het eerste bezoek. Geen van beide overschrijft de ander, en historische orders worden niet aangepast.
+
 ## Uitrol en terugval
+
+- **Tijden in Ploi staan in UTC.** Het deploylog toont UTC zonder tijdzone; server en app draaien op
+  Europe/Amsterdam. Voorbeeld: PR 3 staat in Ploi op 2026-11-06 16:03:06 en ging live om 17:03 CET
+  (wijzigingstijd van de uitgerolde bestanden). Orders in het beheer staan in Europe/Amsterdam.
 
 - **Volgorde:** de code werkt ook zonder de nieuwe kolommen (`PurchaseTracking::ready()`): betaling, webhook en
   bevestigingspagina gaan gewoon door, alleen zonder `purchase`-event, en `orders:report` weigert met een melding.

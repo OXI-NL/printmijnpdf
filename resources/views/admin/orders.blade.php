@@ -443,9 +443,15 @@
                                 <td class="customer">
                                     <div class="customer-name">{{ $order->customer_name }}</div>
                                     <div class="customer-email">{{ $order->customer_email }}</div>
-                                    @if($order->utm_source || $order->gclid || $order->fbclid)
-                                    <div class="customer-email" style="color: #6366f1;">{{ $order->attribution_summary }}</div>
-                                    @endif
+                                    @php $herkomst = $order->attribution; @endphp
+                                    <div class="customer-email" data-herkomst="{{ $herkomst['basis'] }}"
+                                         style="color: {{ $herkomst['basis'] === 'onbekend' ? '#9ca3af' : '#6366f1' }};"
+                                         title="{{ $herkomst['raw'] ? collect($herkomst['raw'])->map(fn ($v, $k) => $k . '=' . $v)->implode("\n") : 'Geen herkomstgegevens vastgelegd' }}">
+                                        {{ $herkomst['label'] }}@if($herkomst['landing_page']) · instap {{ $herkomst['landing_page'] }}@endif
+                                        @foreach($herkomst['notes'] as $note)
+                                            <br><span style="font-size: 0.85em; color: #9ca3af;">{{ $note }}</span>
+                                        @endforeach
+                                    </div>
                                 </td>
                                 <td class="file-info">
                                     <span class="file-name" title="{{ $order->pdf_original_name }}">{{ $order->pdf_original_name }}</span>
