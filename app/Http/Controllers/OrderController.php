@@ -75,6 +75,8 @@ class OrderController extends Controller
                 'format' => $format,
                 'standard' => $formatResult['standard'],
                 'booklet_allowed' => $formatResult['booklet_allowed'],
+                'booklet_problem' => $formatResult['booklet_problem'],
+                'booklet_format' => $formatResult['booklet_format'],
                 'width_mm' => $formatResult['detected_width_mm'],
                 'height_mm' => $formatResult['detected_height_mm'],
                 'has_bleed' => $formatResult['has_bleed'],
@@ -135,17 +137,16 @@ class OrderController extends Controller
                 'errors' => ['pdf' => [$formatResult['reason'] ?? 'Afwijkend formaat.']],
             ], 422);
         }
-        $format = $formatResult['format'];
         $pageCount = (new PdfPageCounter())->count($pdfPath);
         $bindingType = $request->input('binding_type');
+        // Tariefklasse: een boekje tot Letterbreedte telt als A4
+        $format = $bindingType === 'booklet' ? $formatResult['booklet_format'] : $formatResult['format'];
 
         if ($bindingType === 'booklet' && !$formatResult['booklet_allowed']) {
             return response()->json([
                 'success' => false,
-                'message' => 'Dit formaat is te groot voor een geniet boekje (max. '
-                    . PdfFormatValidator::BOOKLET_MAX_WIDTH_MM . ' × ' . PdfFormatValidator::BOOKLET_MAX_HEIGHT_MM
-                    . ' mm per pagina). Kies losse pagina\'s.',
-                'errors' => ['binding_type' => ['Formaat te groot voor een boekje.']],
+                'message' => PdfFormatValidator::bookletProblemMessage($formatResult['booklet_problem']) . ' Kies losse pagina\'s.',
+                'errors' => ['binding_type' => ['Formaat past niet als boekje.']],
             ], 422);
         }
 

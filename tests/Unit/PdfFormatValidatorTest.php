@@ -89,9 +89,12 @@ class PdfFormatValidatorTest extends TestCase
             ['A5', 'L', 'A5', false, true],   // 210 × 148: twee naast elkaar = 420 mm, past
             ['A4', 'L', 'A4', false, false],  // 297 × 210: twee naast elkaar = 594 mm, past niet
             [[200, 200], 'P', 'A4', false, true],
-            [[140, 140], 'P', 'A5', false, true],
-            [[222, 304], 'P', 'A3', false, true],  // grootste boekjespagina
-            [[230, 304], 'P', 'A3', false, false],
+            [[148, 148], 'P', 'A5', false, true],
+            [[140, 140], 'P', 'A5', false, false], // lager dan staand A6
+            [[215.9, 279.4], 'P', 'A3', false, true], // Letter: breder dan A4, dus A3-tarief
+            [[216, 300], 'P', 'A3', false, true],  // grootste boekjespagina
+            [[219, 300], 'P', 'A3', false, false], // breder dan Letter
+            [[216, 303], 'P', 'A3', false, false],
             ['A3', 'P', 'A3', false, false],
             ['A3', 'L', 'A3', false, false],
         ];
@@ -104,6 +107,41 @@ class PdfFormatValidatorTest extends TestCase
             $this->assertSame($class, $result['format'], $label);
             $this->assertSame($standard, $result['standard'], $label);
             $this->assertSame($booklet, $result['booklet_allowed'], $label);
+        }
+    }
+
+    public function test_boekje_van_staand_a6_tot_letterbreedte(): void
+    {
+        // [maat in mm, oriëntatie, boekje-probleem]
+        $cases = [
+            [[105, 148], 'P', null],          // staand A6: het kleinste boekje
+            [[105, 148], 'L', 'too_small'],   // liggend A6: te laag
+            [[100, 148], 'P', 'too_small'],
+            [[105, 140], 'P', 'too_small'],
+            [[215.9, 279.4], 'P', null],      // Letter
+            [[216, 300], 'P', null],
+            [[220, 280], 'P', 'too_large'],
+            [[210, 305], 'P', 'too_large'],
+        ];
+
+        foreach ($cases as [$size, $orientation, $problem]) {
+            $label = json_encode($size) . " {$orientation}";
+            $result = $this->validate($size, $orientation);
+
+            $this->assertTrue($result['valid'], $label);
+            $this->assertSame($problem, $result['booklet_problem'], $label);
+            $this->assertSame($problem === null, $result['booklet_allowed'], $label);
+        }
+    }
+
+    public function test_boekje_kost_hoogstens_a4_tarief(): void
+    {
+        // [maat in mm, prijsklasse, tarief als boekje]
+        foreach ([[[215.9, 279.4], 'A3', 'A4'], [[216, 300], 'A3', 'A4'], [[210, 297], 'A4', 'A4'], [[105, 148], 'A5', 'A5'], [[230, 300], 'A3', 'A3']] as [$size, $class, $booklet]) {
+            $result = $this->validate($size);
+
+            $this->assertSame($class, $result['format'], json_encode($size));
+            $this->assertSame($booklet, $result['booklet_format'], json_encode($size));
         }
     }
 

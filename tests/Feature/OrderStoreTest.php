@@ -160,6 +160,41 @@ class OrderStoreTest extends TestCase
             ->assertJsonValidationErrors('binding_type');
     }
 
+    public function test_letter_als_boekje_tegen_a4_tarief(): void
+    {
+        $this->bestel(['pdf' => $this->pdf(12, [215.9, 279.4])])->assertOk();
+
+        $order = Order::sole();
+        $this->assertSame('A4', $order->format, 'een boekje gaat op hetzelfde vel als A4');
+        $this->assertSame(215.9, $order->trim_width_mm);
+        $this->assertSame('215,9 × 279,4 mm (A4-tarief)', $order->format_label);
+        $this->assertSame(12 * config('pricing.per_page_a4'), $order->price_pages);
+    }
+
+    public function test_letter_als_losse_paginas_houdt_a3_tarief(): void
+    {
+        $this->bestel(['pdf' => $this->pdf(10, [215.9, 279.4]), 'binding_type' => 'loose'])->assertOk();
+
+        $this->assertSame('A3', Order::sole()->format, 'breder dan A4: kleinste passende klasse is A3');
+    }
+
+    public function test_staand_a6_kan_als_boekje_tegen_a5_tarief(): void
+    {
+        $this->bestel(['pdf' => $this->pdf(12, [105, 148])])->assertOk();
+
+        $this->assertSame('A5', Order::sole()->format);
+    }
+
+    public function test_kleiner_dan_staand_a6_kan_niet_als_boekje(): void
+    {
+        $this->bestel(['pdf' => $this->pdf(12, [105, 148], 'L')])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('binding_type')
+            ->assertJsonPath('message', 'Je pagina\'s zijn te klein voor een geniet boekje (minimaal staand A6, 105 × 148 mm per pagina). Kies losse pagina\'s.');
+
+        $this->bestel(['pdf' => $this->pdf(12, [105, 148], 'L'), 'binding_type' => 'loose'])->assertOk();
+    }
+
     public function test_a3_losse_paginas_tegen_a3_tarief(): void
     {
         $this->bestel(['pdf' => $this->pdf(10, 'A3', 'L'), 'binding_type' => 'loose'])->assertOk();
