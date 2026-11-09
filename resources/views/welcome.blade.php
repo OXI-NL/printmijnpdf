@@ -236,7 +236,7 @@
                 "name": "Welke afmetingen worden ondersteund?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Elk formaat tot en met A3 kunnen we printen, met één formaat per bestelling. We herkennen het formaat van je PDF automatisch. Een geniet boekje kan tot 222 × 304 mm per pagina (dus ook A4, A5 en vierkante formaten); grotere pagina's, tot A3, printen we als losse pagina's. Een afwijkend formaat snijden we op maat; je betaalt het tarief van het kleinste standaardformaat waar je pagina in past (A5, A4 of A3). Een A4-boekje printen we op liggend A3 en vouwen we dubbel, een A5-boekje op liggend A4."
+                    "text": "Elk formaat tot en met A3 kunnen we printen, met één formaat per bestelling. We herkennen het formaat van je PDF automatisch. Een geniet boekje kan van staand A6 (105 × 148 mm) tot 216 × 300 mm per pagina, dus ook A4, A5, Letter en vierkante formaten; kleinere of grotere pagina's, tot A3, printen we als losse pagina's. Een afwijkend formaat snijden we op maat; je betaalt het tarief van het kleinste standaardformaat waar je pagina in past (A5, A4 of A3). Een boekje kost hoogstens het A4-tarief, ook als Letter. Een A4-boekje printen we op liggend A3 en vouwen we dubbel, een A5-boekje op liggend A4."
                 }
             },
             {
@@ -2201,9 +2201,9 @@
             <summary>Welke afmetingen worden ondersteund?</summary>
             <p>Elk formaat tot en met A3 kunnen we printen, met één formaat per bestelling. We herkennen het formaat van je PDF automatisch.</p>
             <ul style="margin: 0.5rem 0 0.5rem 1.5rem;">
-                <li>Geniet boekje: tot 222 × 304 mm per pagina, dus ook A4, A5 en vierkante formaten. Een A4-boekje printen we op liggend A3, een A5-boekje op liggend A4.</li>
+                <li>Geniet boekje: van staand A6 (105 × 148 mm) tot 216 × 300 mm per pagina, dus ook A4, A5, Letter en vierkante formaten. Een A4-boekje printen we op liggend A3, een A5-boekje op liggend A4.</li>
                 <li>Losse pagina's: tot en met A3.</li>
-                <li>Een afwijkend formaat snijden we op maat. Je betaalt het tarief van het kleinste standaardformaat waar je pagina in past (A5, A4 of A3).</li>
+                <li>Een afwijkend formaat snijden we op maat. Je betaalt het tarief van het kleinste standaardformaat waar je pagina in past (A5, A4 of A3). Een boekje kost hoogstens het A4-tarief, ook als Letter.</li>
             </ul>
             <p>Heeft je PDF pagina's van verschillende formaten? Splits hem dan in aparte bestellingen, of <a href="mailto:info@printmijnpdf.nl" style="color: var(--primary); text-decoration: none; font-weight: 500;">neem contact met ons op</a>.</p>
             <p>Lees ook <a href="{{ route('landing.aanleveren') }}" style="color: var(--primary); text-decoration: none; font-weight: 500;">hoe je je PDF aanlevert voor het beste resultaat</a>: met afloop, snijtekens en een veilige marge.</p>
@@ -2323,8 +2323,11 @@
         let currentFile = null;
         let pageCount = 0;
         let detectedFormat = 'A4';
-        let formatLabel = 'A4';
+        let bookletFormat = 'A4'; // tariefklasse als magazine: hoogstens A4 (o.a. Letter)
+        let customSize = null;    // snijmaat bij een afwijkend formaat, bv. "215,9 × 279,4 mm"
+        let fileSizeMb = 0;
         let bookletAllowed = true;
+        let bookletProblem = null; // 'too_large' of 'too_small' als het formaat geen magazine kan worden
         let hasBleed = false;
         let bleedMM = 0;
         let bleedFixable = false;
@@ -2534,10 +2537,12 @@
                 pageCount = data.page_count;
                 detectedFormat = data.format || 'A4';
                 bookletAllowed = data.booklet_allowed !== false;
+                bookletProblem = data.booklet_problem || null;
+                bookletFormat = data.booklet_format || detectedFormat;
                 // Afwijkend formaat: toon de snijmaat, de prijs volgt de kleinste passende klasse
-                formatLabel = data.standard === false && data.width_mm
-                    ? `${formatMm(data.width_mm)} × ${formatMm(data.height_mm)} mm (${detectedFormat}-tarief)`
-                    : detectedFormat;
+                customSize = data.standard === false && data.width_mm
+                    ? `${formatMm(data.width_mm)} × ${formatMm(data.height_mm)} mm`
+                    : null;
                 hasBleed = data.has_bleed || false;
                 bleedMM = data.bleed_mm || 0;
                 bleedFixable = !hasBleed && data.bleed_fixable === true;
@@ -2568,8 +2573,8 @@
             pdfResult.classList.add('visible');
 
             document.getElementById('pdfName').textContent = file.name;
-            document.getElementById('pdfMeta').textContent = 
-                `${pageCount} pagina's · ${formatLabel} · ${(file.size / 1024 / 1024).toFixed(1)} MB`;
+            fileSizeMb = file.size / 1024 / 1024;
+            renderPdfMeta();
 
             if (!bookletAvailable()) {
                 bindingType = 'loose';
@@ -2581,7 +2586,9 @@
                 showInlineNotice(
                     bookletAllowed
                         ? `Je document heeft ${pageCount} pagina's. Dat is te veel voor een magazine (maximaal 64), dus we printen het als losse vellen.`
-                        : `Je pagina's zijn te groot om er een magazine van te maken. We printen ze daarom als losse vellen.`,
+                        : bookletProblem === 'too_small'
+                            ? `Je pagina's zijn te klein om er een magazine van te maken (minimaal staand A6). We printen ze daarom als losse vellen.`
+                            : `Je pagina's zijn te groot om er een magazine van te maken. We printen ze daarom als losse vellen.`,
                     'info'
                 );
             }
@@ -2598,7 +2605,7 @@
             validateForm();
 
             PMP_Analytics.trackUpload(pageCount, file.size / 1024 / 1024, {
-                format: detectedFormat,
+                format: tariffFormat(),
                 bookletPossible: bookletAvailable(),
                 finishing: bindingType + '|' + printSide,
                 value: calculatePrices().total / 100
@@ -3130,6 +3137,7 @@
             currentFile = null;
             pageCount = 0;
             bookletAllowed = true;
+            bookletProblem = null;
             hasBleed = false;
             bleedFixable = false;
             orderThumbnail = null;
@@ -3175,12 +3183,23 @@
             return bookletAllowed && pageCount <= MAX_BOOKLET_PAGES;
         }
 
+        // Tariefklasse hangt af van de afwerking: een magazine gaat altijd op het A4-vel
+        function tariffFormat() {
+            return bindingType === 'booklet' ? bookletFormat : detectedFormat;
+        }
+
+        function renderPdfMeta() {
+            const formatLabel = customSize ? `${customSize} (${tariffFormat()}-tarief)` : detectedFormat;
+            document.getElementById('pdfMeta').textContent =
+                `${pageCount} pagina's · ${formatLabel} · ${fileSizeMb.toFixed(1)} MB`;
+        }
+
         function pricePerPageFor(format) {
             return { A3: PRICES.perPageA3, A4: PRICES.perPageA4, A5: PRICES.perPageA5 }[format] ?? PRICES.perPageA4;
         }
 
         function calculatePrices() {
-            const pricePerPage = pricePerPageFor(detectedFormat);
+            const pricePerPage = pricePerPageFor(tariffFormat());
             let pagesCost = billablePages() * pricePerPage * quantity;
             let bindingCost = bindingType === 'booklet'
                 ? PRICES.binding + ((quantity - 1) * PRICES.bindingExtra)
@@ -3202,8 +3221,9 @@
         }
 
         function updatePriceDisplay() {
+            renderPdfMeta();
             const prices = calculatePrices();
-            const pricePerPage = pricePerPageFor(detectedFormat);
+            const pricePerPage = pricePerPageFor(tariffFormat());
 
             const blanks = blankPagesNeeded();
             const blanksNote = blanks > 0 ? ` (incl. ${blanks} blanco)` : '';
@@ -3370,7 +3390,7 @@
             const formData = new FormData();
             formData.append('pdf', currentFile);
             formData.append('page_count', pageCount);
-            formData.append('format', detectedFormat);
+            formData.append('format', tariffFormat());
             formData.append('has_bleed', hasBleed ? '1' : '0');
             formData.append('bleed_mm', bleedMM);
             formData.append('binding_type', bindingType);

@@ -684,7 +684,7 @@ class LandingPageController extends Controller
                         'title' => 'Verder nog handig om te weten',
                         'list' => [
                             'Eén formaat per bestelling: alle pagina\'s in je PDF moeten even groot zijn. Heb je verschillende formaten, plaats dan aparte bestellingen.',
-                            'Elk formaat tot en met A3 kan. Een geniet boekje kan tot 222 × 304 mm per pagina; groter printen we als losse pagina\'s.',
+                            'Elk formaat tot en met A3 kan. Een geniet boekje kan van staand A6 tot 216 × 300 mm per pagina (ook Letter); kleiner of groter printen we als losse pagina\'s.',
                             'Lever een boekje aan in de gewone leesvolgorde, met pagina 1 als voorkant. Wij zetten de pagina\'s zelf in de juiste volgorde.',
                             'Gebruik foto\'s in goede kwaliteit (bij voorkeur 300 dpi op ware grootte), dan worden ze scherp geprint.',
                         ],
@@ -831,7 +831,7 @@ class LandingPageController extends Controller
                 'sections' => [
                     [
                         'title' => 'Welke PDF\'s kun je laten printen?',
-                        'text' => 'Scripties, readers, cursusmateriaal, handleidingen, rapporten, verslagen, receptenboekjes, portfolio\'s en programmaboekjes. Meestal A4 of A5, maar een eigen formaat kan ook: als boekje tot 222 × 304 mm per pagina, als losse pagina\'s tot en met A3.',
+                        'text' => 'Scripties, readers, cursusmateriaal, handleidingen, rapporten, verslagen, receptenboekjes, portfolio\'s en programmaboekjes. Meestal A4 of A5, maar een eigen formaat kan ook: als boekje van staand A6 tot 216 × 300 mm per pagina, als losse pagina\'s tot en met A3.',
                     ],
                     [
                         'title' => 'Boekje of losse pagina\'s?',

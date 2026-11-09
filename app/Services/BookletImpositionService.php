@@ -13,13 +13,11 @@ class BookletImpositionService
     use ImposesPages;
 
     /**
-     * Drukvellen in punten, liggend: twee pagina's naast elkaar rond de rug.
-     * SRA3 (450 × 320 mm) voor A4-boekjes, SRA4 (320 × 225 mm) voor A5.
+     * Drukvel in punten, liggend SRA3 (450 × 320 mm): twee pagina's naast
+     * elkaar rond de rug, één boekje per vel. Ook A5 en kleiner gaan hierop,
+     * gecentreerd; een kleiner vel (SRA4) zette de pers 2-op een SRA3.
      */
-    public const SHEETS = [
-        'A4' => ['name' => 'SRA3', 'width' => 1275.59, 'height' => 907.09],
-        'A5' => ['name' => 'SRA4', 'width' => 907.09, 'height' => 637.80],
-    ];
+    public const SHEET = ['name' => 'SRA3', 'width' => 1275.59, 'height' => 907.09];
 
     /** Snijtekens: afstand tot het snijkader en lengte, in mm. */
     public const CROP_MARK_OFFSET_MM = 3;
@@ -53,7 +51,7 @@ class BookletImpositionService
             Storage::disk('local')->makeDirectory('pdfs/imposed');
             $outputPath = Storage::disk('local')->path($relativePath);
             if ($order->binding_type === 'booklet') {
-                $this->impose($inputPath, self::sheetFor($order), $bleedPt, $outputPath, $order->order_number);
+                $this->impose($inputPath, $bleedPt, $outputPath, $order->order_number);
             } else {
                 (new CutStackImpositionService)->impose($inputPath, $order->print_side === 'double', $bleedPt, $outputPath, $order->order_number);
             }
@@ -81,21 +79,6 @@ class BookletImpositionService
     }
 
     /**
-     * Welk vel uit SHEETS: SRA4 alleen als de pagina op een halve SRA4 past
-     * (staand A5 of kleiner); al het andere, ook liggend A5, gaat op SRA3.
-     */
-    public static function sheetFor(Order $order): string
-    {
-        $halfSra4Mm = self::SHEETS['A5']['width'] / 2 / 72 * 25.4;
-
-        if ($order->format !== 'A5' || ($order->trim_width_mm !== null && $order->trim_width_mm > $halfSra4Mm - 6)) {
-            return 'A4';
-        }
-
-        return 'A5';
-    }
-
-    /**
      * Zet een PDF om naar drukvellen voor een geniet boekje (saddle stitch).
      * Elk vel heeft een voor- en achterkant met twee pagina's tegen de rug.
      *
@@ -103,9 +86,9 @@ class BookletImpositionService
      * @param string|null $outputPath Schrijf naar dit bestand; zonder pad komt de PDF als string terug
      * @param string $orderNumber Komt in de opdrachtregel onder de snijtekens
      */
-    public function impose(string $inputPath, string $format, float $bleedPt = 0.0, ?string $outputPath = null, string $orderNumber = ''): string
+    public function impose(string $inputPath, float $bleedPt = 0.0, ?string $outputPath = null, string $orderNumber = ''): string
     {
-        $sheet = self::SHEETS[$format];
+        $sheet = self::SHEET;
 
         $pdf = new Fpdi('P', 'pt');
         $pdf->SetAutoPageBreak(false);
@@ -179,7 +162,7 @@ class BookletImpositionService
         [$template, $trim] = $this->importWithTrim($pdf, $pageNumber, $bleedPt);
         $size = $pdf->getTemplateSize($template);
 
-        // Alleen verkleinen als de pagina niet past (de validatie laat voor boekjes max. 222 × 304 mm toe)
+        // Alleen verkleinen als de pagina niet past (de validatie laat voor boekjes max. 216 × 300 mm toe)
         $scale = min(1.0, $half / $trim['width'], $sheet['height'] / $trim['height']);
 
         // Snijkader op het vel (PDF-coördinaten, oorsprong linksonder)
