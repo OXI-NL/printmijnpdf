@@ -19,6 +19,24 @@ use Illuminate\Support\Facades\Route;
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/llms.txt', [LlmsController::class, 'index'])->name('llms');
 
+// Meldingen van de CSP in meekijkmodus (zie ContentSecurityPolicy-middleware).
+// Alleen loggen; begrensd zodat niemand het log kan volschrijven.
+Route::post('/csp-report', function (\Illuminate\Http\Request $request) {
+    $report = json_decode(substr($request->getContent(), 0, 8192), true)['csp-report'] ?? null;
+
+    if (is_array($report)) {
+        \Illuminate\Support\Facades\Log::warning('CSP-melding', array_map(
+            fn ($value) => is_string($value) ? substr($value, 0, 300) : null,
+            array_intersect_key($report, array_flip([
+                'document-uri', 'violated-directive', 'effective-directive',
+                'blocked-uri', 'source-file', 'line-number',
+            ])),
+        ));
+    }
+
+    return response()->noContent();
+})->middleware('throttle:30,1')->name('csp-report');
+
 // Homepage / bestelformulier
 Route::get('/', [OrderController::class, 'index'])->name('home');
 

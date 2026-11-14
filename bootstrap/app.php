@@ -14,9 +14,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // 301 van /pagina/ en /index.php naar het canonieke adres
         $middleware->prepend(\App\Http\Middleware\CanonicalUrl::class);
 
+        // CSP in meekijkmodus: blokkeert niets, meldt alleen
+        $middleware->append(\App\Http\Middleware\ContentSecurityPolicy::class);
+
         // Mollie webhook heeft geen CSRF token
         $middleware->validateCsrfTokens(except: [
             'webhook/mollie',
+            // De browser stuurt CSP-meldingen zelf, zonder token
+            'csp-report',
             // Beveiligd met een HMAC-token; een klant kan na een verlopen sessie terugkeren
             'bestelling/*/aankoop-gemeten',
         ]);
