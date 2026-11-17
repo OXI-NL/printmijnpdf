@@ -20,9 +20,16 @@ return [
     'binding' => env('PRICE_BINDING', 500),         // €5.00 eerste boekje
     'binding_extra' => env('PRICE_BINDING_EXTRA', 250), // €2.50 per extra boekje
     'shipping' => env('PRICE_SHIPPING', 750),       // €7.50
+    // Grote oplage: boven dit aantal exemplaren geldt het hogere verzendtarief
+    'shipping_large_above' => 100,
+    'shipping_large' => env('PRICE_SHIPPING_LARGE', 1250), // €12.50
 
     // Grootste oplage die je zelf online bestelt; daarboven via contact
-    'max_quantity' => 100,
+    'max_quantity' => 100,        // boekjes
+    'max_quantity_loose' => 500,  // losse pagina's
+    // Grootste bestelling in vellen, omgerekend naar A4 (A5 telt half, A3 dubbel):
+    // ongeveer wat in één doos past. Eén exemplaar kan altijd.
+    'max_sheets_a4' => 4500,
 
     // Actieve promotiecodes
     'promo_codes' => [

@@ -82,6 +82,15 @@ class OrderValidationTest extends TestCase
             ->assertStatus(422)->assertJsonValidationErrors('quantity');
     }
 
+    public function test_losse_paginas_mogen_tot_vijfhonderd_exemplaren(): void
+    {
+        $this->postJson('/api/order', $this->geldigeBestelling(['binding_type' => 'loose', 'quantity' => 500]))
+            ->assertJsonMissingValidationErrors('quantity');
+
+        $this->postJson('/api/order', $this->geldigeBestelling(['binding_type' => 'loose', 'quantity' => 501]))
+            ->assertStatus(422)->assertJsonValidationErrors('quantity');
+    }
+
     public function test_prijsberekening_vereist_een_pdf(): void
     {
         $this->postJson('/api/calculate-price', [])

@@ -219,6 +219,47 @@ class Order extends Model
         return "{$mm($this->trim_width_mm)} × {$mm($this->trim_height_mm)} mm";
     }
 
+    /** Grootste oplage die je online bestelt: losse pagina's mogen hoger dan boekjes. */
+    public static function maxQuantity(?string $bindingType): int
+    {
+        return (int) ($bindingType === 'loose'
+            ? config('pricing.max_quantity_loose', 500)
+            : config('pricing.max_quantity', 100));
+    }
+
+    /** Vellen per exemplaar, omgerekend naar A4 (A5 telt half, A3 dubbel): maat voor het gewicht. */
+    public static function sheetsPerCopy(int $pageCount, string $format, string $bindingType, string $printSide): float
+    {
+        $pages = self::billablePages($pageCount, $bindingType);
+        // Een boekje is altijd dubbelzijdig: 4 pagina's op een vel van dubbel formaat
+        $sheets = ($bindingType === 'booklet' || $printSide === 'double') ? (int) ceil($pages / 2) : $pages;
+
+        return $sheets * match ($format) {
+            'A5' => 0.5,
+            'A3' => 2,
+            default => 1,
+        };
+    }
+
+    /**
+     * Grootste oplage voor deze PDF: de grens per afwerking, verlaagd als de
+     * bestelling anders boven het maximale aantal vellen komt. Eén exemplaar kan altijd.
+     */
+    public static function maxQuantityFor(int $pageCount, string $format, string $bindingType, string $printSide): int
+    {
+        $bySheets = (int) floor(config('pricing.max_sheets_a4', 4500) / max(0.5, self::sheetsPerCopy($pageCount, $format, $bindingType, $printSide)));
+
+        return max(1, min(self::maxQuantity($bindingType), $bySheets));
+    }
+
+    /** Verzendkosten per bestelling; boven de grens geldt het tarief voor grote oplages. */
+    public static function shippingCost(int $quantity): int
+    {
+        return (int) ($quantity > (int) config('pricing.shipping_large_above', 100)
+            ? config('pricing.shipping_large', 1250)
+            : config('pricing.shipping', 750));
+    }
+
     public static function calculatePrice(int $pageCount, string $format, string $bindingType = 'booklet', string $deliveryType = 'shipping', int $quantity = 1, ?string $promoCode = null): array
     {
         $pageCount = self::billablePages($pageCount, $bindingType);
@@ -243,8 +284,8 @@ class Order extends Model
             $bindingTotal = 0;
         }
 
-        // Verzendkosten blijven gelijk ongeacht aantal
-        $shipping = $deliveryType === 'pickup' ? 0 : config('pricing.shipping', 750);
+        // Verzendkosten: één keer per bestelling, hoger tarief bij een grote oplage
+        $shipping = $deliveryType === 'pickup' ? 0 : self::shippingCost($quantity);
 
         // Kortingscode toepassen
         $discount = 0;

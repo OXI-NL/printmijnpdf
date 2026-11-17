@@ -105,7 +105,7 @@ class LandingPageController extends Controller
      */
     private static function quantityComparison(string $label, int $pages, string $format, string $binding, array $counts): array
     {
-        $counts = array_values(array_filter($counts, fn ($n) => $n >= 1 && $n <= (int) config('pricing.max_quantity', 100)));
+        $counts = array_values(array_filter($counts, fn ($n) => $n >= 1 && $n <= Order::maxQuantity($binding)));
 
         return [
             'label' => $label,
@@ -118,8 +118,15 @@ class LandingPageController extends Controller
                     'each' => self::euro((int) round($total / $n)),
                 ];
             }, $counts),
-            'maxQuantity' => (int) config('pricing.max_quantity', 100),
+            'maxQuantity' => Order::maxQuantity($binding),
         ];
+    }
+
+    /** Verzendtarief in één zin, inclusief het tarief voor grote oplages. */
+    private static function shippingText(): string
+    {
+        return 'Verzending kost ' . self::euro((int) config('pricing.shipping', 750)) . ' per bestelling, bij meer dan '
+            . (int) config('pricing.shipping_large_above', 100) . ' exemplaren ' . self::euro((int) config('pricing.shipping_large', 1250)) . '.';
     }
 
     /** Laagste paginaprijs (A5), voor "vanaf"-teksten */
@@ -140,7 +147,7 @@ class LandingPageController extends Controller
                 ['Besteltijd', 'Vóór 11:00 op een werkdag besteld.'],
                 ['Aantal', 'Tot en met 50 exemplaren. Meer exemplaren of later besteld: de volgende werkdag klaar.'],
                 ['Afhalen', 'Gratis, dezelfde dag tussen 17:00 en 17:30 bij NIVO print | design | web, Exportweg 11, 2645 ED Delfgauw. Je krijgt een mail zodra het klaarligt.'],
-                ['Bezorgen', 'Dezelfde dag verzonden; PostNL bezorgt binnen 2 werkdagen. Verzending kost ' . self::euro((int) config('pricing.shipping', 750)) . ' per bestelling.'],
+                ['Bezorgen', 'Dezelfde dag verzonden; PostNL bezorgt binnen 2 werkdagen. ' . self::shippingText()],
             ],
             'note' => 'Na 11:00 en toch vandaag nodig? Bel 015-219 2525 voordat je bestelt.',
         ];
@@ -1261,7 +1268,7 @@ class LandingPageController extends Controller
                 ['question' => 'Waar kan ik printen als ik geen printer heb?', 'answer' => 'Bij een bibliotheek, copyshop of online printservice zoals PrintMijnPDF. Online is handig voor documenten van meerdere pagina\'s of in kleur: je uploadt je PDF en krijgt het geprint thuisbezorgd.'],
                 ['question' => 'Moet ik een account aanmaken?', 'answer' => 'Nee. Je uploadt je PDF, vult je adres in en betaalt met iDEAL.'],
                 ['question' => 'Kan ik ook zwart-wit printen?', 'answer' => 'We printen standaard in full colour. Een document in zwart-wit wordt gewoon zwart-wit geprint, tegen dezelfde prijs.'],
-                ['question' => 'Wat kost het?', 'answer' => 'Je betaalt € 10,00 startkosten per bestelling plus € 0,15 per A4-pagina of € 0,10 per A5-pagina. Bezorgen kost € 7,50, afhalen is gratis. Na het uploaden zie je meteen de totaalprijs.'],
+                ['question' => 'Wat kost het?', 'answer' => 'Je betaalt € 10,00 startkosten per bestelling plus € 0,15 per A4-pagina of € 0,10 per A5-pagina. Bezorgen kost € 7,50 (bij meer dan 100 exemplaren € 12,50), afhalen is gratis. Na het uploaden zie je meteen de totaalprijs.'],
             ],
             'slug' => 'printen-zonder-printer',
         ]);
@@ -1310,7 +1317,7 @@ class LandingPageController extends Controller
                     ],
                     [
                         'title' => 'Liever bezorgd?',
-                        'text' => 'Dat kan in heel Nederland. Vóór 11:00 besteld is vandaag verzonden; PostNL bezorgt binnen 2 werkdagen. Verzending kost ' . self::euro((int) config('pricing.shipping', 750)) . ' per bestelling.',
+                        'text' => 'Dat kan in heel Nederland. Vóór 11:00 besteld is vandaag verzonden; PostNL bezorgt binnen 2 werkdagen. ' . self::shippingText(),
                     ],
                 ],
             ],

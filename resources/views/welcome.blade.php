@@ -1953,7 +1953,7 @@
                     <input type="number" id="qtyInput" class="qty-input" value="1" min="1" max="{{ (int) config('pricing.max_quantity') }}" inputmode="numeric" aria-label="Aantal exemplaren" aria-describedby="qtyHint">
                     <button type="button" class="qty-btn" id="qtyPlus" aria-label="Aantal verhogen">+</button>
                 </div>
-                <span class="quantity-hint" id="qtyHint">Typ een aantal of gebruik − en +. Online bestel je tot {{ (int) config('pricing.max_quantity') }} exemplaren; wil je er meer, mail dan naar <a href="mailto:info@printmijnpdf.nl">info@printmijnpdf.nl</a>.</span>
+                <span class="quantity-hint" id="qtyHint">Typ een aantal of gebruik − en +. Online bestel je tot <span id="qtyMax">{{ (int) config('pricing.max_quantity') }}</span> exemplaren; wil je er meer, mail dan naar <a href="mailto:info@printmijnpdf.nl">info@printmijnpdf.nl</a>.</span>
             </div>
         </section>
 
@@ -2269,9 +2269,26 @@
             perPageA5: {{ (int) config('pricing.per_page_a5') }},
             binding: {{ (int) config('pricing.binding') }},
             bindingExtra: {{ (int) config('pricing.binding_extra') }},
-            shipping: {{ (int) config('pricing.shipping') }}
+            shipping: {{ (int) config('pricing.shipping') }},
+            shippingLarge: {{ (int) config('pricing.shipping_large') }},
+            shippingLargeAbove: {{ (int) config('pricing.shipping_large_above') }}
         };
-        const MAX_QUANTITY = {{ (int) config('pricing.max_quantity') }};
+        // Losse pagina's mogen in een grotere oplage dan boekjes
+        const MAX_QUANTITY_BOOKLET = {{ (int) config('pricing.max_quantity') }};
+        const MAX_QUANTITY_LOOSE = {{ (int) config('pricing.max_quantity_loose') }};
+        // Grootste bestelling in A4-vellen (A5 telt half, A3 dubbel); gelijk aan Order::maxQuantityFor
+        const MAX_SHEETS_A4 = {{ (int) config('pricing.max_sheets_a4') }};
+        function maxQuantity() {
+            const perBinding = bindingType === 'loose' ? MAX_QUANTITY_LOOSE : MAX_QUANTITY_BOOKLET;
+            const pages = billablePages();
+            if (!pages) return perBinding;
+            const sheets = (bindingType === 'booklet' || printSide === 'double') ? Math.ceil(pages / 2) : pages;
+            const weight = sheets * ({ A5: 0.5, A3: 2 }[detectedFormat] ?? 1);
+            return Math.max(1, Math.min(perBinding, Math.floor(MAX_SHEETS_A4 / Math.max(0.5, weight))));
+        }
+        function shippingPrice() {
+            return quantity > PRICES.shippingLargeAbove ? PRICES.shippingLarge : PRICES.shipping;
+        }
 
         const PROMO_CODES = {
             'PMPWINTER': { discountPercent: 15, appliesTo: ['pages', 'startup', 'binding'] }
@@ -2543,6 +2560,7 @@
                     'info'
                 );
             }
+            setQuantity(quantity); // grens en hint volgen de afwerking
 
             setTimeout(checkBlankPages, 400);
 
@@ -3115,6 +3133,8 @@
             printSide = 'double';
             quantity = 1;
             document.getElementById('qtyInput').value = 1;
+            document.getElementById('qtyInput').max = MAX_QUANTITY_BOOKLET;
+            document.getElementById('qtyMax').textContent = MAX_QUANTITY_BOOKLET;
             document.getElementById('qtyMinus').disabled = true;
             document.getElementById('qtyPlus').disabled = false;
             document.getElementById('qtyHint').classList.remove('warn');
@@ -3143,7 +3163,7 @@
             let bindingCost = bindingType === 'booklet'
                 ? PRICES.binding + ((quantity - 1) * PRICES.bindingExtra)
                 : 0;
-            const shippingCost = deliveryType === 'shipping' ? PRICES.shipping : 0;
+            const shippingCost = deliveryType === 'shipping' ? shippingPrice() : 0;
             let startupCost = PRICES.startup;
 
             let discount = 0;
@@ -3186,6 +3206,8 @@
                 bindingRow.style.display = 'none';
             }
 
+            document.getElementById('deliveryShippingPrice').textContent = formatPrice(shippingPrice());
+
             // Vóór 11:00 klaar geldt tot 50 exemplaren; daarboven de volgende werkdag
             const sameDay = quantity <= 50;
             document.getElementById('deliveryShippingWhen').textContent = sameDay
@@ -3200,7 +3222,7 @@
                 document.getElementById('priceShippingValue').textContent = 'Gratis';
             } else if (deliveryType === 'shipping') {
                 document.getElementById('priceShippingLabel').textContent = 'Verzending (PostNL)';
-                document.getElementById('priceShippingValue').textContent = formatPrice(PRICES.shipping);
+                document.getElementById('priceShippingValue').textContent = formatPrice(shippingPrice());
             } else {
                 document.getElementById('priceShippingLabel').textContent = 'Bezorgen of afhalen';
                 document.getElementById('priceShippingValue').textContent = 'nog kiezen';
@@ -3308,7 +3330,7 @@
                 number: 'Controleer je huisnummer.',
                 city: 'Controleer je woonplaats.',
                 phone: 'Controleer je telefoonnummer.',
-                quantity: 'Kies een aantal tussen 1 en ' + MAX_QUANTITY + '.',
+                quantity: 'Van deze PDF bestel je online maximaal ' + maxQuantity() + ' exemplaren. Wil je er meer, mail dan naar info@printmijnpdf.nl.',
                 delivery_type: 'Kies verzenden of afhalen.'
             };
             const field = Object.keys(messages).find(f => errors[f]);
@@ -3433,7 +3455,7 @@
             optLoose.classList.remove('selected');
             subOptions.classList.remove('visible');
             hideInlineNotice();
-            updatePriceDisplay();
+            setQuantity(quantity);
             checkBlankPages();
             PMP_Analytics.trackFinishing(bindingType, printSide, quantity);
             buildProof();
@@ -3445,7 +3467,7 @@
             optBooklet.classList.remove('selected');
             subOptions.classList.add('visible');
             if (bookletAvailable()) hideInlineNotice();
-            updatePriceDisplay();
+            setQuantity(quantity);
             PMP_Analytics.trackFinishing(bindingType, printSide, quantity);
             buildProof();
         });
@@ -3454,6 +3476,7 @@
             printSide = 'double';
             optDouble.classList.add('selected');
             optSingle.classList.remove('selected');
+            setQuantity(quantity);
             PMP_Analytics.trackFinishing(bindingType, printSide, quantity);
             buildProof();
         });
@@ -3462,6 +3485,7 @@
             printSide = 'single';
             optSingle.classList.add('selected');
             optDouble.classList.remove('selected');
+            setQuantity(quantity);
             PMP_Analytics.trackFinishing(bindingType, printSide, quantity);
             buildProof();
         });
@@ -3480,11 +3504,14 @@
         const qtyHint = document.getElementById('qtyHint');
 
         function setQuantity(n, { updateField = true } = {}) {
-            quantity = Math.min(MAX_QUANTITY, Math.max(1, n));
+            const max = maxQuantity();
+            quantity = Math.min(max, Math.max(1, n));
             if (updateField) qtyInput.value = quantity;
+            qtyInput.max = max;
+            document.getElementById('qtyMax').textContent = max;
             document.getElementById('qtyMinus').disabled = (quantity <= 1);
-            document.getElementById('qtyPlus').disabled = (quantity >= MAX_QUANTITY);
-            qtyHint.classList.toggle('warn', n > MAX_QUANTITY);
+            document.getElementById('qtyPlus').disabled = (quantity >= max);
+            qtyHint.classList.toggle('warn', n > max);
             updatePriceDisplay();
         }
 
@@ -3494,7 +3521,7 @@
         // Zelf typen: tijdens het typen niet in het veld ingrijpen, pas bij verlaten corrigeren
         qtyInput.addEventListener('input', () => {
             const n = parseInt(qtyInput.value, 10);
-            if (!Number.isNaN(n)) setQuantity(n, { updateField: n > MAX_QUANTITY });
+            if (!Number.isNaN(n)) setQuantity(n, { updateField: n > maxQuantity() });
         });
         qtyInput.addEventListener('blur', () => { qtyInput.value = quantity; });
         qtyInput.addEventListener('focus', () => qtyInput.select());

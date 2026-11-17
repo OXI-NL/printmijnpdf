@@ -22,6 +22,8 @@ class PricingTest extends TestCase
             'pricing.binding' => 500,
             'pricing.binding_extra' => 250,
             'pricing.shipping' => 675,
+            'pricing.shipping_large' => 1250,
+            'pricing.shipping_large_above' => 100,
             'pricing.promo_codes' => [
                 'PMPWINTER' => [
                     'discount_percent' => 15,
@@ -65,6 +67,32 @@ class PricingTest extends TestCase
 
         $this->assertSame(0, $p['binding']);
         $this->assertSame(750 + 1000 + 675, $p['total']);
+    }
+
+    public function test_verzending_kost_meer_boven_honderd_exemplaren(): void
+    {
+        $this->assertSame(675, Order::calculatePrice(1, 'A4', 'loose', 'shipping', 100)['shipping']);
+        $this->assertSame(1250, Order::calculatePrice(1, 'A4', 'loose', 'shipping', 101)['shipping']);
+        $this->assertSame(1250, Order::calculatePrice(1, 'A4', 'loose', 'shipping', 500)['shipping']);
+        $this->assertSame(0, Order::calculatePrice(1, 'A4', 'loose', 'pickup', 500)['shipping']);
+    }
+
+    public function test_vellengrens_verlaagt_de_maximale_oplage(): void
+    {
+        config(['pricing.max_quantity' => 100, 'pricing.max_quantity_loose' => 500, 'pricing.max_sheets_a4' => 4500]);
+
+        // 1 pagina: de grens per afwerking geldt
+        $this->assertSame(500, Order::maxQuantityFor(1, 'A4', 'loose', 'double'));
+        // 40 pagina's dubbelzijdig = 20 vel per exemplaar -> 225; enkelzijdig 40 vel -> 112
+        $this->assertSame(225, Order::maxQuantityFor(40, 'A4', 'loose', 'double'));
+        $this->assertSame(112, Order::maxQuantityFor(40, 'A4', 'loose', 'single'));
+        // A5 telt half, A3 dubbel
+        $this->assertSame(450, Order::maxQuantityFor(40, 'A5', 'loose', 'double'));
+        $this->assertSame(112, Order::maxQuantityFor(40, 'A3', 'loose', 'double'));
+        // Het dikste boekje blijft onder de grens
+        $this->assertSame(100, Order::maxQuantityFor(64, 'A4', 'booklet', 'double'));
+        // Eén exemplaar kan altijd
+        $this->assertSame(1, Order::maxQuantityFor(10000, 'A4', 'loose', 'single'));
     }
 
     public function test_afhalen_kost_geen_verzendkosten(): void

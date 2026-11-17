@@ -99,6 +99,24 @@ class OrderStoreTest extends TestCase
         $this->assertSame(10 * config('pricing.per_page_a4'), $order->price_pages);
     }
 
+    public function test_grote_oplage_losse_paginas_betaalt_hoger_verzendtarief(): void
+    {
+        // 10 pagina's dubbelzijdig = 5 vel per exemplaar; 500 exemplaren = 2500 vel
+        $this->bestel(['binding_type' => 'loose', 'quantity' => 500])->assertOk();
+
+        $this->assertSame(config('pricing.shipping_large'), Order::sole()->price_shipping);
+    }
+
+    public function test_bestelling_boven_de_vellengrens_wordt_geweigerd(): void
+    {
+        // 10 pagina's enkelzijdig = 10 vel per exemplaar; grens 4500 vel -> maximaal 450
+        $this->bestel(['binding_type' => 'loose', 'print_side' => 'single', 'quantity' => 451])
+            ->assertStatus(422)->assertJsonValidationErrors('quantity');
+        $this->assertSame(0, Order::count());
+
+        $this->bestel(['binding_type' => 'loose', 'print_side' => 'single', 'quantity' => 450])->assertOk();
+    }
+
     public function test_paginatelling_uit_de_browser_wordt_genegeerd(): void
     {
         $this->bestel(['page_count' => 1, 'blank_pages_accepted' => '1'])->assertOk();

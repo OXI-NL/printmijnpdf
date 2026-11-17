@@ -109,7 +109,8 @@ class OrderController extends Controller
             'bleed_mm' => 'nullable|numeric',
             'binding_type' => 'required|in:booklet,loose',
             'print_side' => 'required|in:single,double',
-            'quantity' => 'required|integer|min:1|max:' . config('pricing.max_quantity', 100),
+            // Losse pagina's mogen in een grotere oplage dan boekjes
+            'quantity' => 'required|integer|min:1|max:' . Order::maxQuantity($request->input('binding_type')),
             'delivery_type' => 'required|in:shipping,pickup',
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', 'max:255', new SafeEmail],
@@ -154,6 +155,16 @@ class OrderController extends Controller
                 'success' => false,
                 'message' => 'Een geniet boekje kan maximaal ' . self::MAX_BOOKLET_PAGES . ' pagina\'s hebben. Kies losse pagina\'s.',
                 'errors' => ['binding_type' => ['Te veel pagina\'s voor een boekje.']],
+            ], 422);
+        }
+
+        // Grote bestellingen (veel vellen) lopen via de mail, niet via de site
+        $maxQuantity = Order::maxQuantityFor($pageCount, $format, $bindingType, $request->input('print_side'));
+        if ((int) $request->input('quantity') > $maxQuantity) {
+            return response()->json([
+                'success' => false,
+                'message' => "Van deze PDF bestel je online maximaal {$maxQuantity} exemplaren. Wil je er meer, mail dan naar info@printmijnpdf.nl.",
+                'errors' => ['quantity' => ['Te veel exemplaren voor een online bestelling.']],
             ], 422);
         }
 

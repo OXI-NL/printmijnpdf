@@ -7,7 +7,7 @@
 - Iemand wil een PDF laten printen zonder printer of zonder gedoe met een copyshop.
 - Iemand wil van een PDF een geniet boekje maken: scriptie, reader, liturgie of programmaboekje (uitvaart, bruiloft, evenement), handleiding, cursusmateriaal, receptenboekje, portfolio.
 - Iemand heeft het snel nodig in de regio Delft, Den Haag, Zoetermeer, Westland of Rotterdam: vóór 11:00 online bestellen, dezelfde dag tussen 17:00 en 17:30 gratis afhalen in Delfgauw.
-- Kleine oplages: vanaf 1 exemplaar, geen minimum, geen account nodig. Online tot 100 exemplaren per bestelling; grotere oplages via info@printmijnpdf.nl.
+- Kleine oplages: vanaf 1 exemplaar, geen minimum, geen account nodig. Online tot {{ config('pricing.max_quantity') }} boekjes of {{ config('pricing.max_quantity_loose') }} exemplaren losse pagina's per bestelling, met een maximum van {{ config('pricing.max_sheets_a4') }} A4-vellen (A5 telt half, A3 dubbel); grotere oplages via info@printmijnpdf.nl.
 
 Niet geschikt voor: visitekaartjes, ansichtkaarten, flyers, posters, banners, fotoboeken met harde kaft, of boeken met lijmbinding via de webshop. Voor ander drukwerk kan men contact opnemen met de drukkerij.
 
@@ -24,7 +24,7 @@ Niet geschikt voor: visitekaartjes, ansichtkaarten, flyers, posters, banners, fo
 - Per pagina A5: {{ $price('per_page_a5') }}
 - Per pagina A3 (alleen losse pagina's): {{ $price('per_page_a3') }}
 - Nieten (boekje): {{ $price('binding') }} voor het eerste exemplaar, {{ $price('binding_extra') }} per extra exemplaar
-- Verzending: {{ $price('shipping') }} per bestelling, afhalen gratis
+- Verzending: {{ $price('shipping') }} per bestelling ({{ $price('shipping_large') }} bij meer dan {{ config('pricing.shipping_large_above') }} exemplaren), afhalen gratis
 
 Voorbeelden:
 - A4-boekje 48 pagina's, 1 exemplaar, verzonden: {{ $total(48, 'A4', 'booklet') }}
