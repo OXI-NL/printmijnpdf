@@ -22,11 +22,15 @@ class PdfFormatValidator
     ];
 
     /**
-     * Grootste pagina voor een geniet boekje: twee pagina's naast elkaar op het
-     * drukvel van 460 × 320 mm met 8 mm marge rondom (444 × 304 mm bedrukbaar).
+     * Paginamaat voor een geniet boekje: twee pagina's naast elkaar op liggend
+     * SRA3 (450 × 320 mm). Breedte hoogstens Letter (215,9 mm, ruim 9 mm marge
+     * links en rechts; de pers drukt tot 4 mm van de rand), hoogte met 1 cm
+     * marge. Kleinste boekje is staand A6.
      */
-    public const BOOKLET_MAX_WIDTH_MM = 222;
-    public const BOOKLET_MAX_HEIGHT_MM = 304;
+    public const BOOKLET_MAX_WIDTH_MM = 216;
+    public const BOOKLET_MAX_HEIGHT_MM = 300;
+    public const BOOKLET_MIN_WIDTH_MM = 105;
+    public const BOOKLET_MIN_HEIGHT_MM = 148;
 
     /**
      * Tolerantie in punten voor afrondingsverschillen.
@@ -57,10 +61,10 @@ class PdfFormatValidator
 
     /**
      * Valideer of een PDF-bestand geprint kan worden: alle pagina's even groot
-     * en hoogstens A3. Geeft de prijsklasse terug en of een boekje kan.
+     * en hoogstens A3. Geeft de prijsklasse terug en of een boekje kan (en zo niet, waarom).
      *
      * @param string $filePath Pad naar het PDF-bestand
-     * @return array{valid: bool, format: ?string, standard: bool, booklet_allowed: bool, has_bleed: bool, bleed_mm: float, reason: ?string, detected_width_mm: ?float, detected_height_mm: ?float, box_used: ?string}
+     * @return array{valid: bool, format: ?string, standard: bool, booklet_allowed: bool, booklet_problem: ?string, booklet_format: ?string, has_bleed: bool, bleed_mm: float, reason: ?string, detected_width_mm: ?float, detected_height_mm: ?float, box_used: ?string}
      */
     public function validate(string $filePath): array
     {
@@ -133,14 +137,16 @@ class PdfFormatValidator
                 );
             }
 
-            $tolMm = self::toMm(self::TOLERANCE_PT);
+            $bookletProblem = self::bookletProblem($widthMm, $heightMm);
 
             return [
                 'valid' => true,
                 'format' => $format,
                 'standard' => $this->isStandard($width, $height),
-                'booklet_allowed' => $widthMm <= self::BOOKLET_MAX_WIDTH_MM + $tolMm
-                    && $heightMm <= self::BOOKLET_MAX_HEIGHT_MM + $tolMm,
+                'booklet_allowed' => $bookletProblem === null,
+                'booklet_problem' => $bookletProblem,
+                // Elk boekje gaat op hetzelfde SRA3-vel als A4: hoogstens A4-tarief (o.a. Letter)
+                'booklet_format' => $bookletProblem === null && $format === 'A3' ? 'A4' : $format,
                 // Vanaf 2 mm rondom telt het als afloop (gebruikelijk is 3 mm)
                 'has_bleed' => $bleedMm >= self::MIN_BLEED_MM,
                 'bleed_mm' => $bleedMm >= self::MIN_BLEED_MM ? $bleedMm : 0.0,
@@ -384,6 +390,35 @@ class PdfFormatValidator
     }
 
     /**
+     * Waarom deze paginamaat geen geniet boekje kan worden: 'too_large',
+     * 'too_small', of null als het kan.
+     */
+    public static function bookletProblem(float $widthMm, float $heightMm): ?string
+    {
+        $tolMm = self::toMm(self::TOLERANCE_PT);
+
+        if ($widthMm > self::BOOKLET_MAX_WIDTH_MM + $tolMm || $heightMm > self::BOOKLET_MAX_HEIGHT_MM + $tolMm) {
+            return 'too_large';
+        }
+
+        if ($widthMm < self::BOOKLET_MIN_WIDTH_MM - $tolMm || $heightMm < self::BOOKLET_MIN_HEIGHT_MM - $tolMm) {
+            return 'too_small';
+        }
+
+        return null;
+    }
+
+    /** Melding bij bookletProblem(), voor de bestelflow. */
+    public static function bookletProblemMessage(string $problem): string
+    {
+        return $problem === 'too_small'
+            ? 'Je pagina\'s zijn te klein voor een geniet boekje (minimaal staand A6, '
+                . self::BOOKLET_MIN_WIDTH_MM . ' × ' . self::BOOKLET_MIN_HEIGHT_MM . ' mm per pagina).'
+            : 'Je pagina\'s zijn te groot voor een geniet boekje (maximaal '
+                . self::BOOKLET_MAX_WIDTH_MM . ' × ' . self::BOOKLET_MAX_HEIGHT_MM . ' mm per pagina).';
+    }
+
+    /**
      * Precies staand A4 of A5: daarvoor is geen snijmaat nodig op pakbon en factuur.
      */
     private function isStandard(float $width, float $height): bool
@@ -492,6 +527,8 @@ class PdfFormatValidator
             'format' => null,
             'standard' => false,
             'booklet_allowed' => false,
+            'booklet_problem' => null,
+            'booklet_format' => null,
             'has_bleed' => false,
             'bleed_mm' => 0.0,
             'reason' => $reason,

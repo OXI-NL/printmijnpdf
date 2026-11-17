@@ -54,7 +54,7 @@ class BookletImpositionTest extends TestCase
 
     public function test_a4_boekje_op_liggende_sra3_vellen(): void
     {
-        $reader = $this->lees((new BookletImpositionService)->impose($this->maakPdf(10), 'A4'));
+        $reader = $this->lees((new BookletImpositionService)->impose($this->maakPdf(10)));
 
         $this->assertSame(6, $reader->getPageCount(), '10 pagina\'s → 3 vellen, voor en achter');
         [$width, $height] = $reader->getPage(1)->getWidthAndHeight();
@@ -62,19 +62,29 @@ class BookletImpositionTest extends TestCase
         $this->assertEqualsWithDelta(907.09, $height, 0.1);
     }
 
-    public function test_a5_boekje_op_sra4_vellen(): void
+    public function test_a5_boekje_als_een_boekje_op_sra3_net_als_a4(): void
     {
-        $reader = $this->lees((new BookletImpositionService)->impose($this->maakPdf(8, 148, 210), 'A5'));
+        $reader = $this->lees((new BookletImpositionService)->impose($this->maakPdf(8, 148, 210)));
 
-        $this->assertSame(4, $reader->getPageCount());
+        $this->assertSame(4, $reader->getPageCount(), '8 pagina\'s → 2 vellen, voor en achter');
         [$width, $height] = $reader->getPage(1)->getWidthAndHeight();
-        $this->assertEqualsWithDelta(907.09, $width, 0.1);
-        $this->assertEqualsWithDelta(637.80, $height, 0.1);
+        $this->assertEqualsWithDelta(1275.59, $width, 0.1, 'SRA3, net als A4');
+        $this->assertEqualsWithDelta(907.09, $height, 0.1);
+
+        // Eén boekje per vel: twee A5-pagina's tegen de rug, verticaal gecentreerd
+        preg_match_all('/([\d.]+) 0 0 ([\d.]+) ([\d.]+) ([\d.]+) cm \/TPL/', $reader->getPage(1)->getContentStream(), $m, PREG_SET_ORDER);
+        $this->assertCount(2, $m, 'twee pagina\'s per velzijde, niet vier');
+        $a5Width = 148 * 72 / 25.4;
+        $spine = 1275.59 / 2;
+        $this->assertEqualsWithDelta(1.0, (float) $m[0][1], 0.0001, 'geen verkleining');
+        $this->assertEqualsWithDelta($spine - $a5Width, (float) $m[0][3], 0.05, 'linkerpagina eindigt op de rug');
+        $this->assertEqualsWithDelta($spine, (float) $m[1][3], 0.05, 'rechterpagina begint op de rug');
+        $this->assertEqualsWithDelta((907.09 - 210 * 72 / 25.4) / 2, (float) $m[0][4], 0.05, 'verticaal gecentreerd');
     }
 
     public function test_paginas_staan_op_ware_grootte_tegen_de_rug(): void
     {
-        $reader = $this->lees((new BookletImpositionService)->impose($this->maakPdf(8), 'A4'));
+        $reader = $this->lees((new BookletImpositionService)->impose($this->maakPdf(8)));
         $content = $reader->getPage(1)->getContentStream();
 
         preg_match_all('/([\d.]+) 0 0 ([\d.]+) ([\d.]+) ([\d.]+) cm \/TPL/', $content, $m, PREG_SET_ORDER);
@@ -93,7 +103,7 @@ class BookletImpositionTest extends TestCase
     {
         $bleed = 3 * 72 / 25.4;
         $pdf = $this->maakPdf(4, 216, 303); // A4 + 3 mm afloop rondom
-        $reader = $this->lees((new BookletImpositionService)->impose($pdf, 'A4', $bleed));
+        $reader = $this->lees((new BookletImpositionService)->impose($pdf, $bleed));
 
         preg_match_all('/([\d.]+) 0 0 ([\d.]+) ([\d.]+) ([\d.]+) cm \/TPL/', $reader->getPage(1)->getContentStream(), $m, PREG_SET_ORDER);
         [$left, $right] = $m;
@@ -107,7 +117,7 @@ class BookletImpositionTest extends TestCase
 
     public function test_snijtekens_op_3_mm_van_het_snijkader_en_7_mm_lang(): void
     {
-        $reader = $this->lees((new BookletImpositionService)->impose($this->maakPdf(8), 'A4'));
+        $reader = $this->lees((new BookletImpositionService)->impose($this->maakPdf(8)));
         $content = $reader->getPage(1)->getContentStream();
 
         preg_match_all('/([\d.]+) ([\d.]+) m ([\d.]+) ([\d.]+) l S/', $content, $m, PREG_SET_ORDER);
@@ -130,7 +140,7 @@ class BookletImpositionTest extends TestCase
 
     public function test_opdrachtregel_4_mm_onder_het_snijkader(): void
     {
-        $reader = $this->lees((new BookletImpositionService)->impose($this->maakPdf(8), 'A4', 0.0, null, 'PMP-261019-684E'));
+        $reader = $this->lees((new BookletImpositionService)->impose($this->maakPdf(8), 0.0, null, 'PMP-261019-684E'));
 
         $this->assertStringContainsString('(PMP-261019-684E | Geniete brochure | 4/4 | vel 1/2 voorkant) Tj', $reader->getPage(1)->getContentStream());
         $content = $reader->getPage(4)->getContentStream();
@@ -189,7 +199,7 @@ class BookletImpositionTest extends TestCase
     public function test_pdf_met_gecomprimeerde_xref_wordt_verwerkt(): void
     {
         // PDF 1.5 met xref stream, PNG-predictor en object streams: weigert de gratis FPDI-parser
-        $reader = $this->lees((new BookletImpositionService)->impose(self::FIXTURE_XREFSTREAM, 'A4'));
+        $reader = $this->lees((new BookletImpositionService)->impose(self::FIXTURE_XREFSTREAM));
 
         $this->assertSame(4, $reader->getPageCount(), '6 pagina\'s → 8 → 2 vellen');
     }
@@ -260,17 +270,5 @@ class BookletImpositionTest extends TestCase
 
         $this->assertFalse($result['success']);
         $this->assertStringStartsWith('PDF kon niet worden verwerkt', $result['message']);
-    }
-
-    public function test_vel_volgt_de_snijmaat(): void
-    {
-        $sheet = fn (string $format, ?float $w = null, ?float $h = null) =>
-            BookletImpositionService::sheetFor(new Order(['format' => $format, 'trim_width_mm' => $w, 'trim_height_mm' => $h]));
-
-        $this->assertSame('A5', $sheet('A5'), 'staand A5 op SRA4');
-        $this->assertSame('A5', $sheet('A5', 140, 140), 'klein vierkant past op een halve SRA4');
-        $this->assertSame('A4', $sheet('A5', 210, 148.5), 'liggend A5 is te breed voor een halve SRA4');
-        $this->assertSame('A4', $sheet('A4'));
-        $this->assertSame('A4', $sheet('A3', 222, 304));
     }
 }

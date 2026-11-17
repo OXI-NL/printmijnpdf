@@ -15,7 +15,7 @@ Niet geschikt voor: visitekaartjes, ansichtkaarten, flyers, posters, banners, fo
 
 - Geniet boekje A4 of A5: dubbelzijdig, full colour, gevouwen en in de rug geniet. 4 tot 64 pagina's, per 4 pagina's (blanco pagina's worden aan het eind aangevuld).
 - Losse pagina's A4 of A5: enkel- of dubbelzijdig, full colour, ongebonden. Geen vaste paginalimiet (bestand maximaal 100 MB).
-- Aanleveren: PDF met één paginaformaat, maximaal 100 MB. Elk formaat tot en met A3: als boekje tot 222 × 304 mm per pagina, als losse pagina's tot A3. Afwijkende formaten worden op maat gesneden en geprijsd als het kleinste passende standaardformaat (A5, A4 of A3). De pagina's voor een boekje worden automatisch in de juiste volgorde gezet (inslag); de klant levert een gewone PDF aan.
+- Aanleveren: PDF met één paginaformaat, maximaal 100 MB. Elk formaat tot en met A3: als boekje van staand A6 (105 × 148 mm) tot 216 × 300 mm per pagina, als losse pagina's tot A3. Afwijkende formaten worden op maat gesneden en geprijsd als het kleinste passende standaardformaat (A5, A4 of A3); een boekje kost hoogstens het A4-tarief (ook Letter). De pagina's voor een boekje worden automatisch in de juiste volgorde gezet (inslag); de klant levert een gewone PDF aan.
 
 ## Prijzen (inclusief btw)
 

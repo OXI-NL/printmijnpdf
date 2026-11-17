@@ -19,7 +19,7 @@ class CutStackImpositionService
     use ImposesPages;
 
     /** Liggend SRA3, net als de A4-boekjes */
-    public const SHEET = BookletImpositionService::SHEETS['A4'];
+    public const SHEET = BookletImpositionService::SHEET;
 
     /** Hoogstens zoveel pagina's per vel: A4 komt 2-op, A5 4-op */
     public const MAX_UP = 4;

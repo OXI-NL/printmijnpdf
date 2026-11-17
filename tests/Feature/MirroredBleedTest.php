@@ -204,13 +204,13 @@ class MirroredBleedTest extends TestCase
 
     public function test_boekje_van_aangevulde_pdf_zet_snijkant_tegen_de_rug(): void
     {
-        $pdf = (new BookletImpositionService)->impose($this->metAfloop($this->maakPdf(4)), 'A4', self::BLEED);
+        $pdf = (new BookletImpositionService)->impose($this->metAfloop($this->maakPdf(4)), self::BLEED);
         $reader = new PdfReader(new ExtendedPdfParser(StreamReader::createByString($pdf)));
 
         $this->assertSame(2, $reader->getPageCount());
         // Linkerpagina: snijkant op de rug, afloop alleen aan de buitenkant
         preg_match('/1\.0+ 0 0 1\.0+ ([\d.]+) ([\d.]+) cm \/TPL\d+ Do/', $reader->getPage(1)->getContentStream(), $m);
-        $spine = BookletImpositionService::SHEETS['A4']['width'] / 2;
+        $spine = BookletImpositionService::SHEET['width'] / 2;
         $this->assertEqualsWithDelta($spine - 595.28 - self::BLEED, (float) $m[1], 0.05);
     }
 
